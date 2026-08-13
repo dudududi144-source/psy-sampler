@@ -1,0 +1,530 @@
+     1→# PSY FAMILY SYSTEM INVENTORY
+     2→
+     3→## Cross-Repository Forensic Scan of the Entire PSY Family
+     4→
+     5→**Scan date:** 2026-08-12
+     6→**Scanner:** Foundation Lab / Systems Factory (Phase 0.5 + Phase 1)
+     7→**Method:** Deep file reads of all 7 repos under `dudududi144-source`. Names are NOT trusted — wiring is verified by import graph, tests are verified by execution, claims are verified by evidence.
+     8→
+     9→---
+    10→
+    11→## 1. REPO INVENTORY
+    12→
+    13→| repo | size | what it actually is | audio? | tests |
+    14→|------|------|---------------------|:------:|:-----:|
+    15→| **psy** | 109KB | PSY-6 GROOVEBOX single-file app (v4.0-m2-song). 1418-line `index.html` + 576-line `soundBank.js` + 399-line test file. | YES — mainline | 22 tests |
+    16→| **psy3-clean** | 697KB | "PSY6 MAX" single-file (v3.0.0-m1-fullon). Pre-M2 psy. 1148-line `index.html`. | YES — superseded | 1 self-test |
+    17→| **psy4** | 115MB | "PSY LIVE" Next.js app. Live engine = `psyLive.ts` (967 lines). Studio engine tree = 70 files / 34,469 lines (mostly dead). 117 regression tests. | YES — research line | 117 tests |
+    18→| **psy5** | 33KB | "PSY6 STANDALONE" single-file pooled-engine groovebox. 416-line `index.html` + 164-line `factory-presets.js`. | YES — pooled experiment | 6 self-gate |
+    19→| **forge** | 31KB | CI/CD platform (Next.js). Sovereign deployment system. | NO | unknown |
+    20→| **PromptForge** | 82KB | AI dev orchestrator (Python). Autonomous code generation. | NO | unknown |
+    21→| **nova** | 48MB | "Prompt-to-Reality Engine" (Next.js). Turns text prompts into HTML apps. | NO | 2840 tests |
+    22→
+    23→**Audio repos: 4** (psy, psy3-clean, psy4, psy5)
+    24→**Non-audio repos: 3** (forge, PromptForge, nova) — out of scope for foundation lab
+    25→
+    26→---
+    27→
+    28→## 2. SUBSYSTEM INVENTORY
+    29→
+    30→### 2.1 psy (mainline groovebox — the reference design)
+    31→
+    32→| # | Subsystem | Path | Entry point | Dependencies | Runtime? | Tests? | Quality | Reusable? | Action |
+    33→|---|-----------|------|-------------|--------------|:--------:|:------:|:-------:|:---------:|--------|
+    34→| 1 | Groovebox engine | `index.html` (inline) | `window.__psy6` | Web Audio API, mulberry32 PRNG | YES | 22 vm-based tests | HIGH | YES (as reference) | **KEEP** as reference design |
+    35→| 2 | M2 Song model | `index.html:507-746` | `buildSong()`, `buildTheme()` | mulberry32 | YES | 5 determinism tests | HIGH | YES | **PORT** to foundation/composition |
+    36→| 3 | Motif transforms | `index.html:575-616` | `transposeDegree`, `invert`, `retrograde`, `displace`, `fragment`, `augment`, `diminish` | none (pure) | YES | 1 test | HIGH | YES | **PORT** to foundation/motifs |
+    37→| 4 | Synth voices | `index.html:335-505` | `makeVoices()` | Web Audio | YES | self-test (RMS/peak) | MEDIUM | YES (as pattern) | **REFACTOR** into foundation/synthesis |
+    38→| 5 | FX chain | `index.html:780-873` | delay, reverb, drive, comp, duck | Web Audio | YES | self-test | HIGH | YES | **PORT** to foundation/fx |
+    39→| 6 | Scheduler | `index.html:902-916` | `setInterval(25ms)` + 0.14s lookahead | AudioContext.currentTime | YES | 4 integration tests | MEDIUM | NO (setInterval is debt) | **REBUILD** as Transport |
+    40→| 7 | Sound bank | `soundBank.js` (576 lines) | `SOUND_BANK`, `getById`, `autoSelect` | none | NO (not loaded by index.html) | NONE | HIGH (data) | YES (as data) | **PORT** to foundation/synthesis |
+    41→| 8 | Scales/theory | `index.html:165-215` | `SCALES`, `stableDegrees`, `nearestStableDeg` | none | YES | covered by song tests | HIGH | YES | **PORT** to foundation/harmony |
+    42→| 9 | Sidechain ducking | `index.html:810,974-979` | `duck` gain on BASS+PAD | Web Audio | YES | tested via DROP test | HIGH | YES | **PORT** to foundation/mixing |
+    43→| 10 | Section automation | `index.html:1049-1065` | `energyAt()` → `automationFromEnergy()` | Web Audio | YES | tested | HIGH | YES | **PORT** to foundation/composition |
+    44→| 11 | Pre-drop silence | `index.html:720-723,970` | `isPreDropSilenceBar`, `preDropGate` | none | YES | tested | HIGH | YES | **PORT** to foundation/composition |
+    45→| 12 | Self-test (offline render) | `index.html:1089-1120` | `selfTest()` via OfflineAudioContext | Web Audio | YES | runs on load | HIGH | YES | **PORT** to foundation/testing |
+    46→| 13 | PSY6_ARCHITECTURE.md | `PSY6_ARCHITECTURE.md` (216 lines) | — | — | — | — | HIGH | YES (as design ref) | **KEEP** as foundation blueprint |
+    47→| 14 | CROSS_REPO_AUDIT.md | `CROSS_REPO_AUDIT.md` (70 lines) | — | — | — | — | HIGH | YES | **KEEP** as audit reference |
+    48→
+    49→**psy unique capabilities:**
+    50→- M2 song model with 7-section arranger (INTRO→BUILD→DROP→BREAK→RISER→DROP2→OUTRO)
+    51→- 4 themes (A/A2/B/transition) with motif operations
+    52→- 4 bass styles (gallop/offbeat/pumping/pedal)
+    53→- Energy curves → automation
+    54→- Phrygian Dominant modal engine with stable-degree resolution
+    55→- Call-and-response lead motifs
+    56→- 22 deterministic VM-based tests (only audio test suite in the family)
+    57→
+    58→---
+    59→
+    60→### 2.2 psy3-clean (superseded ancestor)
+    61→
+    62→| # | Subsystem | Path | Entry point | Runtime? | Tests? | Quality | Action |
+    63→|---|-----------|------|-------------|:--------:|:------:|:-------:|--------|
+    64→| 15 | Groovebox engine | `index.html` (1148 lines) | `Groovebox` prototype class | YES | 1 self-test | MEDIUM | **ARCHIVE** |
+    65→| 16 | Arranger (6 sections) | `index.html:222` | `SECTIONS` const, `jumpSection()` | YES | NONE | MEDIUM | **ARCHIVE** (superseded by psy M2) |
+    66→| 17 | Generative patterns | `index.html:286` | `makePatterns()`, `makeLeadMotif()`, `makeArpPhrase()` | YES | NONE | HIGH | **PORT** (unique Phrygian Dominant theory) |
+    67→| 18 | Worker scheduler | `index.html:684,692` | `WORKER_SRC` blob, 25ms tick | YES | NONE | MEDIUM | **REFERENCE** (for Transport design) |
+    68→| 19 | XY pad | `index.html:1101` | filter freq + Q control | YES | NONE | LOW | **ARCHIVE** |
+    69→
+    70→**psy3-clean unique capabilities:**
+    71→- Phrygian Dominant modal engine (more sophisticated than psy5's static patterns)
+    72→- Call-and-response lead motif with ±1 scale degree resolution
+    73→- Arp spiral over root-b2-3-5-octave
+    74→- XY pad for filter control
+    75→- 6 scales (naturalMinor, harmonicMinor, phrygian, phrygianDominant, doubleHarmonic, minorPentatonic)
+    76→
+    77→**Verdict:** Superseded by psy mainline. **ARCHIVE** the whole repo, but **PORT** the generative pattern functions (makeLeadMotif, makeArpPhrase) as they contain unique modal theory.
+    78→
+    79→---
+    80→
+    81→### 2.3 psy4 (research line — the Foundation Lab host)
+    82→
+    83→#### 2.3.1 Live runtime (VERIFIED_RUNTIME)
+    84→
+    85→| # | Subsystem | Path | Lines | Runtime? | Tests? | Quality | Action |
+    86→|---|-----------|------|------:|:--------:|:------:|:-------:|--------|
+    87→| 20 | PsyLive engine | `src/lib/psyLive.ts` | 967 | YES | 56 tests | HIGH | **REFACTOR** (split into foundation modules) |
+    88→| 21 | BeatPLL | `src/lib/beatPLL.ts` | 213 | YES | 48 tests | HIGH | **PORT** to foundation/transport |
+    89→| 22 | MelodyObserver (YIN) | `src/lib/melodyObserver.ts` | 394 | YES | 13 tests | HIGH | **PORT** to foundation/melody |
+    90→| 23 | PatternMutator | `src/lib/patternMutator.ts` | 260 | YES | 3 tests + 200-cycle | HIGH | **PORT** to foundation/patterns |
+    91→| 24 | RadioStateGate | `src/lib/radioStateGate.ts` | 169 | YES | 8 tests | HIGH | **PORT** to foundation/radio |
+    92→| 25 | Learning (statistical) | `src/lib/learning.ts` | 482 | YES | 4 tests | MEDIUM | **REFACTOR** into foundation/memory |
+    93→| 26 | SoundBank (142 presets) | `src/lib/soundBank.ts` | 698 | NO (disconnected) | 2 tests | HIGH (data) | **PORT** to foundation/synthesis |
+    94→| 27 | PooledEngine | `src/lib/pooledEngine.ts` | 508 | NO (dead code) | 6 tests + stress | HIGH | **KEEP** as EXPERIMENTAL BACKEND |
+    95→| 28 | UI page | `src/app/page.tsx` | 229 | YES | NONE | MEDIUM | **KEEP** as device test harness |
+    96→
+    97→#### 2.3.2 Studio engine tree (DEAD_CODE — 70 files, 34,469 lines)
+    98→
+    99→| # | Subsystem | Path | Lines | Wired? | Tests? | Quality | Action |
+   100→|---|-----------|------|------:|:------:|:------:|:-------:|--------|
+   101→| 29 | psy4EngineV2 | `studio/engine/psy4EngineV2.ts` | 5485 | NO | NONE | LOW (untested monolith) | **ARCHIVE** |
+   102→| 30 | musicalDirector | `studio/engine/musicalDirector.ts` | 1987 | NO | NONE | MEDIUM (good design) | **REWRITE** (concept worth keeping) |
+   103→| 31 | musicAnalyzer | `studio/engine/musicAnalyzer.ts` | 1027 | NO | NONE | MEDIUM | **REWRITE** |
+   104→| 32 | melodyEngine | `studio/engine/melodyEngine.ts` | 834 | NO | NONE | MEDIUM (motif development) | **REFACTOR** (extract motif toolkit) |
+   105→| 33 | flowEngine | `studio/engine/flowEngine.ts` | 829 | NO | NONE | MEDIUM | **REWRITE** |
+   106→| 34 | legacyAudioGraph | `studio/engine/legacyAudioGraph.ts` | 860 | NO | NONE | LOW | **ARCHIVE** |
+   107→| 35 | workletEngine | `studio/engine/workletEngine.ts` | 758 | NO | NONE | MEDIUM | **REWRITE** (if worklet path needed) |
+   108→| 36 | advancedVoice | `studio/engine/advancedVoice.ts` | 756 | NO | NONE | MEDIUM | **REFACTOR** (4 synth modes) |
+   109→| 37 | djController | `studio/engine/djController.ts` | 738 | NO | NONE | MEDIUM | **ARCHIVE** (overengineered) |
+   110→| 38 | vocabularyLearner | `studio/engine/vocabularyLearner.ts` | 649 | NO | NONE | MEDIUM | **REWRITE** (concept worth keeping) |
+   111→| 39 | harmonyEngine | `studio/engine/harmonyEngine.ts` | 619 | NO | NONE | HIGH (11 chord types, voice leading) | **PORT** to foundation/harmony |
+   112→| 40 | phraseSync | `studio/engine/phraseSync.ts` | 581 | NO | NONE | MEDIUM | **REWRITE** |
+   113→| 41 | effectsRack | `studio/engine/effectsRack.ts` | 568 | NO | NONE | MEDIUM | **REFACTOR** |
+   114→| 42 | styleClassifier | `studio/engine/styleClassifier.ts` | 528 | NO | NONE | MEDIUM | **PORT** (pure function) |
+   115→| 43 | multisampleGenerator | `studio/engine/multisampleGenerator.ts` | 524 | NO | NONE | MEDIUM | **ARCHIVE** |
+   116→| 44 | phaseSync | `studio/engine/phaseSync.ts` | 523 | NO | NONE | MEDIUM | **ARCHIVE** (duplicate of BeatPLL) |
+   117→| 45 | sendEffects | `studio/engine/sendEffects.ts` | 518 | NO | NONE | MEDIUM | **PORT** (chorus, phaser, distortion, bitcrush) |
+   118→| 46 | commercialReference | `studio/engine/commercialReference.ts` | 454 | NO | NONE | HIGH (production targets) | **PORT** to foundation/testing |
+   119→| 47 | timbreFingerprint | `studio/engine/timbreFingerprint.ts` | 440 | NO | NONE | MEDIUM | **PORT** (pure function) |
+   120→| 48 | effectsDetector | `studio/engine/effectsDetector.ts` | 432 | NO | NONE | MEDIUM | **PORT** (pure function) |
+   121→| 49 | synthesisRouter | `studio/engine/synthesisRouter.ts` | 375 | NO | NONE | MEDIUM | **ARCHIVE** |
+   122→| 50 | musicalGrammar | `studio/engine/musicalGrammar.ts` | 331 | YES (via forensic/) | NONE | HIGH (port of psy3 psy_gen.py) | **PORT** to foundation/harmony |
+   123→| 51 | uniquenessDetector | `studio/engine/uniquenessDetector.ts` | 327 | NO | NONE | MEDIUM | **ARCHIVE** |
+   124→| 52 | worlds (10 musical identities) | `studio/engine/worlds.ts` | 290 | NO | NONE | MEDIUM | **PORT** to foundation/composition |
+   125→| 53 | musicalMemory | `studio/engine/musicalMemory.ts` | 279 | NO | NONE | MEDIUM | **REWRITE** into foundation/memory |
+   126→| 54 | sampleBank | `studio/engine/sampleBank.ts` | 266 | NO | NONE | MEDIUM | **ARCHIVE** |
+   127→| 55 | learningMemory | `studio/engine/learningMemory.ts` | 260 | NO | NONE | MEDIUM | **REWRITE** into foundation/memory |
+   128→| 56 | layerEngine | `studio/engine/layerEngine.ts` | 259 | NO | NONE | MEDIUM | **ARCHIVE** |
+   129→| 57 | performanceMonitor | `studio/engine/performanceMonitor.ts` | 254 | NO | NONE | MEDIUM | **PORT** to foundation/testing |
+   130→| 58 | schedulerWorker | `studio/engine/schedulerWorker.ts` | 251 | NO | NONE | MEDIUM | **REFERENCE** (for Transport worker design) |
+   131→| 59 | engineWorklet | `studio/engine/engineWorklet.ts` | 251 | NO | NONE | MEDIUM | **ARCHIVE** |
+   132→| 60 | synthesisDetector | `studio/engine/synthesisDetector.ts` | 241 | NO | NONE | MEDIUM | **PORT** (pure function) |
+   133→| 61 | audioBackend (interface) | `studio/engine/audioBackend.ts` | 237 | NO | NONE | HIGH (clean interface) | **PORT** to foundation/synthesis |
+   134→| 62 | multibandCompressor | `studio/engine/multibandCompressor.ts` | 235 | NO | NONE | MEDIUM | **PORT** to foundation/mixing |
+   135→| 63 | mixAwareSelector | `studio/engine/mixAwareSelector.ts` | 197 | NO | NONE | MEDIUM | **ARCHIVE** |
+   136→| 64 | callResponseEngine | `studio/engine/callResponseEngine.ts` | 137 | NO | NONE | MEDIUM | **PORT** (small, useful) |
+   137→| 65 | offlineRenderer (stub) | `studio/engine/offlineRenderer.ts` | 114 | NO | NONE | LOW (near-empty) | **DELETE** |
+   138→
+   139→#### 2.3.3 reference/ subdirectory (4 VERIFIED_LIBRARY, 9 DEAD_CODE)
+   140→
+   141→| # | Subsystem | Path | Lines | Wired? | Tests? | Quality | Action |
+   142→|---|-----------|------|------:|:------:|:------:|:-------:|--------|
+   143→| 66 | referenceListener V1 | `studio/engine/reference/referenceListener.ts` | 818 | YES (API route) | NONE | MEDIUM | **REFACTOR** into foundation/radio |
+   144→| 67 | referenceListenerV2 | `studio/engine/reference/referenceListenerV2.ts` | 1210 | NO | NONE | MEDIUM (real FFT pipeline) | **REWRITE** (fetch+ReadableStream approach) |
+   145→| 68 | continuousTrainer | `studio/engine/reference/continuousTrainer.ts` | 773 | NO | NONE | MEDIUM | **ARCHIVE** |
+   146→| 69 | renderWorker | `studio/engine/reference/renderWorker.ts` | 375 | NO | NONE | MEDIUM | **ARCHIVE** |
+   147→| 70 | selfAnalyzer | `studio/engine/reference/selfAnalyzer.ts` | 354 | NO | NONE | MEDIUM | **REWRITE** into foundation/analysis |
+   148→| 71 | trainingLoop | `studio/engine/reference/trainingLoop.ts` | 353 | NO | NONE | MEDIUM | **ARCHIVE** |
+   149→| 72 | musicalUnderstanding | `studio/engine/reference/musicalUnderstanding.ts` | 339 | NO | NONE | HIGH (Krumhansl-Schmuckler) | **PORT** to foundation/harmony |
+   150→| 73 | referenceScore | `studio/engine/reference/referenceScore.ts` | 297 | YES (API route) | NONE | MEDIUM | **PORT** to foundation/testing |
+   151→| 74 | performanceMonitor (ref) | `studio/engine/reference/performanceMonitor.ts` | 256 | NO | NONE | MEDIUM | **ARCHIVE** (duplicate) |
+   152→| 75 | worldDNA | `studio/engine/reference/worldDNA.ts` | 236 | YES (API route) | NONE | MEDIUM | **PORT** to foundation/composition |
+   153→| 76 | perVoiceAnalyzer | `studio/engine/reference/perVoiceAnalyzer.ts` | 232 | NO | NONE | MEDIUM | **ARCHIVE** |
+   154→| 77 | parameterRegistry | `studio/engine/reference/parameterRegistry.ts` | 176 | YES (API route) | NONE | MEDIUM | **PORT** to foundation/testing |
+   155→| 78 | radioStreams | `studio/engine/reference/radioStreams.ts` | 127 | NO | NONE | HIGH (verified stream registry) | **PORT** to foundation/radio |
+   156→
+   157→#### 2.3.4 forensic/ subdirectory (15 VERIFIED_LIBRARY, 2 DEAD_CODE)
+   158→
+   159→| # | Subsystem | Path | Lines | Wired? | Tests? | Quality | Action |
+   160→|---|-----------|------|------:|:------:|:------:|:-------:|--------|
+   161→| 79 | forensicRunner | `studio/engine/forensic/forensicRunner.ts` | 143 | YES (API) | NONE | HIGH | **PORT** to foundation/testing |
+   162→| 80 | offlineRenderer (forensic) | `studio/engine/forensic/offlineRenderer.ts` | 717 | YES (API) | NONE | HIGH | **PORT** to foundation/testing |
+   163→| 81 | voices (isomorphic) | `studio/engine/forensic/voices.ts` | 674 | YES (API) | NONE | HIGH | **PORT** to foundation/synthesis |
+   164→| 82 | audioAnalyzer | `studio/engine/forensic/audioAnalyzer.ts` | 546 | YES (API) | NONE | HIGH (own FFT) | **PORT** to foundation/analysis |
+   165→| 83 | qualityScore | `studio/engine/forensic/qualityScore.ts` | 615 | YES (API) | NONE | HIGH | **PORT** to foundation/testing |
+   166→| 84 | dsp (isomorphic) | `studio/engine/forensic/dsp.ts` | 222 | YES (API) | NONE | HIGH (polyBLEP, Moog ladder) | **PORT** to foundation/synthesis |
+   167→| 85 | mixing | `studio/engine/forensic/mixing.ts` | 235 | YES (API) | NONE | HIGH | **PORT** to foundation/mixing |
+   168→| 86 | repetitionDetector | `studio/engine/forensic/repetitionDetector.ts` | 229 | YES (API) | NONE | MEDIUM | **PORT** to foundation/testing |
+   169→| 87 | worldDifferentiator | `studio/engine/forensic/worldDifferentiator.ts` | 176 | YES (API) | NONE | MEDIUM | **PORT** to foundation/testing |
+   170→| 88 | paramValidator | `studio/engine/forensic/paramValidator.ts` | 186 | YES (API) | NONE | MEDIUM | **PORT** to foundation/testing |
+   171→| 89 | closedLoop | `studio/engine/forensic/closedLoop.ts` | 285 | YES (API) | NONE | MEDIUM | **PORT** to foundation/testing |
+   172→| 90 | reportGenerator | `studio/engine/forensic/reportGenerator.ts` | 318 | YES (API) | NONE | MEDIUM | **PORT** to foundation/testing |
+   173→| 91 | musicalGrammar (forensic) | `studio/engine/forensic/musicalGrammar.ts` | 165 | YES (API) | NONE | HIGH | **MERGE** with #50 |
+   174→| 92 | worlds (forensic) | `studio/engine/forensic/worlds.ts` | 134 | YES (API) | NONE | MEDIUM | **MERGE** with #52 |
+   175→| 93 | prng | `studio/engine/forensic/prng.ts` | 44 | YES (API) | NONE | HIGH | **PORT** to foundation/shared |
+   176→| 94 | liteRenderer | `studio/engine/forensic/liteRenderer.ts` | 402 | NO | NONE | MEDIUM | **ARCHIVE** |
+   177→| 95 | latencyMonitor | `studio/engine/forensic/latencyMonitor.ts` | 134 | NO | NONE | MEDIUM | **PORT** to foundation/testing |
+   178→
+   179→#### 2.3.5 Worklets (DEAD_CODE — real implementations, never loaded)
+   180→
+   181→| # | Subsystem | Path | Lines | Wired? | Tests? | Quality | Action |
+   182→|---|-----------|------|------:|:------:|:------:|:-------:|--------|
+   183→| 96 | psy4-engine worklet | `public/worklets/psy4-engine.js` | 2575 | NO (addModule never called) | NONE | HIGH (production-grade) | **KEEP** as EXPERIMENTAL (future worklet backend) |
+   184→| 97 | psy4-dsp worklet | `public/worklets/psy4-dsp.js` | 485 | NO (addModule never called) | NONE | HIGH (6 processors) | **KEEP** as EXPERIMENTAL |
+   185→
+   186→#### 2.3.6 DSP utilities (DEAD_CODE)
+   187→
+   188→| # | Subsystem | Path | Lines | Wired? | Tests? | Quality | Action |
+   189→|---|-----------|------|------:|:------:|:------:|:-------:|--------|
+   190→| 98 | wavetable | `studio/dsp/wavetable.ts` | 105 | NO | NONE | MEDIUM | **MERGE** with musicalGrammar |
+   191→| 99 | clock (Transport) | `studio/clock.ts` | 100 | NO | NONE | MEDIUM | **REFERENCE** (for Transport design) |
+   192→| 100 | rng | `studio/rng.ts` | 79 | NO | NONE | HIGH | **PORT** to foundation/shared (consolidate with prng) |
+   193→
+   194→---
+   195→
+   196→### 2.4 psy5 (pooled engine experiment)
+   197→
+   198→| # | Subsystem | Path | Lines | Runtime? | Tests? | Quality | Action |
+   199→|---|-----------|------|------:|:--------:|:------:|:-------:|--------|
+   200→| 101 | PooledEngine | `index.html` (class, ~line 354) | ~200 | YES | 1 self-gate test (G8) | HIGH | **PORT** to foundation/synthesis (reference for voice pooling) |
+   201→| 102 | SynthVoice (pooled) | `index.html` (class, ~line 363) | ~80 | YES | NONE | HIGH | **PORT** to foundation/synthesis |
+   202→| 103 | DrumVoice (pooled) | `index.html` (class, ~line 368) | ~120 | YES | NONE | HIGH | **PORT** to foundation/synthesis |
+   203→| 104 | Worker scheduler | `index.html:152` | `makeTimerWorker()`, 25ms tick, 0.12s lookahead | YES | NONE | HIGH (jitter-resistant) | **PORT** to foundation/transport (worker pattern) |
+   204→| 105 | Factory presets | `factory-presets.js` (164 lines) | `LIB`, `buildStyle()` | YES (inline copy) | NONE | HIGH | **PORT** to foundation/synthesis |
+   205→| 106 | Multi-genre builder | `factory-presets.js` | `buildStyle(style, seed)` for TECHNO/PSYTRANCE/TRANCE/PROGRESSIVE | YES | 1 determinism test (G2) | HIGH | **PORT** to foundation/composition |
+   206→| 107 | Self-Gate test framework | `index.html:408-412` | `runSelfGate()` with OfflineAudioContext | YES | 6 assertions | HIGH | **PORT** to foundation/testing |
+   207→| 108 | Macro system | `index.html:376` | `resolveMacros()` (ENERGY/DRIVE/SPACE/MOVEMENT) | YES (2 wired, 2 placeholder) | 1 test (G6) | MEDIUM | **REFACTOR** (fix DRIVE/MOVEMENT) |
+   208→| 109 | Parameter locks | `index.html` (step data) | `st.lock = {cutoff, res}` | YES | NONE | HIGH | **PORT** to foundation/patterns |
+   209→| 110 | Step micro-timing | `index.html` (step data) | `st.micro` (-100..+100) | YES | NONE | MEDIUM | **PORT** to foundation/patterns |
+   210→| 111 | Step probability | `index.html` (step data) | `st.prob` | YES | NONE | MEDIUM | **PORT** to foundation/patterns |
+   211→| 112 | Lane automation | `index.html` (pattern data) | `p.lanes[]` with breakpoint interpolation | YES | NONE | MEDIUM | **PORT** to foundation/patterns |
+   212→| 113 | Undo/redo | `index.html` (history) | 60-entry stack | YES | NONE | MEDIUM | **PORT** to foundation/shared |
+   213→| 114 | Save/load/export | `index.html` | project JSON | YES | 1 test (G5) | HIGH | **PORT** to foundation/shared |
+   214→
+   215→**psy5 unique capabilities:**
+   216→- Pre-allocated voice pools (20 synth + 24 drum, round-robin reuse)
+   217→- Worker-based jitter-resistant scheduler
+   218→- Multi-genre factory preset system (4 genres + EMPTY)
+   219→- Per-step parameter locks, micro-timing, probability
+   220→- Lane automation with breakpoint interpolation
+   221→- Self-Gate test framework (6 OfflineAudioContext assertions)
+   222→- Save/load/export/resume project system
+   223→- 3 pad modes (DRUM/SCALE/CHORD)
+   224→
+   225→---
+   226→
+   227→### 2.5 Non-audio repos (out of scope)
+   228→
+   229→| # | Repo | What it is | Foundation utility? | Action |
+   230→|---|------|------------|:-------------------:|--------|
+   231→| 115 | forge | CI/CD platform | NO | **IGNORE** |
+   232→| 116 | PromptForge | AI dev orchestrator (Python) | NO | **IGNORE** |
+   233→| 117 | nova | Prompt-to-HTML app builder | Limited (5-10 utility modules could be cherry-picked: static-analysis, interaction-probe, diff, zip, design-tokens, rate-limit, circuit-breaker) | **IGNORE** for now; cherry-pick utilities if needed later |
+   234→
+   235→---
+   236→
+   237→## 3. DUPLICATION ANALYSIS — Sources of Truth
+   238→
+   239→When the same idea exists in multiple repos, we select ONE source of truth based on: correctness, architecture, testability, latency, musical behavior, extensibility.
+   240→
+   241→### 3.1 Beat tracking / PLL
+   242→
+   243→| Implementation | Repo | Lines | Tests | Quality | Verdict |
+   244→|----------------|------|------:|:-----:|:-------:|---------|
+   245→| BeatPLL (YIN-fixed) | psy4 | 213 | 48 tests | HIGH | **SOURCE OF TRUTH** |
+   246→| phaseSync | psy4 studio | 523 | 0 | MEDIUM (duplicate) | RETIRE |
+   247→| djController | psy4 studio | 738 | 0 | LOW (overengineered) | RETIRE |
+   248→| (none) | psy | — | — | — | N/A (psy has no beat detection) |
+   249→
+   250→**Decision:** BeatPLL is the single source. Port to `foundation/transport`. Delete phaseSync and djController.
+   251→
+   252→### 3.2 Pitch detection / melody
+   253→
+   254→| Implementation | Repo | Lines | Tests | Quality | Verdict |
+   255→|----------------|------|------:|:-----:|:-------:|---------|
+   256→| MelodyObserver (YIN) | psy4 | 394 | 13 tests | HIGH | **SOURCE OF TRUTH** |
+   257→| melodyEngine | psy4 studio | 834 | 0 | MEDIUM (motif development, not detection) | REFACTOR (extract motif toolkit, don't use as detector) |
+   258→| musicalUnderstanding | psy4 reference | 339 | 0 | MEDIUM (Krumhansl-Schmuckler key finding) | PORT (key detection, not pitch detection) |
+   259→| (none) | psy | — | — | — | N/A |
+   260→
+   261→**Decision:** MelodyObserver is the pitch detection source. musicalUnderstanding is the key detection source. melodyEngine's motif transforms are the motif toolkit source. Port each to its foundation domain.
+   262→
+   263→### 3.3 Pattern mutation
+   264→
+   265→| Implementation | Repo | Lines | Tests | Quality | Verdict |
+   266→|----------------|------|------:|:-----:|:-------:|---------|
+   267→| PatternMutator | psy4 | 260 | 3 tests + 200-cycle | HIGH | **SOURCE OF TRUTH** |
+   268→| makePatterns | psy | ~150 | covered by song tests | HIGH (generative) | PORT (different purpose — generative, not mutation) |
+   269→| EvolvingSequence | psy4 studio musicalGrammar | ~50 | 0 | MEDIUM | MERGE concepts |
+   270→
+   271→**Decision:** PatternMutator for mutation. psy's makePatterns for generative creation. Both go to `foundation/patterns` with distinct APIs.
+   272→
+   273→### 3.4 Sound bank / presets
+   274→
+   275→| Implementation | Repo | Lines | Tests | Quality | Verdict |
+   276→|----------------|------|------:|:-----:|:-------:|---------|
+   277→| SoundBank (142 presets) | psy4 | 698 | 2 tests | HIGH | **SOURCE OF TRUTH** |
+   278→| soundBank.js (119 presets) | psy | 576 | 0 | HIGH (same schema) | MERGE (add psy's unique presets) |
+   279→| factory-presets.js (~51 presets) | psy5 | 164 | 0 | HIGH (multi-genre builder) | MERGE (add buildStyle function) |
+   280→
+   281→**Decision:** psy4 SoundBank is the source. Merge psy's 119 + psy5's 51 presets + psy5's `buildStyle()` multi-genre builder. Target: ~200+ presets in `foundation/synthesis`.
+   282→
+   283→### 3.5 Scheduler / clock
+   284→
+   285→| Implementation | Repo | Lines | Tests | Quality | Verdict |
+   286→|----------------|------|------:|:-----:|:-------:|---------|
+   287→| setInterval(25ms) + 0.14s lookahead | psy | ~20 | 4 integration tests | MEDIUM (debt: background-tab stalls) | REFERENCE (pattern) |
+   288→| Worker blob + 25ms + 0.2s | psy3-clean | ~30 | 0 | MEDIUM | REFERENCE (worker pattern) |
+   289→| Worker blob + 25ms + 0.12s | psy5 | ~40 | 0 | HIGH (jitter-resistant) | **SOURCE OF TRUTH** (worker pattern) |
+   290→| schedulerWorker | psy4 studio | 251 | 0 | MEDIUM | REFERENCE (TS implementation) |
+   291→| studio/clock.ts | psy4 studio | 100 | 0 | MEDIUM | REFERENCE (Transport interface) |
+   292→| PSY6_ARCHITECTURE.md Transport API | psy | 216 (doc) | — | HIGH (design) | **SOURCE OF TRUTH** (design) |
+   293→
+   294→**Decision:** Build `foundation/transport` following the PSY6_ARCHITECTURE.md Transport API design, using psy5's worker pattern for jitter resistance, psy4's BeatPLL for beat estimation, and AudioContext.currentTime as the only clock. **No setInterval as musical clock.**
+   295→
+   296→### 3.6 Synthesis / voices
+   297→
+   298→| Implementation | Repo | Lines | Tests | Quality | Verdict |
+   299→|----------------|------|------:|:-----:|:-------:|---------|
+   300→| Inline per-note voices | psy | ~170 | self-test | MEDIUM (GC pressure) | REFERENCE (voice designs) |
+   301→| Inline per-note voices | psy3-clean | ~140 | self-test | MEDIUM | REFERENCE |
+   302→| PooledEngine (16+12 voices) | psy4 | 508 | 6 tests + stress | HIGH | **SOURCE OF TRUTH** (pool design) |
+   303→| PooledEngine (20+24 voices) | psy5 | ~400 | 1 self-gate | HIGH | MERGE (larger pool, worker integration) |
+   304→| advancedVoice (4 modes) | psy4 studio | 756 | 0 | MEDIUM | REFACTOR (extract FM/supersaw/wavetable modes) |
+   305→| forensic/voices.ts (isomorphic) | psy4 studio | 674 | 0 | HIGH (TS port of worklet) | PORT (for offline rendering) |
+   306→| psy4-engine.js worklet | psy4 public | 2575 | 0 | HIGH (production-grade) | KEEP as future worklet backend |
+   307→
+   308→**Decision:** psy4 PooledEngine is the source for voice pooling. psy5's larger pool sizes and worker integration are the evolution. forensic/voices.ts is the isomorphic rendering source. psy4-engine.js worklet is the future RT-safe backend. All go to `foundation/synthesis` with clear classification.
+   309→
+   310→### 3.7 Effects
+   311→
+   312→| Implementation | Repo | Lines | Tests | Quality | Verdict |
+   313→|----------------|------|------:|:-----:|:-------:|---------|
+   314→| FX chain (delay/reverb/drive/comp/duck) | psy | ~100 | self-test | HIGH | **SOURCE OF TRUTH** (core FX) |
+   315→| FX chain (same) | psy3-clean | ~90 | self-test | HIGH | MERGE (identical) |
+   316→| sendEffects (chorus/phaser/distortion/bitcrush) | psy4 studio | 518 | 0 | MEDIUM | PORT (additional FX) |
+   317→| effectsRack (per-track insert chain) | psy4 studio | 568 | 0 | MEDIUM | REFACTOR |
+   318→| multibandCompressor | psy4 studio | 235 | 0 | MEDIUM | PORT |
+   319→| forensic/mixing.ts (BusProcessor, SchroederReverb) | psy4 studio | 235 | 0 | HIGH | PORT (isomorphic) |
+   320→
+   321→**Decision:** psy's FX chain is the core. psy4's sendEffects + multibandCompressor + forensic/mixing.ts are additions. All go to `foundation/fx` and `foundation/mixing`.
+   322→
+   323→### 3.8 Harmony / theory
+   324→
+   325→| Implementation | Repo | Lines | Tests | Quality | Verdict |
+   326→|----------------|------|------:|:-----:|:-------:|---------|
+   327→| Scales + stableDegrees | psy | ~50 | covered by song tests | HIGH | **SOURCE OF TRUTH** (modal theory) |
+   328→| 6 scales | psy3-clean | ~40 | 0 | HIGH | MERGE (same scales) |
+   329→| harmonyEngine (11 chord types, voice leading) | psy4 studio | 619 | 0 | HIGH | PORT (chord/voice-leading) |
+   330→| musicalGrammar (SCALES, PROGRESSIONS) | psy4 studio | 331 | 0 | HIGH | MERGE (consolidate scales) |
+   331→| musicalUnderstanding (Krumhansl-Schmuckler) | psy4 reference | 339 | 0 | HIGH | PORT (key detection) |
+   332→
+   333→**Decision:** psy's modal theory is the source for scales + stable degrees. harmonyEngine is the source for chords + voice leading. musicalUnderstanding is the source for key detection. All go to `foundation/harmony`.
+   334→
+   335→### 3.9 Song structure / arrangement
+   336→
+   337→| Implementation | Repo | Lines | Tests | Quality | Verdict |
+   338→|----------------|------|------:|:-----:|:-------:|---------|
+   339→| M2 Song model (7 sections, 4 themes, 4 bass styles) | psy | ~240 | 5 tests | HIGH | **SOURCE OF TRUTH** |
+   340→| Arranger (6 sections) | psy3-clean | ~60 | 0 | MEDIUM | ARCHIVE (superseded) |
+   341→| flowEngine (dynamic flow) | psy4 studio | 829 | 0 | MEDIUM | REWRITE (concept worth keeping) |
+   342→| worlds (10 musical identities) | psy4 studio | 290 | 0 | MEDIUM | PORT (as world presets) |
+   343→
+   344→**Decision:** psy's M2 Song model is the source. flowEngine's dynamic flow concept is worth rewriting on top of the Song model. worlds become composition presets. All go to `foundation/composition`.
+   345→
+   346→### 3.10 Learning / memory
+   347→
+   348→| Implementation | Repo | Lines | Tests | Quality | Verdict |
+   349→|----------------|------|------:|:-----:|:-------:|---------|
+   350→| Learning (statistical bookkeeping) | psy4 | 482 | 4 tests | MEDIUM | **SOURCE OF TRUTH** (for now) |
+   351→| learningMemory | psy4 studio | 260 | 0 | MEDIUM | REWRITE (concept) |
+   352→| musicalMemory | psy4 studio | 279 | 0 | MEDIUM | REWRITE (concept) |
+   353→| vocabularyLearner | psy4 studio | 649 | 0 | MEDIUM | REWRITE (concept) |
+   354→| continuousTrainer | psy4 reference | 773 | 0 | LOW | ARCHIVE |
+   355→
+   356→**Decision:** psy4 Learning is the interim source. The Contextual Musical Memory concept (Context → Action → Outcome → Score) from the prompt will be built fresh in `foundation/memory`, drawing design ideas from learningMemory + musicalMemory + vocabularyLearner but NOT porting their code (all untested).
+   357→
+   358→### 3.11 Testing
+   359→
+   360→| Implementation | Repo | Lines | Tests | Quality | Verdict |
+   361→|----------------|------|------:|:-----:|:-------:|---------|
+   362→| VM-based test harness + 22 tests | psy | 399 | 22 | HIGH | **SOURCE OF TRUTH** (test patterns) |
+   363→| Self-Gate framework (6 assertions) | psy5 | ~100 | 6 | HIGH | PORT (OfflineAudioContext pattern) |
+   364→| Reality Bridge suite (117 tests) | psy4 | ~2000 | 117 | HIGH | **SOURCE OF TRUTH** (DSP/PLL/melody tests) |
+   365→| forensic/qualityScore + reportGenerator | psy4 studio | 933 | 0 | HIGH | PORT (forensic testing) |
+   366→| commercialReference (production targets) | psy4 studio | 454 | 0 | HIGH | PORT (benchmarks) |
+   367→| selfTest (OfflineAudioContext) | psy | ~30 | 1 | HIGH | PORT (inline self-test pattern) |
+   368→
+   369→**Decision:** psy4 Reality Bridge suite is the source for DSP/PLL/melody tests. psy's VM harness is the source for engine integration tests. psy5's Self-Gate is the source for browser-based assertion tests. forensic/ is the source for offline rendering + quality scoring. All go to `foundation/testing`.
+   370→
+   371→### 3.12 DSP primitives
+   372→
+   373→| Implementation | Repo | Lines | Tests | Quality | Verdict |
+   374→|----------------|------|------:|:-----:|:-------:|---------|
+   375→| forensic/dsp.ts (polyBLEP, Moog ladder, fastTanh, PinkNoise) | psy4 studio | 222 | 0 | HIGH (isomorphic) | **SOURCE OF TRUTH** |
+   376→| psy4-dsp.js worklet (6 processors) | psy4 public | 485 | 0 | HIGH | KEEP (worklet implementations) |
+   377→| psy4-engine.js worklet (full engine) | psy4 public | 2575 | 0 | HIGH | KEEP (worklet implementation) |
+   378→| dsp/wavetable.ts (additive wavetables) | psy4 studio | 105 | 0 | MEDIUM | MERGE |
+   379→
+   380→**Decision:** forensic/dsp.ts is the source for isomorphic DSP primitives (can run in Node and browser). The worklets are the RT-safe implementations for future use. All go to `foundation/synthesis`.
+   381→
+   382→### 3.13 PRNG / RNG
+   383→
+   384→| Implementation | Repo | Lines | Tests | Quality | Verdict |
+   385→|----------------|------|------:|:-----:|:-------:|---------|
+   386→| mulberry32 (inline) | psy | ~5 | covered | HIGH | — |
+   387→| mulberry32 (inline) | psy3-clean | ~5 | 0 | HIGH | — |
+   388→| Rng class | psy4 studio/rng.ts | 79 | 0 | HIGH | — |
+   389→| SeededRng class | psy4 studio/musicalGrammar.ts | ~20 | 0 | HIGH | — |
+   390→| mulberry32 (prng.ts) | psy4 studio/forensic/prng.ts | 44 | 0 | HIGH | **SOURCE OF TRUTH** (cleanest) |
+   391→
+   392→**Decision:** forensic/prng.ts is the source. Consolidate all PRNG usage to this one. Goes to `foundation/shared`.
+   393→
+   394→---
+   395→
+   396→## 4. ACTION SUMMARY
+   397→
+   398→| Action | Count | Lines |
+   399→|--------|------:|------:|
+   400→| **KEEP** (as reference/experimental) | 6 | ~5500 |
+   401→| **PORT** (move to foundation as-is or near-as-is) | 35 | ~12000 |
+   402→| **REFACTOR** (extract good parts, restructure) | 8 | ~4000 |
+   403→| **REBUILD** (concept worth keeping, code not) | 8 | ~5000 |
+   404→| **MERGE** (consolidate duplicates) | 6 | ~1500 |
+   405→| **ARCHIVE** (superseded or not worth porting) | 18 | ~8000 |
+   406→| **DELETE** (empty stubs) | 1 | ~114 |
+   407→| **IGNORE** (non-audio) | 3 repos | — |
+   408→
+   409→**Total audio code scanned:** ~48,000 lines across 4 repos
+   410→**Estimated foundation target:** ~15,000-20,000 lines (after consolidation, deduplication, and archiving)
+   411→**Reduction:** ~60% (from 48k → ~18k lines of clean, tested, connected code)
+   412→
+   413→---
+   414→
+   415→## 5. DUPLICATION RESOLUTION — Single Sources of Truth
+   416→
+   417→| Domain | Source of Truth | Why |
+   418→|--------|----------------|-----|
+   419→| Beat tracking / PLL | psy4 `beatPLL.ts` (48 tests) | Only tested PLL in the family |
+   420→| Pitch detection | psy4 `melodyObserver.ts` YIN (13 tests) | Only tested pitch detector |
+   421→| Pattern mutation | psy4 `patternMutator.ts` (200-cycle test) | Only tested mutator |
+   422→| Radio state | psy4 `radioStateGate.ts` (8 tests) | Only explicit state machine |
+   423→| Sound bank | psy4 `soundBank.ts` (142 presets, verified) | Largest, verified dataset |
+   424→| Voice pooling | psy4 `pooledEngine.ts` (6 tests + stress) | Most tested pool design |
+   425→| Scheduler design | psy `PSY6_ARCHITECTURE.md` Transport API | Best architectural design |
+   426→| Worker scheduler pattern | psy5 `makeTimerWorker()` | Cleanest worker implementation |
+   427→| Song model / arrangement | psy M2 `buildSong()` (5 tests) | Only tested song structure |
+   428→| Motif transforms | psy `transposeDegree/invert/retrograde/...` | Pure, tested |
+   429→| Modal theory / scales | psy `SCALES` + `stableDegrees` | Most sophisticated |
+   430→| Chord / voice leading | psy4 studio `harmonyEngine.ts` | 11 chord types, voice leading |
+   431→| Key detection | psy4 reference `musicalUnderstanding.ts` | Krumhansl-Schmuckler |
+   432→| FX chain (core) | psy delay/reverb/drive/comp/duck | Most tested FX |
+   433→| FX (additional) | psy4 studio `sendEffects.ts` | Chorus/phaser/distortion/bitcrush |
+   434→| Multiband compressor | psy4 studio `multibandCompressor.ts` | 3-band design |
+   435→| Isomorphic DSP | psy4 forensic `dsp.ts` | polyBLEP, Moog ladder, runs in Node |
+   436→| Isomorphic voices | psy4 forensic `voices.ts` | TS port of worklet voices |
+   437→| Isomorphic mixing | psy4 forensic `mixing.ts` | BusProcessor, SchroederReverb |
+   438→| Forensic testing | psy4 forensic `forensicRunner.ts` + 14 modules | Full offline render+analyze pipeline |
+   439→| Production targets | psy4 studio `commercialReference.ts` | LUFS, true-peak, spectral balance |
+   440→| Self-test pattern | psy `selfTest()` via OfflineAudioContext | Inline, runs on load |
+   441→| Test harness | psy VM-based harness + psy5 Self-Gate | Two complementary patterns |
+   442→| PRNG | psy4 forensic `prng.ts` (mulberry32) | Cleanest implementation |
+   443→| Radio streams | psy4 reference `radioStreams.ts` | Verified stream registry |
+   444→
+   445→---
+   446→
+   447→## 6. FOUNDATION DOMAIN MAPPING
+   448→
+   449→Based on the inventory, the `foundation/` directory will be organized as:
+   450→
+   451→```
+   452→foundation/
+   453→  transport/          ← BeatPLL + PSY6_ARCHITECTURE Transport API + psy5 worker pattern
+   454→  radio/              ← RadioStateGate + radioStreams + referenceListener concepts
+   455→  analysis/           ← audioAnalyzer (FFT) + selfAnalyzer + musicAnalyzer concepts
+   456→  rhythm/             ← BeatDetector + OnsetDetector + TempoEstimator (from BeatPLL)
+   457→  melody/             ← MelodyObserver (YIN) + musicalUnderstanding (key detection)
+   458→  harmony/            ← Scales + harmonyEngine + musicalGrammar
+   459→  motifs/             ← psy motif transforms + melodyEngine motif toolkit
+   460→  patterns/           ← PatternMutator + psy makePatterns + psy5 parameter locks
+   461→  composition/        ← psy M2 Song model + flowEngine concepts + worlds
+   462→  synthesis/          ← PooledEngine + SoundBank + forensic/dsp + forensic/voices
+   463→  fx/                 ← psy FX chain + sendEffects
+   464→  mixing/             ← psy ducking + multibandCompressor + forensic/mixing
+   465→  learning/           ← psy4 Learning (interim) → Contextual Musical Memory (future)
+   466→  memory/             ← learningMemory + musicalMemory concepts (REWRITE)
+   467→  synchronization/    ← (future: network sync, not built yet)
+   468→  shared/             ← prng + rng + utils + types
+   469→  testing/            ← Reality Bridge suite + psy VM harness + psy5 Self-Gate + forensic
+   470→```
+   471→
+   472→**Each module will be built in its own Gate (F1-F8), starting with F1 (Transport).**
+   473→
+   474→---
+   475→
+   476→## 7. CRITICAL FINDINGS
+   477→
+   478→### 7.1 What actually works (VERIFIED)
+   479→
+   480→- **psy4 live runtime** (psyLive + BeatPLL + MelodyObserver + PatternMutator + RadioStateGate): 117 tests green, browser-verified
+   481→- **psy groovebox**: 22 tests green, self-test passes, M2 song model works
+   482→- **psy5 pooled engine**: 6 self-gate tests pass, pooled voices work
+   483→- **psy4 forensic pipeline**: 15 modules reachable via API routes (zero tests, but real implementations)
+   484→
+   485→### 7.2 What doesn't work (DEAD_CODE)
+   486→
+   487→- **psy4 studio/engine/ top-level tree**: 36 files, ~22,000 lines, ZERO imports from live runtime
+   488→- **psy4 reference/ continuous-learning subsystem**: 9 files, ~5,200 lines, explicitly acknowledged as dead in worklog
+   489→- **psy4 worklets**: 2 files, 3,060 lines, real implementations but `addModule()` never called
+   490→- **psy4 studio/dsp/**: 3 files, 284 lines, all dead
+   491→
+   492→### 7.3 What's missing (CLAIM_ONLY)
+   493→
+   494→- **MusicalTransport** (single source of truth for bpm/beat/phase) — designed in PSY6_ARCHITECTURE.md but not built
+   495→- **Song structure in psy4** — worklog claims it exists but code was removed in REBUILD
+   496→- **Self-recovery / health monitor** — worklog claims it exists but code doesn't exist
+   497→- **Reinforcement learning** — worklog claims "REINFORCE" but it's statistical bookkeeping
+   498→- **Multi-device sync** — not built (correctly deferred)
+   499→
+   500→### 7.4 What's unique to each repo
+   501→
+   502→- **psy**: M2 song model, motif transforms, Phrygian Dominant modal engine, 22 VM-based tests, PSY6_ARCHITECTURE.md
+   503→- **psy3-clean**: Generative pattern functions (makeLeadMotif, makeArpPhrase) with unique modal theory
+   504→- **psy4**: BeatPLL (tested), MelodyObserver/YIN (tested), PatternMutator (tested), RadioStateGate (tested), forensic pipeline, 142-preset SoundBank, PooledEngine, 2 AudioWorklets
+   505→- **psy5**: Pooled voice engine (20+24), worker scheduler, multi-genre factory presets, parameter locks, Self-Gate test framework
+   506→
+   507→---
+   508→
+   509→## 8. NEXT STEPS
+   510→
+   511→### Gate F0 (this document) — COMPLETE
+   512→- ✓ Repo state verified (HEAD == origin/main, 117 tests green, lint clean)
+   513→- ✓ All audit reports read
+   514→- ✓ All 7 repos scanned (4 audio + 3 non-audio)
+   515→- ✓ 117 subsystems cataloged
+   516→- ✓ Every subsystem classified (VERIFIED_RUNTIME / VERIFIED_LIBRARY / EXPERIMENTAL / DEAD_CODE / CLAIM_ONLY)
+   517→- ✓ Every subsystem assigned an action (KEEP / PORT / REFACTOR / REBUILD / ARCHIVE / DELETE)
+   518→- ✓ Duplicates identified, sources of truth selected
+   519→- ✓ Foundation domain mapping defined
+   520→
+   521→### Gate F1 (next) — MusicalTransport
+   522→- Build `foundation/transport/` following PSY6_ARCHITECTURE.md §5 Transport API
+   523→- Use BeatPLL (from psy4) as the beat estimator
+   524→- Use psy5's worker pattern for jitter-resistant ticking
+   525→- Use AudioContext.currentTime as the ONLY clock
+   526→- Write deterministic tests (streams A-J from PSY6_ARCHITECTURE.md §6)
+   527→- DO NOT build network sync yet
+   528→
+   529→**No code is written in this gate. This is purely an inventory document.**
+   530→

@@ -1,0 +1,2476 @@
+=== branches ===
+[
+  {
+    "name": "main",
+    "commit": {
+      "sha": "8e0ffb3f758e9c661b1765498f430f67d053a6d8",
+      "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/8e0ffb3f758e9c661b1765498f430f67d053a6d8"
+    },
+    "protected": false
+  }
+]
+
+=== commits ===
+[
+  {
+    "sha": "8e0ffb3f758e9c661b1765498f430f67d053a6d8",
+    "node_id": "C_kwDOT0zzxNoAKDhlMGZmYjNmNzU4ZTljNjYxYjE3NjU0OThmNDMwZjY3ZDA1M2E2ZDg",
+    "commit": {
+      "author": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-13T01:26:15Z"
+      },
+      "committer": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-13T01:26:15Z"
+      },
+      "message": "STEP 10: ULTIMATE PSYCHEDELIC DESIGN - glassmorphism, 3D effects, scanlines, safe-area",
+      "tree": {
+        "sha": "cab8c06f8ba6198ea3762ff5b725ad7af16a6cca",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/trees/cab8c06f8ba6198ea3762ff5b725ad7af16a6cca"
+      },
+      "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/commits/8e0ffb3f758e9c661b1765498f430f67d053a6d8",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/8e0ffb3f758e9c661b1765498f430f67d053a6d8",
+    "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/8e0ffb3f758e9c661b1765498f430f67d053a6d8",
+    "comments_url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/8e0ffb3f758e9c661b1765498f430f67d053a6d8/comments",
+    "author": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "e3f1284434f38aab09ec8b93d3ec2269a3876615",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/e3f1284434f38aab09ec8b93d3ec2269a3876615",
+        "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/e3f1284434f38aab09ec8b93d3ec2269a3876615"
+      }
+    ]
+  },
+  {
+    "sha": "e3f1284434f38aab09ec8b93d3ec2269a3876615",
+    "node_id": "C_kwDOT0zzxNoAKGUzZjEyODQ0MzRmMzhhYWIwOWVjOGI5M2QzZWMyMjY5YTM4NzY2MTU",
+    "commit": {
+      "author": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-13T01:23:00Z"
+      },
+      "committer": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-13T01:23:00Z"
+      },
+      "message": "STEP 9: PSYCHEDELIC DESIGN - animated gradients, neon glow, trippy colors",
+      "tree": {
+        "sha": "f2f425949e549bca1658218c3802748527d3a9cc",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/trees/f2f425949e549bca1658218c3802748527d3a9cc"
+      },
+      "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/commits/e3f1284434f38aab09ec8b93d3ec2269a3876615",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/e3f1284434f38aab09ec8b93d3ec2269a3876615",
+    "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/e3f1284434f38aab09ec8b93d3ec2269a3876615",
+    "comments_url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/e3f1284434f38aab09ec8b93d3ec2269a3876615/comments",
+    "author": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "1a0c17f3eac5e32b883193f98619c41a8314b491",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/1a0c17f3eac5e32b883193f98619c41a8314b491",
+        "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/1a0c17f3eac5e32b883193f98619c41a8314b491"
+      }
+    ]
+  },
+  {
+    "sha": "1a0c17f3eac5e32b883193f98619c41a8314b491",
+    "node_id": "C_kwDOT0zzxNoAKDFhMGMxN2YzZWFjNWUzMmI4ODMxOTNmOTg2MTljNDFhODMxNGI0OTE",
+    "commit": {
+      "author": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-13T01:20:35Z"
+      },
+      "committer": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-13T01:20:35Z"
+      },
+      "message": "STEP 8: ADDED MACRO BUTTONS - SPACE + ENERGY + TENSION in transport",
+      "tree": {
+        "sha": "c7efa4431c46e67fad9ad3d2cd962b23a7cc55b2",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/trees/c7efa4431c46e67fad9ad3d2cd962b23a7cc55b2"
+      },
+      "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/commits/1a0c17f3eac5e32b883193f98619c41a8314b491",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/1a0c17f3eac5e32b883193f98619c41a8314b491",
+    "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/1a0c17f3eac5e32b883193f98619c41a8314b491",
+    "comments_url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/1a0c17f3eac5e32b883193f98619c41a8314b491/comments",
+    "author": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "9fa2cec1a37a2bc3058b1b9627e07b905684d7ad",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/9fa2cec1a37a2bc3058b1b9627e07b905684d7ad",
+        "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/9fa2cec1a37a2bc3058b1b9627e07b905684d7ad"
+      }
+    ]
+  },
+  {
+    "sha": "9fa2cec1a37a2bc3058b1b9627e07b905684d7ad",
+    "node_id": "C_kwDOT0zzxNoAKDlmYTJjZWMxYTM3YTJiYzMwNThiMWI5NjI3ZTA3YjkwNTY4NGQ3YWQ",
+    "commit": {
+      "author": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-13T01:12:43Z"
+      },
+      "committer": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-13T01:12:43Z"
+      },
+      "message": "STEP 7: WIRED MIDI CLOCK - handleMidiClock connected to onMidiMsg",
+      "tree": {
+        "sha": "9ecdb399c5278c259edf0d71bfe796398b7482c6",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/trees/9ecdb399c5278c259edf0d71bfe796398b7482c6"
+      },
+      "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/commits/9fa2cec1a37a2bc3058b1b9627e07b905684d7ad",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/9fa2cec1a37a2bc3058b1b9627e07b905684d7ad",
+    "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/9fa2cec1a37a2bc3058b1b9627e07b905684d7ad",
+    "comments_url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/9fa2cec1a37a2bc3058b1b9627e07b905684d7ad/comments",
+    "author": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "5d10a31ac00090ef50d86842257a4bb7921aaf49",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/5d10a31ac00090ef50d86842257a4bb7921aaf49",
+        "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/5d10a31ac00090ef50d86842257a4bb7921aaf49"
+      }
+    ]
+  },
+  {
+    "sha": "5d10a31ac00090ef50d86842257a4bb7921aaf49",
+    "node_id": "C_kwDOT0zzxNoAKDVkMTBhMzFhYzAwMDkwZWY1MGQ4Njg0MjI1N2E0YmI3OTIxYWFmNDk",
+    "commit": {
+      "author": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-13T01:11:06Z"
+      },
+      "committer": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-13T01:11:06Z"
+      },
+      "message": "STEP 6: WIRED MACRO CONTROLS - applyMacro now uses device.setKnob()",
+      "tree": {
+        "sha": "8992bede6799a43332410774575424439de57b69",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/trees/8992bede6799a43332410774575424439de57b69"
+      },
+      "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/commits/5d10a31ac00090ef50d86842257a4bb7921aaf49",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/5d10a31ac00090ef50d86842257a4bb7921aaf49",
+    "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/5d10a31ac00090ef50d86842257a4bb7921aaf49",
+    "comments_url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/5d10a31ac00090ef50d86842257a4bb7921aaf49/comments",
+    "author": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "f0994ce3cb3130f073d16e97dea352ef26560d7f",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/f0994ce3cb3130f073d16e97dea352ef26560d7f",
+        "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/f0994ce3cb3130f073d16e97dea352ef26560d7f"
+      }
+    ]
+  },
+  {
+    "sha": "f0994ce3cb3130f073d16e97dea352ef26560d7f",
+    "node_id": "C_kwDOT0zzxNoAKGYwOTk0Y2UzY2IzMTMwZjA3M2QxNmU5N2RlYTM1MmVmMjY1NjBkN2Y",
+    "commit": {
+      "author": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-13T01:01:44Z"
+      },
+      "committer": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-13T01:01:44Z"
+      },
+      "message": "STEP 5: WIRED GRAMMAR SYSTEM - updateGrammars called on kick/bass/lead",
+      "tree": {
+        "sha": "4af8f12920e23d6aab9320f24483e8e0b2c56698",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/trees/4af8f12920e23d6aab9320f24483e8e0b2c56698"
+      },
+      "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/commits/f0994ce3cb3130f073d16e97dea352ef26560d7f",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/f0994ce3cb3130f073d16e97dea352ef26560d7f",
+    "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/f0994ce3cb3130f073d16e97dea352ef26560d7f",
+    "comments_url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/f0994ce3cb3130f073d16e97dea352ef26560d7f/comments",
+    "author": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "4d263de6568dd10f3abe86f9deb101dd62a2a602",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/4d263de6568dd10f3abe86f9deb101dd62a2a602",
+        "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/4d263de6568dd10f3abe86f9deb101dd62a2a602"
+      }
+    ]
+  },
+  {
+    "sha": "4d263de6568dd10f3abe86f9deb101dd62a2a602",
+    "node_id": "C_kwDOT0zzxNoAKDRkMjYzZGU2NTY4ZGQxMGYzYWJlODZmOWRlYjEwMWRkNjJhMmE2MDI",
+    "commit": {
+      "author": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-13T00:59:47Z"
+      },
+      "committer": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-13T00:59:47Z"
+      },
+      "message": "STEP 4: WIRED POOLED ENGINE to Groovebox.init()",
+      "tree": {
+        "sha": "388c33a7ab2838b592817d0542a81c7638e15788",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/trees/388c33a7ab2838b592817d0542a81c7638e15788"
+      },
+      "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/commits/4d263de6568dd10f3abe86f9deb101dd62a2a602",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/4d263de6568dd10f3abe86f9deb101dd62a2a602",
+    "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/4d263de6568dd10f3abe86f9deb101dd62a2a602",
+    "comments_url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/4d263de6568dd10f3abe86f9deb101dd62a2a602/comments",
+    "author": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "1e6723e7a61efe214be300a9e280c21b7d3b27a1",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/1e6723e7a61efe214be300a9e280c21b7d3b27a1",
+        "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/1e6723e7a61efe214be300a9e280c21b7d3b27a1"
+      }
+    ]
+  },
+  {
+    "sha": "1e6723e7a61efe214be300a9e280c21b7d3b27a1",
+    "node_id": "C_kwDOT0zzxNoAKDFlNjcyM2U3YTYxZWZlMjE0YmUzMDBhOWUyODBjMjFiN2QzYjI3YTE",
+    "commit": {
+      "author": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-13T00:49:51Z"
+      },
+      "committer": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-13T00:49:51Z"
+      },
+      "message": "STEP 3: WIRE GENRE TO AUDIO - kick/hat/perc now use genre-specific params",
+      "tree": {
+        "sha": "bd76a4643791645af9936bc4939e96a587bdbe16",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/trees/bd76a4643791645af9936bc4939e96a587bdbe16"
+      },
+      "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/commits/1e6723e7a61efe214be300a9e280c21b7d3b27a1",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/1e6723e7a61efe214be300a9e280c21b7d3b27a1",
+    "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/1e6723e7a61efe214be300a9e280c21b7d3b27a1",
+    "comments_url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/1e6723e7a61efe214be300a9e280c21b7d3b27a1/comments",
+    "author": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "6125b02e467b459343f8a803ba3fe887670cba8a",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/6125b02e467b459343f8a803ba3fe887670cba8a",
+        "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/6125b02e467b459343f8a803ba3fe887670cba8a"
+      }
+    ]
+  },
+  {
+    "sha": "6125b02e467b459343f8a803ba3fe887670cba8a",
+    "node_id": "C_kwDOT0zzxNoAKDYxMjViMDJlNDY3YjQ1OTM0M2Y4YTgwM2JhM2ZlODg3NjcwY2JhOGE",
+    "commit": {
+      "author": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-13T00:47:40Z"
+      },
+      "committer": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-13T00:47:40Z"
+      },
+      "message": "STEP 2: CLEANUP - removed 1 dead GENRE_* objects + 40 dead getGenre* functions",
+      "tree": {
+        "sha": "95344851e3f5763dbf6f808088326c7cdbb92907",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/trees/95344851e3f5763dbf6f808088326c7cdbb92907"
+      },
+      "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/commits/6125b02e467b459343f8a803ba3fe887670cba8a",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/6125b02e467b459343f8a803ba3fe887670cba8a",
+    "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/6125b02e467b459343f8a803ba3fe887670cba8a",
+    "comments_url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/6125b02e467b459343f8a803ba3fe887670cba8a/comments",
+    "author": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "56f58a1b1c4ae1548e121f67a0aadc15339c83d2",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/56f58a1b1c4ae1548e121f67a0aadc15339c83d2",
+        "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/56f58a1b1c4ae1548e121f67a0aadc15339c83d2"
+      }
+    ]
+  },
+  {
+    "sha": "56f58a1b1c4ae1548e121f67a0aadc15339c83d2",
+    "node_id": "C_kwDOT0zzxNoAKDU2ZjU4YTFiMWM0YWUxNTQ4ZTEyMWY2N2EwYWFkYzE1MzM5YzgzZDI",
+    "commit": {
+      "author": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-13T00:22:19Z"
+      },
+      "committer": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-13T00:22:19Z"
+      },
+      "message": "MIDI CLOCK SYNC: external tempo sync from psy6-ultimate",
+      "tree": {
+        "sha": "39d0a49b6b5eea7722a895fb6d15f5e6b326ade4",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/trees/39d0a49b6b5eea7722a895fb6d15f5e6b326ade4"
+      },
+      "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/commits/56f58a1b1c4ae1548e121f67a0aadc15339c83d2",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/56f58a1b1c4ae1548e121f67a0aadc15339c83d2",
+    "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/56f58a1b1c4ae1548e121f67a0aadc15339c83d2",
+    "comments_url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/56f58a1b1c4ae1548e121f67a0aadc15339c83d2/comments",
+    "author": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "204ec6730df2f7c906656a58fe88fba69535e5c1",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/204ec6730df2f7c906656a58fe88fba69535e5c1",
+        "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/204ec6730df2f7c906656a58fe88fba69535e5c1"
+      }
+    ]
+  },
+  {
+    "sha": "204ec6730df2f7c906656a58fe88fba69535e5c1",
+    "node_id": "C_kwDOT0zzxNoAKDIwNGVjNjczMGRmMmY3YzkwNjY1NmE1OGZlODhmYmE2OTUzNWU1YzE",
+    "commit": {
+      "author": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-13T00:17:07Z"
+      },
+      "committer": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-13T00:17:07Z"
+      },
+      "message": "MACRO CONTROLS: SPACE + ENERGY + TENSION macros from psy6-ultimate",
+      "tree": {
+        "sha": "2bd59e5474d7b8a83075b7e3d27fcfa1d3747d6d",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/trees/2bd59e5474d7b8a83075b7e3d27fcfa1d3747d6d"
+      },
+      "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/commits/204ec6730df2f7c906656a58fe88fba69535e5c1",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/204ec6730df2f7c906656a58fe88fba69535e5c1",
+    "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/204ec6730df2f7c906656a58fe88fba69535e5c1",
+    "comments_url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/204ec6730df2f7c906656a58fe88fba69535e5c1/comments",
+    "author": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "868ef9fbba62413579b90d401209a078791dcd2a",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/868ef9fbba62413579b90d401209a078791dcd2a",
+        "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/868ef9fbba62413579b90d401209a078791dcd2a"
+      }
+    ]
+  },
+  {
+    "sha": "868ef9fbba62413579b90d401209a078791dcd2a",
+    "node_id": "C_kwDOT0zzxNoAKDg2OGVmOWZiYmE2MjQxMzU3OWI5MGQ0MDEyMDlhMDc4NzkxZGNkMmE",
+    "commit": {
+      "author": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-13T00:14:11Z"
+      },
+      "committer": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-13T00:14:11Z"
+      },
+      "message": "GRAMMAR SYSTEM: BassGrammar + MelodicGrammar + RhythmGrammar + confidence",
+      "tree": {
+        "sha": "16e6d2a1819135e0c8d459ca353e2f43982806d8",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/trees/16e6d2a1819135e0c8d459ca353e2f43982806d8"
+      },
+      "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/commits/868ef9fbba62413579b90d401209a078791dcd2a",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/868ef9fbba62413579b90d401209a078791dcd2a",
+    "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/868ef9fbba62413579b90d401209a078791dcd2a",
+    "comments_url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/868ef9fbba62413579b90d401209a078791dcd2a/comments",
+    "author": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "9364e09e934917ecd7e53d8a239224506c3e824b",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/9364e09e934917ecd7e53d8a239224506c3e824b",
+        "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/9364e09e934917ecd7e53d8a239224506c3e824b"
+      }
+    ]
+  },
+  {
+    "sha": "9364e09e934917ecd7e53d8a239224506c3e824b",
+    "node_id": "C_kwDOT0zzxNoAKDkzNjRlMDllOTM0OTE3ZWNkN2U1M2Q4YTIzOTIyNDUwNmMzZTgyNGI",
+    "commit": {
+      "author": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-13T00:13:01Z"
+      },
+      "committer": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-13T00:13:01Z"
+      },
+      "message": "GRAMMAR SYSTEM: BassGrammar + MelodicGrammar + RhythmGrammar from psy6-ultimate",
+      "tree": {
+        "sha": "84140e2a0443ba5018868a64e8851cd64d5fcf0b",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/trees/84140e2a0443ba5018868a64e8851cd64d5fcf0b"
+      },
+      "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/commits/9364e09e934917ecd7e53d8a239224506c3e824b",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/9364e09e934917ecd7e53d8a239224506c3e824b",
+    "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/9364e09e934917ecd7e53d8a239224506c3e824b",
+    "comments_url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/9364e09e934917ecd7e53d8a239224506c3e824b/comments",
+    "author": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "16c7eaff5a67119294abcb145d50867489269f15",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/16c7eaff5a67119294abcb145d50867489269f15",
+        "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/16c7eaff5a67119294abcb145d50867489269f15"
+      }
+    ]
+  },
+  {
+    "sha": "16c7eaff5a67119294abcb145d50867489269f15",
+    "node_id": "C_kwDOT0zzxNoAKDE2YzdlYWZmNWE2NzExOTI5NGFiY2IxNDVkNTA4Njc0ODkyNjlmMTU",
+    "commit": {
+      "author": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-13T00:09:35Z"
+      },
+      "committer": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-13T00:09:35Z"
+      },
+      "message": "POOLED ENGINE: SynthVoice + DrumVoice + PooledEngine from psy6-ultimate (zero GC)",
+      "tree": {
+        "sha": "479434c5a5a522ceff48f82cd4442adc580a5057",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/trees/479434c5a5a522ceff48f82cd4442adc580a5057"
+      },
+      "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/commits/16c7eaff5a67119294abcb145d50867489269f15",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/16c7eaff5a67119294abcb145d50867489269f15",
+    "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/16c7eaff5a67119294abcb145d50867489269f15",
+    "comments_url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/16c7eaff5a67119294abcb145d50867489269f15/comments",
+    "author": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "9ca509940ddb9c2eeb21548d4fe5c3d3bee469de",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/9ca509940ddb9c2eeb21548d4fe5c3d3bee469de",
+        "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/9ca509940ddb9c2eeb21548d4fe5c3d3bee469de"
+      }
+    ]
+  },
+  {
+    "sha": "9ca509940ddb9c2eeb21548d4fe5c3d3bee469de",
+    "node_id": "C_kwDOT0zzxNoAKDljYTUwOTk0MGRkYjljMmVlYjIxNTQ4ZDRmZTVjM2QzYmVlNDY5ZGU",
+    "commit": {
+      "author": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-13T00:05:25Z"
+      },
+      "committer": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-13T00:05:25Z"
+      },
+      "message": "CRITICAL FIX: cfg() now uses genre-specific sound parameters (actually changes sound)",
+      "tree": {
+        "sha": "035e1eb48d8269dd6205711a5a121becfe14d448",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/trees/035e1eb48d8269dd6205711a5a121becfe14d448"
+      },
+      "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/commits/9ca509940ddb9c2eeb21548d4fe5c3d3bee469de",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/9ca509940ddb9c2eeb21548d4fe5c3d3bee469de",
+    "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/9ca509940ddb9c2eeb21548d4fe5c3d3bee469de",
+    "comments_url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/9ca509940ddb9c2eeb21548d4fe5c3d3bee469de/comments",
+    "author": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "25f6318a39009b7e58586d773948324164c01fd3",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/25f6318a39009b7e58586d773948324164c01fd3",
+        "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/25f6318a39009b7e58586d773948324164c01fd3"
+      }
+    ]
+  },
+  {
+    "sha": "25f6318a39009b7e58586d773948324164c01fd3",
+    "node_id": "C_kwDOT0zzxNoAKDI1ZjYzMThhMzkwMDliN2U1ODU4NmQ3NzM5NDgzMjQxNjRjMDFmZDM",
+    "commit": {
+      "author": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-12T23:58:46Z"
+      },
+      "committer": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-12T23:58:46Z"
+      },
+      "message": "INTEGRATE PSY5 PRESETS: factory presets + genre-specific sound assignment",
+      "tree": {
+        "sha": "aa5a8494b5f28883d00855fd2d6165221ac7a33c",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/trees/aa5a8494b5f28883d00855fd2d6165221ac7a33c"
+      },
+      "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/commits/25f6318a39009b7e58586d773948324164c01fd3",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/25f6318a39009b7e58586d773948324164c01fd3",
+    "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/25f6318a39009b7e58586d773948324164c01fd3",
+    "comments_url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/25f6318a39009b7e58586d773948324164c01fd3/comments",
+    "author": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "751157d06ab4bab5e3e88ee79fe602775630b718",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/751157d06ab4bab5e3e88ee79fe602775630b718",
+        "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/751157d06ab4bab5e3e88ee79fe602775630b718"
+      }
+    ]
+  },
+  {
+    "sha": "751157d06ab4bab5e3e88ee79fe602775630b718",
+    "node_id": "C_kwDOT0zzxNoAKDc1MTE1N2QwNmFiNGJhYjVlM2U4OGVlNzlmZTYwMjc3NTYzMGI3MTg",
+    "commit": {
+      "author": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-12T23:54:53Z"
+      },
+      "committer": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-12T23:54:53Z"
+      },
+      "message": "GENRE SEQUENCE: unique sequence + rhythm + melody per genre",
+      "tree": {
+        "sha": "47863113c463b9b232f82e11fc5d74dff5c4c5ad",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/trees/47863113c463b9b232f82e11fc5d74dff5c4c5ad"
+      },
+      "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/commits/751157d06ab4bab5e3e88ee79fe602775630b718",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/751157d06ab4bab5e3e88ee79fe602775630b718",
+    "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/751157d06ab4bab5e3e88ee79fe602775630b718",
+    "comments_url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/751157d06ab4bab5e3e88ee79fe602775630b718/comments",
+    "author": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "0cc9650bce86991ba8c3c10c9ff6a6bad9d26bb3",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/0cc9650bce86991ba8c3c10c9ff6a6bad9d26bb3",
+        "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/0cc9650bce86991ba8c3c10c9ff6a6bad9d26bb3"
+      }
+    ]
+  },
+  {
+    "sha": "0cc9650bce86991ba8c3c10c9ff6a6bad9d26bb3",
+    "node_id": "C_kwDOT0zzxNoAKDBjYzk2NTBiY2U4Njk5MWJhOGMzYzEwYzlmZjZhNmJhZDlkMjZiYjM",
+    "commit": {
+      "author": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-12T23:50:38Z"
+      },
+      "committer": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-12T23:50:38Z"
+      },
+      "message": "GENRE SYNTH2: unique synth + filter + envelope per genre",
+      "tree": {
+        "sha": "8e578c5ffe1247f810dda2d8eaaa95bf67802f8e",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/trees/8e578c5ffe1247f810dda2d8eaaa95bf67802f8e"
+      },
+      "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/commits/0cc9650bce86991ba8c3c10c9ff6a6bad9d26bb3",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/0cc9650bce86991ba8c3c10c9ff6a6bad9d26bb3",
+    "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/0cc9650bce86991ba8c3c10c9ff6a6bad9d26bb3",
+    "comments_url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/0cc9650bce86991ba8c3c10c9ff6a6bad9d26bb3/comments",
+    "author": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "ee0097c9b6c6d4f1b5a3af145391240647f95958",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/ee0097c9b6c6d4f1b5a3af145391240647f95958",
+        "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/ee0097c9b6c6d4f1b5a3af145391240647f95958"
+      }
+    ]
+  },
+  {
+    "sha": "ee0097c9b6c6d4f1b5a3af145391240647f95958",
+    "node_id": "C_kwDOT0zzxNoAKGVlMDA5N2M5YjZjNmQ0ZjFiNWEzYWYxNDUzOTEyNDA2NDdmOTU5NTg",
+    "commit": {
+      "author": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-12T23:43:44Z"
+      },
+      "committer": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-12T23:43:44Z"
+      },
+      "message": "GENRE DRUMS3: unique percussion + clap + tom per genre",
+      "tree": {
+        "sha": "6dbac6ca59aa641bb1b4e800a58ec35fa702a939",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/trees/6dbac6ca59aa641bb1b4e800a58ec35fa702a939"
+      },
+      "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/commits/ee0097c9b6c6d4f1b5a3af145391240647f95958",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/ee0097c9b6c6d4f1b5a3af145391240647f95958",
+    "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/ee0097c9b6c6d4f1b5a3af145391240647f95958",
+    "comments_url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/ee0097c9b6c6d4f1b5a3af145391240647f95958/comments",
+    "author": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "f43fc19e38251be9d7e8cd5c4084a53c6fbb3d3c",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/f43fc19e38251be9d7e8cd5c4084a53c6fbb3d3c",
+        "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/f43fc19e38251be9d7e8cd5c4084a53c6fbb3d3c"
+      }
+    ]
+  },
+  {
+    "sha": "f43fc19e38251be9d7e8cd5c4084a53c6fbb3d3c",
+    "node_id": "C_kwDOT0zzxNoAKGY0M2ZjMTllMzgyNTFiZTlkN2U4Y2Q1YzQwODRhNTNjNmZiYjNkM2M",
+    "commit": {
+      "author": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-12T23:42:23Z"
+      },
+      "committer": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-12T23:42:23Z"
+      },
+      "message": "GENRE DRUMS2: unique sub-bass + hi-hat + snare per genre",
+      "tree": {
+        "sha": "ecf8f8ff719a28667759a8057248d97c9d1ebd99",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/trees/ecf8f8ff719a28667759a8057248d97c9d1ebd99"
+      },
+      "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/commits/f43fc19e38251be9d7e8cd5c4084a53c6fbb3d3c",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/f43fc19e38251be9d7e8cd5c4084a53c6fbb3d3c",
+    "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/f43fc19e38251be9d7e8cd5c4084a53c6fbb3d3c",
+    "comments_url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/f43fc19e38251be9d7e8cd5c4084a53c6fbb3d3c/comments",
+    "author": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "1027fdc6bdcc7504acea1d73b8acf0038646b739",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/1027fdc6bdcc7504acea1d73b8acf0038646b739",
+        "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/1027fdc6bdcc7504acea1d73b8acf0038646b739"
+      }
+    ]
+  },
+  {
+    "sha": "1027fdc6bdcc7504acea1d73b8acf0038646b739",
+    "node_id": "C_kwDOT0zzxNoAKDEwMjdmZGM2YmRjYzc1MDRhY2VhMWQ3M2I4YWNmMDAzODY0NmI3Mzk",
+    "commit": {
+      "author": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-12T23:38:45Z"
+      },
+      "committer": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-12T23:38:45Z"
+      },
+      "message": "GENRE FX2: unique risers + impacts + vocal per genre",
+      "tree": {
+        "sha": "2d27b5eaf2a8f38af9f171629a3edf1d257128d3",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/trees/2d27b5eaf2a8f38af9f171629a3edf1d257128d3"
+      },
+      "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/commits/1027fdc6bdcc7504acea1d73b8acf0038646b739",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/1027fdc6bdcc7504acea1d73b8acf0038646b739",
+    "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/1027fdc6bdcc7504acea1d73b8acf0038646b739",
+    "comments_url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/1027fdc6bdcc7504acea1d73b8acf0038646b739/comments",
+    "author": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "ca66a2641f16fe5ef43f5411c254d2709b13d789",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/ca66a2641f16fe5ef43f5411c254d2709b13d789",
+        "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/ca66a2641f16fe5ef43f5411c254d2709b13d789"
+      }
+    ]
+  },
+  {
+    "sha": "ca66a2641f16fe5ef43f5411c254d2709b13d789",
+    "node_id": "C_kwDOT0zzxNoAKGNhNjZhMjY0MWYxNmZlNWVmNDNmNTQxMWMyNTRkMjcwOWIxM2Q3ODk",
+    "commit": {
+      "author": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-12T23:36:55Z"
+      },
+      "committer": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-12T23:36:55Z"
+      },
+      "message": "GENRE MASTERING: unique stereo + compression + EQ per genre",
+      "tree": {
+        "sha": "de0b712fae9da999fa4dcb359ae45fbfaf3ae8af",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/trees/de0b712fae9da999fa4dcb359ae45fbfaf3ae8af"
+      },
+      "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/commits/ca66a2641f16fe5ef43f5411c254d2709b13d789",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/ca66a2641f16fe5ef43f5411c254d2709b13d789",
+    "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/ca66a2641f16fe5ef43f5411c254d2709b13d789",
+    "comments_url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/ca66a2641f16fe5ef43f5411c254d2709b13d789/comments",
+    "author": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "6a4a0fc9bd9f68c75e39a08ad2f07b7576c72b72",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/6a4a0fc9bd9f68c75e39a08ad2f07b7576c72b72",
+        "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/6a4a0fc9bd9f68c75e39a08ad2f07b7576c72b72"
+      }
+    ]
+  },
+  {
+    "sha": "6a4a0fc9bd9f68c75e39a08ad2f07b7576c72b72",
+    "node_id": "C_kwDOT0zzxNoAKDZhNGEwZmM5YmQ5ZjY4Yzc1ZTM5YTA4YWQyZjA3Yjc1NzZjNzJiNzI",
+    "commit": {
+      "author": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-12T23:31:57Z"
+      },
+      "committer": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-12T23:31:57Z"
+      },
+      "message": "GENRE MODULATION: unique LFO + glitch + texture per genre",
+      "tree": {
+        "sha": "0099e4c75129e4a0155f1553b5437672061cf7f2",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/trees/0099e4c75129e4a0155f1553b5437672061cf7f2"
+      },
+      "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/commits/6a4a0fc9bd9f68c75e39a08ad2f07b7576c72b72",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/6a4a0fc9bd9f68c75e39a08ad2f07b7576c72b72",
+    "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/6a4a0fc9bd9f68c75e39a08ad2f07b7576c72b72",
+    "comments_url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/6a4a0fc9bd9f68c75e39a08ad2f07b7576c72b72/comments",
+    "author": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "a3a0a2d953f1aa2656f4b3b0d0806d3fa84b9eb4",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/a3a0a2d953f1aa2656f4b3b0d0806d3fa84b9eb4",
+        "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/a3a0a2d953f1aa2656f4b3b0d0806d3fa84b9eb4"
+      }
+    ]
+  },
+  {
+    "sha": "a3a0a2d953f1aa2656f4b3b0d0806d3fa84b9eb4",
+    "node_id": "C_kwDOT0zzxNoAKGEzYTBhMmQ5NTNmMWFhMjY1NmY0YjNiMGQwODA2ZDNmYTg0YjllYjQ",
+    "commit": {
+      "author": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-12T23:29:23Z"
+      },
+      "committer": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-12T23:29:23Z"
+      },
+      "message": "GENRE STRUCTURE: unique section lengths + build-ups + drops per genre",
+      "tree": {
+        "sha": "e72cd8b47d3e55310705e28a1102c8c28108252a",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/trees/e72cd8b47d3e55310705e28a1102c8c28108252a"
+      },
+      "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/commits/a3a0a2d953f1aa2656f4b3b0d0806d3fa84b9eb4",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/a3a0a2d953f1aa2656f4b3b0d0806d3fa84b9eb4",
+    "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/a3a0a2d953f1aa2656f4b3b0d0806d3fa84b9eb4",
+    "comments_url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/a3a0a2d953f1aa2656f4b3b0d0806d3fa84b9eb4/comments",
+    "author": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "70303e7ae2ddf8258ab8f89dd8dda42b0466fc9e",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/70303e7ae2ddf8258ab8f89dd8dda42b0466fc9e",
+        "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/70303e7ae2ddf8258ab8f89dd8dda42b0466fc9e"
+      }
+    ]
+  },
+  {
+    "sha": "70303e7ae2ddf8258ab8f89dd8dda42b0466fc9e",
+    "node_id": "C_kwDOT0zzxNoAKDcwMzAzZTdhZTJkZGY4MjU4YWI4Zjg5ZGQ4ZGRhNDJiMDQ2NmZjOWU",
+    "commit": {
+      "author": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-12T23:20:05Z"
+      },
+      "committer": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-12T23:20:05Z"
+      },
+      "message": "FIX: applyGenre now stops -> applies -> restarts (no mixing between genres)",
+      "tree": {
+        "sha": "779f51714cc9463721648aee6b1452af112b4211",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/trees/779f51714cc9463721648aee6b1452af112b4211"
+      },
+      "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/commits/70303e7ae2ddf8258ab8f89dd8dda42b0466fc9e",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/70303e7ae2ddf8258ab8f89dd8dda42b0466fc9e",
+    "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/70303e7ae2ddf8258ab8f89dd8dda42b0466fc9e",
+    "comments_url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/70303e7ae2ddf8258ab8f89dd8dda42b0466fc9e/comments",
+    "author": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "0ff6ef7dd60a2012950c7a9de8a618973d39d7e9",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/0ff6ef7dd60a2012950c7a9de8a618973d39d7e9",
+        "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/0ff6ef7dd60a2012950c7a9de8a618973d39d7e9"
+      }
+    ]
+  },
+  {
+    "sha": "0ff6ef7dd60a2012950c7a9de8a618973d39d7e9",
+    "node_id": "C_kwDOT0zzxNoAKDBmZjZlZjdkZDYwYTIwMTI5NTBjN2E5ZGU4YTYxODk3M2QzOWQ3ZTk",
+    "commit": {
+      "author": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-12T23:16:21Z"
+      },
+      "committer": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-12T23:16:21Z"
+      },
+      "message": "GENRE DYNAMICS: unique energy + automation + performance per genre",
+      "tree": {
+        "sha": "47901b7df5fd70f75720d766eb7445b761377567",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/trees/47901b7df5fd70f75720d766eb7445b761377567"
+      },
+      "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/commits/0ff6ef7dd60a2012950c7a9de8a618973d39d7e9",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/0ff6ef7dd60a2012950c7a9de8a618973d39d7e9",
+    "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/0ff6ef7dd60a2012950c7a9de8a618973d39d7e9",
+    "comments_url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/0ff6ef7dd60a2012950c7a9de8a618973d39d7e9/comments",
+    "author": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "81d78e7c8ca0ae06b2a7c3f25d0f8cf9f1840c22",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/81d78e7c8ca0ae06b2a7c3f25d0f8cf9f1840c22",
+        "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/81d78e7c8ca0ae06b2a7c3f25d0f8cf9f1840c22"
+      }
+    ]
+  },
+  {
+    "sha": "81d78e7c8ca0ae06b2a7c3f25d0f8cf9f1840c22",
+    "node_id": "C_kwDOT0zzxNoAKDgxZDc4ZTdjOGNhMGFlMDZiMmE3YzNmMjVkMGY4Y2Y5ZjE4NDBjMjI",
+    "commit": {
+      "author": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-12T23:15:04Z"
+      },
+      "committer": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-12T23:15:04Z"
+      },
+      "message": "GENRE SPACE: unique reverb + delay + filter sweep per genre",
+      "tree": {
+        "sha": "77d17f5644a4ea1837a44ec5a4788b572b927337",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/trees/77d17f5644a4ea1837a44ec5a4788b572b927337"
+      },
+      "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/commits/81d78e7c8ca0ae06b2a7c3f25d0f8cf9f1840c22",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/81d78e7c8ca0ae06b2a7c3f25d0f8cf9f1840c22",
+    "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/81d78e7c8ca0ae06b2a7c3f25d0f8cf9f1840c22",
+    "comments_url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/81d78e7c8ca0ae06b2a7c3f25d0f8cf9f1840c22/comments",
+    "author": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "cc993e837bb6a96d49c77f3b466b87b7a898772c",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/cc993e837bb6a96d49c77f3b466b87b7a898772c",
+        "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/cc993e837bb6a96d49c77f3b466b87b7a898772c"
+      }
+    ]
+  },
+  {
+    "sha": "cc993e837bb6a96d49c77f3b466b87b7a898772c",
+    "node_id": "C_kwDOT0zzxNoAKGNjOTkzZTgzN2JiNmE5NmQ0OWM3N2YzYjQ2NmI4N2I3YTg5ODc3MmM",
+    "commit": {
+      "author": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-12T23:00:51Z"
+      },
+      "committer": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-12T23:00:51Z"
+      },
+      "message": "GENRE EXTRA: unique transitions + pads + percussion per genre",
+      "tree": {
+        "sha": "796845147592979224a36ef6c25dd5a8e48dfc1f",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/trees/796845147592979224a36ef6c25dd5a8e48dfc1f"
+      },
+      "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/commits/cc993e837bb6a96d49c77f3b466b87b7a898772c",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/cc993e837bb6a96d49c77f3b466b87b7a898772c",
+    "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/cc993e837bb6a96d49c77f3b466b87b7a898772c",
+    "comments_url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/cc993e837bb6a96d49c77f3b466b87b7a898772c/comments",
+    "author": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "497b4e2b872153f3b8e6fe3edb12375887d7f3f5",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/497b4e2b872153f3b8e6fe3edb12375887d7f3f5",
+        "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/497b4e2b872153f3b8e6fe3edb12375887d7f3f5"
+      }
+    ]
+  },
+  {
+    "sha": "497b4e2b872153f3b8e6fe3edb12375887d7f3f5",
+    "node_id": "C_kwDOT0zzxNoAKDQ5N2I0ZTJiODcyMTUzZjNiOGU2ZmUzZWRiMTIzNzU4ODdkN2YzZjU",
+    "commit": {
+      "author": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-12T22:29:39Z"
+      },
+      "committer": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-12T22:29:39Z"
+      },
+      "message": "GENRE ARP + FX: unique arpeggiator + FX presets per genre",
+      "tree": {
+        "sha": "3391fc8da38fc4980d414dfb6e254fbbb9df2659",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/trees/3391fc8da38fc4980d414dfb6e254fbbb9df2659"
+      },
+      "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/commits/497b4e2b872153f3b8e6fe3edb12375887d7f3f5",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/497b4e2b872153f3b8e6fe3edb12375887d7f3f5",
+    "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/497b4e2b872153f3b8e6fe3edb12375887d7f3f5",
+    "comments_url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/497b4e2b872153f3b8e6fe3edb12375887d7f3f5/comments",
+    "author": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "7335e1a3f18ba6c47c5af2c8df7ed95229e75823",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/7335e1a3f18ba6c47c5af2c8df7ed95229e75823",
+        "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/7335e1a3f18ba6c47c5af2c8df7ed95229e75823"
+      }
+    ]
+  },
+  {
+    "sha": "7335e1a3f18ba6c47c5af2c8df7ed95229e75823",
+    "node_id": "C_kwDOT0zzxNoAKDczMzVlMWEzZjE4YmE2YzQ3YzVhZjJjOGRmN2VkOTUyMjllNzU4MjM",
+    "commit": {
+      "author": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-12T22:28:23Z"
+      },
+      "committer": {
+        "name": "dudududu144",
+        "email": "dudududi144@gmail.com",
+        "date": "2026-08-12T22:28:23Z"
+      },
+      "message": "GENRE SYNTHESIS: unique bass + kick + hat synthesis per genre",
+      "tree": {
+        "sha": "5423eec5dd32c408a1147bcfc003694900a81e51",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/trees/5423eec5dd32c408a1147bcfc003694900a81e51"
+      },
+      "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/git/commits/7335e1a3f18ba6c47c5af2c8df7ed95229e75823",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/7335e1a3f18ba6c47c5af2c8df7ed95229e75823",
+    "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/7335e1a3f18ba6c47c5af2c8df7ed95229e75823",
+    "comments_url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/7335e1a3f18ba6c47c5af2c8df7ed95229e75823/comments",
+    "author": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "dudududi144-source",
+      "id": 315605262,
+      "node_id": "U_kgDOEs_BDg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/315605262?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/dudududi144-source",
+      "html_url": "https://github.com/dudududi144-source",
+      "followers_url": "https://api.github.com/users/dudududi144-source/followers",
+      "following_url": "https://api.github.com/users/dudududi144-source/following{/other_user}",
+      "gists_url": "https://api.github.com/users/dudududi144-source/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/dudududi144-source/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/dudududi144-source/subscriptions",
+      "organizations_url": "https://api.github.com/users/dudududi144-source/orgs",
+      "repos_url": "https://api.github.com/users/dudududi144-source/repos",
+      "events_url": "https://api.github.com/users/dudududi144-source/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/dudududi144-source/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "4c41dd8b8527bdc398ad52b4209bd24559c22dfe",
+        "url": "https://api.github.com/repos/dudududi144-source/psy3-clean/commits/4c41dd8b8527bdc398ad52b4209bd24559c22dfe",
+        "html_url": "https://github.com/dudududi144-source/psy3-clean/commit/4c41dd8b8527bdc398ad52b4209bd24559c22dfe"
+      }
+    ]
+  }
+]
+=== END ===
