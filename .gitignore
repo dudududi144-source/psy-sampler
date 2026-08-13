@@ -62,4 +62,4 @@ server.log
 # PSY Sampler — download dir
 /download/
 # PSY Sampler — db
-/db/
+/db/.zscripts/
