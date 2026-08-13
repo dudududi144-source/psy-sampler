@@ -11,6 +11,7 @@
 import type { DeviceHost, MusicalContext, NoteEvent } from '@/psy-foundation-shim'
 import type { DemoTransport } from './demo-transport'
 import type { SampleRole } from '@/psy-sampler'
+import { createTimerWorker } from './timer-worker'
 
 export type Pattern = Record<SampleRole, boolean[]>
 
@@ -170,28 +171,8 @@ export class DemoDirector {
   }
 
   private makeTimer(onTick: () => void): { stop: () => void } {
-    const src = `let iv=null;self.onmessage=function(e){const d=e.data;if(d.cmd==='start'){if(iv)clearInterval(iv);iv=setInterval(()=>self.postMessage('tick'),d.ms)}else if(d.cmd==='stop'){if(iv)clearInterval(iv);iv=null}};`
-    try {
-      const blob = new Blob([src], { type: 'application/javascript' })
-      const url = URL.createObjectURL(blob)
-      const worker = new Worker(url)
-      worker.onmessage = () => onTick()
-      worker.postMessage({ cmd: 'start', ms: TICK_MS })
-      return {
-        stop: () => {
-          try {
-            worker.postMessage({ cmd: 'stop' })
-            worker.terminate()
-          } catch {
-            // already terminated
-          }
-          URL.revokeObjectURL(url)
-        },
-      }
-    } catch {
-      const id = setInterval(onTick, TICK_MS)
-      return { stop: () => clearInterval(id) }
-    }
+    // FIX: use shared timer-worker (was duplicated byte-identical string).
+    return createTimerWorker(onTick, TICK_MS)
   }
 }
 

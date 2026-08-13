@@ -181,7 +181,14 @@ export class InMemoryChannel implements Channel {
   publish(event: MusicalEvent): void {
     if (this.closed) return
     const listeners = Array.from(this.listeners)
-    for (const l of listeners) l(event)
+    for (const l of listeners) {
+      // FIX: catch per-listener errors so one bad listener doesn't starve the rest.
+      try {
+        l(event)
+      } catch (err) {
+        console.error('[in-memory-channel] Listener error:', err)
+      }
+    }
   }
 
   close(): void {

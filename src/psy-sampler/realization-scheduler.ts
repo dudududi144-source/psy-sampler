@@ -13,18 +13,19 @@
 // scheduler drains its queue as time advances and fires voices at the right moment.
 //
 // Design:
-//   - Timer: Web Worker (Blob URL) firing postMessage('tick') every 25ms.
+//   - Timer: shared Web Worker (src/lib/timer-worker.ts) firing every 25ms.
 //     (Main-thread setInterval fallback if Worker unavailable.)
 //   - Horizon: 100ms lookahead (audioCtx.currentTime + 0.1).
 //   - Queue: sorted array of scheduled events by .at ascending.
 //   - tick(): drains all events with .at <= currentTime + horizon.
 //   - Stale events (.at < currentTime - 50ms) are dropped (not fired late).
+//   - triggerFn errors are caught (event is logged but not re-thrown).
 //
 // Timing rule: AudioContext.currentTime is the ONLY clock. The 25ms timer only
 // WAKES the drain loop — it is never the musical clock.
 
-import type { SampleId } from './types'
-import type { VoiceTriggerOptions } from './types'
+import type { SampleId, VoiceTriggerOptions, BusName } from './types'
+import { createTimerWorker } from '../lib/timer-worker'
 
 export interface ScheduledSampleEvent {
   at: number
@@ -32,7 +33,7 @@ export interface ScheduledSampleEvent {
   buffer: AudioBuffer
   opts: VoiceTriggerOptions
   /** Bus to route to. */
-  bus: string
+  bus: BusName
 }
 
 export type VoiceTriggerFn = (event: ScheduledSampleEvent) => void
@@ -40,15 +41,13 @@ export type VoiceTriggerFn = (event: ScheduledSampleEvent) => void
 const TICK_MS = 25
 const HORIZON_SEC = 0.1
 
-const WORKER_SRC = `let iv=null;self.onmessage=function(e){const d=e.data;if(d.cmd==='start'){if(iv)clearInterval(iv);iv=setInterval(()=>self.postMessage('tick'),d.ms)}else if(d.cmd==='stop'){if(iv)clearInterval(iv);iv=null}};`
-
 export class RealizationScheduler {
   private readonly ctx: AudioContext
   private triggerFn: VoiceTriggerFn
   private queue: ScheduledSampleEvent[] = []
   private timer: { stop: () => void } | null = null
   private running = false
-  private lastTickWarned = 0
+  private lastTickWarned = Number.NEGATIVE_INFINITY
 
   constructor(ctx: AudioContext, triggerFn: VoiceTriggerFn = () => {}) {
     this.ctx = ctx
@@ -63,7 +62,7 @@ export class RealizationScheduler {
   start(): void {
     if (this.running) return
     this.running = true
-    this.timer = this.makeTimer(() => this.tick())
+    this.timer = createTimerWorker(() => this.tick(), TICK_MS)
   }
 
   stop(): void {
@@ -118,32 +117,12 @@ export class RealizationScheduler {
         }
         continue
       }
-      this.triggerFn(event)
-    }
-  }
-
-  private makeTimer(onTick: () => void): { stop: () => void } {
-    try {
-      const blob = new Blob([WORKER_SRC], { type: 'application/javascript' })
-      const url = URL.createObjectURL(blob)
-      const worker = new Worker(url)
-      worker.onmessage = () => onTick()
-      worker.postMessage({ cmd: 'start', ms: TICK_MS })
-      return {
-        stop: () => {
-          try {
-            worker.postMessage({ cmd: 'stop' })
-            worker.terminate()
-          } catch {
-            // already terminated
-          }
-          URL.revokeObjectURL(url)
-        },
+      // FIX: catch triggerFn errors so one bad event doesn't kill the tick loop.
+      try {
+        this.triggerFn(event)
+      } catch (err) {
+        console.error('[psy-sampler] triggerFn error for event:', err)
       }
-    } catch {
-      // Worker unavailable — fall back to setInterval.
-      const id = setInterval(onTick, TICK_MS)
-      return { stop: () => clearInterval(id) }
     }
   }
 }

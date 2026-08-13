@@ -6,6 +6,7 @@
 //   - graceful failure (missing file → warning, not crash)
 
 import type { SampleAsset, SampleFeatures, SampleManifestEntry } from './types'
+import { provenanceFromEntry } from './provenance'
 
 export class SampleLoader {
   constructor(private readonly audioContext: AudioContext) {}
@@ -28,7 +29,13 @@ export class SampleLoader {
       )
       return null
     }
-    const arrayBuffer = await response.arrayBuffer()
+    let arrayBuffer: ArrayBuffer
+    try {
+      arrayBuffer = await response.arrayBuffer()
+    } catch (err) {
+      console.warn(`[psy-sampler] Failed to read body of "${entry.file}":`, err)
+      return null
+    }
     let audioBuffer: AudioBuffer
     try {
       audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer)
@@ -44,16 +51,8 @@ export class SampleLoader {
         file: entry.file,
         category: entry.category,
         subcategory: entry.subcategory,
-        provenance: {
-          source: entry.source,
-          author: entry.author,
-          license: entry.license,
-          licenseUrl: entry.licenseUrl,
-          commercialUse: entry.commercialUse,
-          attribution: entry.attribution,
-          dateAcquired: entry.dateAcquired,
-          usageRestrictions: entry.usageRestrictions,
-        },
+        // FIX: use provenanceFromEntry (was inlined — DRY violation).
+        provenance: provenanceFromEntry(entry),
         character: {
           character: entry.character,
           genreFit: entry.genreFit,

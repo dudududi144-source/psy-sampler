@@ -93,6 +93,9 @@ function validateEntry(entry: unknown, index: number): SampleManifestEntry {
     throw new ManifestError(`Manifest entry ${index} must be an object`)
   }
   const e = entry as Record<string, unknown>
+  const label = `Manifest entry ${index} ("${e.id ?? '?'}")`
+
+  // Check required fields exist.
   const required: Array<keyof SampleManifestEntry> = [
     'id', 'file', 'category', 'subcategory',
     'source', 'author', 'license', 'licenseUrl', 'commercialUse',
@@ -101,14 +104,48 @@ function validateEntry(entry: unknown, index: number): SampleManifestEntry {
   ]
   for (const key of required) {
     if (!(key in e)) {
-      throw new ManifestError(`Manifest entry ${index} ("${e.id ?? '?'}") missing field: ${key}`)
+      throw new ManifestError(`${label} missing field: ${key}`)
     }
   }
+
+  // FIX: validate field TYPES (not just presence).
+  const stringFields: Array<keyof SampleManifestEntry> = [
+    'id', 'file', 'category', 'subcategory', 'source', 'author', 'license',
+    'dateAcquired', 'usageRestrictions',
+  ]
+  for (const f of stringFields) {
+    if (typeof e[f] !== 'string') {
+      throw new ManifestError(`${label} field "${f}" must be string, got ${typeof e[f]}`)
+    }
+  }
+  if (typeof e.licenseUrl !== 'string' && e.licenseUrl !== null) {
+    throw new ManifestError(`${label} field "licenseUrl" must be string or null`)
+  }
+  if (typeof e.attribution !== 'string' && e.attribution !== null) {
+    throw new ManifestError(`${label} field "attribution" must be string or null`)
+  }
+  if (typeof e.commercialUse !== 'boolean') {
+    throw new ManifestError(`${label} field "commercialUse" must be boolean, got ${typeof e.commercialUse}`)
+  }
+  if (typeof e.rootNote !== 'number' || !Number.isFinite(e.rootNote)) {
+    throw new ManifestError(`${label} field "rootNote" must be a finite number`)
+  }
+  if (!Array.isArray(e.character) || !e.character.every((c) => typeof c === 'string')) {
+    throw new ManifestError(`${label} field "character" must be string[]`)
+  }
+  if (!Array.isArray(e.genreFit) || !e.genreFit.every((c) => typeof c === 'string')) {
+    throw new ManifestError(`${label} field "genreFit" must be string[]`)
+  }
+  if (!Array.isArray(e.bpmRange) || e.bpmRange.length !== 2 ||
+      typeof e.bpmRange[0] !== 'number' || typeof e.bpmRange[1] !== 'number') {
+    throw new ManifestError(`${label} field "bpmRange" must be [number, number]`)
+  }
+
   // Validate verification value.
   const v = e.verification as string
   if (!VALID_VERIFICATIONS.includes(v as SampleVerification)) {
     throw new ManifestError(
-      `Manifest entry ${index} ("${e.id ?? '?'}") has invalid verification="${v}" (must be one of ${VALID_VERIFICATIONS.join(', ')})`
+      `${label} has invalid verification="${v}" (must be one of ${VALID_VERIFICATIONS.join(', ')})`
     )
   }
   return e as unknown as SampleManifestEntry

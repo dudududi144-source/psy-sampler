@@ -122,9 +122,10 @@ export class AudioGraph {
     this.master.gain.setTargetAtTime(value, this.ctx.currentTime, 0.01)
   }
 
-  /** Sync delay time to BPM (dotted-eighth). */
+  /** Sync delay time to BPM (dotted-eighth). Clamps bpm to prevent Infinity. */
   syncDelayToBpm(bpm: number): void {
-    const dottedEighth = (60 / bpm) * 0.75
+    const safeBpm = Math.max(1, Math.min(400, bpm))
+    const dottedEighth = (60 / safeBpm) * 0.75
     this.delay.delayTime.setTargetAtTime(dottedEighth, this.ctx.currentTime, 0.01)
   }
 

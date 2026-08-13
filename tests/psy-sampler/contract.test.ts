@@ -195,7 +195,7 @@ describe('Contract: SamplerDevice implements PsyDevice', () => {
     const host = new DeviceHost(channel)
     host.register(device)
     host.pushTransport(makeStubTransport(1), performance.now())
-    host.pushContext(makeStubContext(), performance.now())
+    host.pushContext(makeStubContext())
     const event: NoteEvent = {
       type: 'note',
       note: 33,

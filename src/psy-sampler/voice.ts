@@ -87,19 +87,28 @@ export class SampleVoice implements Voice {
     this.gainEnv.gain.exponentialRampToValueAtTime(0.0001, at + opts.decay)
 
     source.onended = () => {
-      this._active = false
+      // FIX: only flip _active to false if this is STILL the current source.
+      // If the voice was stolen (trigger called again while this source was
+      // playing), currentSource points to the NEW source — don't flip _active.
       if (this.currentSource === source) {
+        this._active = false
         this.currentSource.disconnect()
         this.currentSource = null
       }
     }
 
-    source.start(at)
-    // Stop a bit after decay to ensure the envelope has fully decayed + buffer tail.
     try {
+      source.start(at)
+      // Stop a bit after decay to ensure the envelope has fully decayed + buffer tail.
       source.stop(at + opts.decay + 0.05)
     } catch {
-      // source already stopped
+      // start/stop failed (invalid at, or source already stopped) — clean up.
+      if (this.currentSource === source) {
+        this.currentSource.disconnect()
+        this.currentSource = null
+      }
+      this._active = false
+      return
     }
     this._active = true
   }

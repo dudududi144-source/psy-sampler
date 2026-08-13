@@ -91,7 +91,14 @@ export class DeviceHost {
 
   private startEventRouting(): void {
     this.channelUnsub = this.channel.subscribe((event: MusicalEvent) => {
-      for (const device of this.devices.values()) device.onEvent(event)
+      // FIX: catch per-device errors so one bad device doesn't starve the rest.
+      for (const device of this.devices.values()) {
+        try {
+          device.onEvent(event)
+        } catch (err) {
+          console.error(`[device-host] Device "${device.id}" onEvent error:`, err)
+        }
+      }
     })
   }
 }

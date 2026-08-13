@@ -29,7 +29,6 @@ import {
   type PsyDevice,
   type MusicalContext,
   type DeviceCapabilities,
-  type MusicalEvent,
   type MusicalTransport,
 } from '@/psy-foundation-shim'
 import { DemoTransport } from '@/lib/demo-transport'
@@ -75,7 +74,7 @@ class StubDevice implements PsyDevice {
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
-const ROLES: SampleRole[] = ['kick', 'bass', 'lead', 'hat-closed', 'clap', 'perc']
+const ROLES: SampleRole[] = ['kick', 'bass', 'lead', 'hat-closed', 'hat-open', 'clap', 'perc', 'texture', 'fx']
 const STEPS = 16
 const ROLE_COLORS: Record<SampleRole, string> = {
   kick: '#00ffc8',
@@ -453,88 +452,116 @@ export default function Home() {
 
   // ─── Initialize audio (on user gesture) ────────────────────────────────────
 
+  const initializingRef = React.useRef(false)
+
   const initializeAudio = React.useCallback(async () => {
-    if (initialized) return
+    // FIX: guard against concurrent invocation (double-click race).
+    if (initialized || initializingRef.current) return
+    initializingRef.current = true
 
-    const Ctx = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
-    const ctx = new Ctx()
-    await ctx.resume()
-    ctxRef.current = ctx
+    let ctx: AudioContext | null = null
+    let bundle: SamplerBundle | null = null
+    let host: DeviceHost | null = null
 
-    // Channel + Host
-    const channel = new InMemoryChannel('psy-sampler-debug')
-    const host = new DeviceHost(channel)
-    hostRef.current = host
+    try {
+      const Ctx = window.AudioContext ?? (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
+      ctx = new Ctx()
+      await ctx.resume()
+      ctxRef.current = ctx
 
-    // Transport
-    const transport = new DemoTransport({ initialBpm: bpm, audioContext: ctx })
-    transportRef.current = transport
+      // Channel + Host
+      const channel = new InMemoryChannel('psy-sampler-debug')
+      host = new DeviceHost(channel)
+      hostRef.current = host
 
-    // Sampler device (standalone — outputNode null → connects to ctx.destination)
-    const bundle = createSamplerDevice({
-      audioContext: ctx,
-      manifestUrl: '/samples/manifest.json',
-      onLoaded: (result) => setLoadResult(result),
-    })
-    bundleRef.current = bundle
-    setAnalyser(bundle.audioGraph.analyser)
+      // Transport
+      const transport = new DemoTransport({ initialBpm: bpm, audioContext: ctx })
+      transportRef.current = transport
 
-    // Stub device for coexistence proof
-    const stub = new StubDevice()
-    stubRef.current = stub
-
-    // Register both devices
-    host.register(bundle.device)
-    host.register(stub)
-    setDeviceCount(host.deviceCount)
-
-    // Director
-    const director = new DemoDirector(
-      {
-        host,
-        transport,
+      // Sampler device (standalone — outputNode null → connects to ctx.destination)
+      bundle = createSamplerDevice({
         audioContext: ctx,
-        bpm,
-        initialPattern: pattern,
-      },
-      (step) => setCurrentStep(step)
-    )
-    directorRef.current = director
-
-    // Push initial context
-    host.pushContext({
-      key: 'A',
-      rootPc: 9,
-      scale: 'phrygianDominant',
-      energy,
-      style: 'psytrance',
-      section,
-      beatsPerBar: 4,
-    })
-
-    // Load samples
-    await bundle.load()
-    setSamples(bundle.library.list())
-
-    // Start polling device stats (for debug panel)
-    statsIntervalRef.current = setInterval(() => {
-      const dev = bundle.device
-      setStats({
-        eventsReceived: dev.eventsReceived,
-        notesTriggered: dev.notesTriggered,
-        notesSkipped: dev.notesSkipped,
-        activeVoices: dev.activeVoices,
-        pendingEvents: dev.pendingEvents,
-        librarySize: dev.librarySize,
-        isStarted: dev.isStarted,
-        lastEvent: dev.lastEvent,
-        lastTransport: dev.lastTransport,
-        lastContext: dev.lastContext,
-        capabilities: dev.capabilities(),
+        manifestUrl: '/samples/manifest.json',
+        onLoaded: (result) => setLoadResult(result),
       })
-    }, 100)
+      bundleRef.current = bundle
+      setAnalyser(bundle.audioGraph.analyser)
 
-    setInitialized(true)
+      // Stub device for coexistence proof
+      const stub = new StubDevice()
+      stubRef.current = stub
+
+      // Register both devices
+      host.register(bundle.device)
+      host.register(stub)
+      setDeviceCount(host.deviceCount)
+
+      // Director
+      const director = new DemoDirector(
+        {
+          host,
+          transport,
+          audioContext: ctx,
+          bpm,
+          initialPattern: pattern,
+        },
+        (step) => setCurrentStep(step)
+      )
+      directorRef.current = director
+
+      // Push initial context
+      host.pushContext({
+        key: 'A',
+        rootPc: 9,
+        scale: 'phrygianDominant',
+        energy,
+        style: 'psytrance',
+        section,
+        beatsPerBar: 4,
+      })
+
+      // Load samples
+      await bundle.load()
+      setSamples(bundle.library.list())
+
+      // FIX: clear any existing interval before setting a new one.
+      if (statsIntervalRef.current) clearInterval(statsIntervalRef.current)
+
+      // Start polling device stats (for debug panel)
+      statsIntervalRef.current = setInterval(() => {
+        const dev = bundle!.device
+        setStats({
+          eventsReceived: dev.eventsReceived,
+          notesTriggered: dev.notesTriggered,
+          notesSkipped: dev.notesSkipped,
+          activeVoices: dev.activeVoices,
+          pendingEvents: dev.pendingEvents,
+          librarySize: dev.librarySize,
+          isStarted: dev.isStarted,
+          lastEvent: dev.lastEvent,
+          lastTransport: dev.lastTransport,
+          lastContext: dev.lastContext,
+          capabilities: dev.capabilities(),
+        })
+      }, 100)
+
+      setInitialized(true)
+    } catch (err) {
+      console.error('[psy-sampler] initializeAudio failed:', err)
+      // Clean up partial state on failure.
+      if (bundle) bundle.dispose()
+      if (host) host.dispose()
+      if (ctx) await ctx.close().catch(() => {})
+      ctxRef.current = null
+      bundleRef.current = null
+      hostRef.current = null
+      if (statsIntervalRef.current) {
+        clearInterval(statsIntervalRef.current)
+        statsIntervalRef.current = null
+      }
+    } finally {
+      initializingRef.current = false
+    }
   }, [initialized, bpm, energy, section, pattern])
 
   // ─── Transport controls ────────────────────────────────────────────────────
@@ -542,14 +569,15 @@ export default function Home() {
   const togglePlay = React.useCallback(() => {
     const director = directorRef.current
     if (!director) return
-    if (isPlaying) {
+    // FIX: read director.isRunning (live) instead of isPlaying state (stale closure).
+    if (director.isRunning) {
       director.stop()
       setIsPlaying(false)
     } else {
       director.start()
       setIsPlaying(true)
     }
-  }, [isPlaying])
+  }, [])
 
   const onBpmChange = React.useCallback((value: number) => {
     setBpm(value)
@@ -568,7 +596,8 @@ export default function Home() {
 
   const onToggleStep = React.useCallback((role: SampleRole, step: number) => {
     directorRef.current?.toggleStep(role, step)
-    setPattern({ ...directorRef.current!.getPattern() })
+    // FIX: deep clone to avoid mutating React state via shared references.
+    setPattern(structuredClone(directorRef.current!.getPattern()))
   }, [])
 
   // ─── Cleanup ───────────────────────────────────────────────────────────────
@@ -577,6 +606,7 @@ export default function Home() {
     return () => {
       if (statsIntervalRef.current) clearInterval(statsIntervalRef.current)
       directorRef.current?.stop()
+      bundleRef.current?.dispose()
       hostRef.current?.dispose()
       ctxRef.current?.close()
     }

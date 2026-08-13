@@ -12,6 +12,10 @@
 // depends on BeatEstimator + ConfidenceTracker + PhaseCorrector (PLL for radio
 // observation). This DemoTransport skips all that — it just maps BPM +
 // AudioContext.currentTime → MusicalTransport snapshots for demo purposes.
+//
+// FIX: revision now derives from bar so DeviceHost.pushTransport dedup doesn't
+// starve the device of transport updates. Each new bar → new revision → device
+// sees updated phraseIndex → variant rotation works.
 
 import type { MusicalTransport } from '@/psy-foundation-shim'
 
@@ -19,12 +23,10 @@ export class DemoTransport {
   private bpm: number
   private beatsPerBar: number
   private origin: MusicalTransport['origin']
-  private revision = 0
   private running = false
-  private readonly listeners = new Set<(t: MusicalTransport) => void>()
 
   constructor(opts: { initialBpm?: number; beatsPerBar?: number; audioContext: AudioContext }) {
-    this.bpm = opts.initialBpm ?? 145
+    this.bpm = Math.max(1, opts.initialBpm ?? 145)
     this.beatsPerBar = opts.beatsPerBar ?? 4
     const ctx = opts.audioContext
     this.origin = { audioTime: ctx.currentTime, beatIndex: 0, bpm: this.bpm }
@@ -34,7 +36,6 @@ export class DemoTransport {
     if (this.running) return
     this.running = true
     this.origin = { audioTime: audioContext.currentTime, beatIndex: 0, bpm: this.bpm }
-    this.bumpRevision(audioContext)
   }
 
   stop(): void {
@@ -42,15 +43,15 @@ export class DemoTransport {
   }
 
   setBpm(bpm: number, audioContext: AudioContext): void {
+    const safeBpm = Math.max(1, Math.min(400, bpm))
     const snap = this.snapshot(audioContext.currentTime)
     const newBeatFloat = snap.beat + snap.phase
-    this.bpm = bpm
+    this.bpm = safeBpm
     this.origin = {
       audioTime: audioContext.currentTime,
       beatIndex: newBeatFloat,
-      bpm,
+      bpm: safeBpm,
     }
-    this.bumpRevision(audioContext)
   }
 
   get isRunning(): boolean {
@@ -73,6 +74,13 @@ export class DemoTransport {
     const beatTime = beatFloat * secPerBeat
     const barTime = beatInBar * secPerBeat
 
+    // FIX: revision derives from bar so it changes when bar advances.
+    // This prevents DeviceHost.pushTransport dedup from starving the device
+    // of transport updates (which broke variant rotation — phraseIndex was
+    // always 0 because revision never changed after start()).
+    // revision = (bar + 1) so it starts at 1 (not 0) and increments per bar.
+    const revision = Math.max(0, bar) + 1
+
     return {
       bpm: this.bpm,
       beat,
@@ -84,23 +92,10 @@ export class DemoTransport {
       barPhase,
       confidence: this.running ? 1.0 : 0.0,
       locked: this.running,
-      revision: this.revision,
+      revision,
       origin: { ...this.origin },
       lastObservationAgo: 0,
       observationCount: this.running ? 1 : 0,
     }
-  }
-
-  onRevision(cb: (t: MusicalTransport) => void): () => void {
-    this.listeners.add(cb)
-    return () => {
-      this.listeners.delete(cb)
-    }
-  }
-
-  private bumpRevision(audioContext: AudioContext): void {
-    this.revision += 1
-    const snap = this.snapshot(audioContext.currentTime)
-    for (const cb of this.listeners) cb(snap)
   }
 }

@@ -51,10 +51,21 @@ export class SampleLibrary {
 
   /** Add an already-loaded asset to the library (used by tests). */
   add(asset: SampleAsset, _entry: SampleManifestEntry): void {
-    this.samples.set(asset.metadata.id, asset)
+    // FIX: dedupe by id — if the id already exists, remove it from byCategory first.
+    const id = asset.metadata.id
     const cat = asset.metadata.category
+    if (this.samples.has(id)) {
+      // Remove from byCategory index to avoid duplicates.
+      const existingCat = this.samples.get(id)!.metadata.category
+      const arr = this.byCategory.get(existingCat)
+      if (arr) {
+        const idx = arr.indexOf(id)
+        if (idx >= 0) arr.splice(idx, 1)
+      }
+    }
+    this.samples.set(id, asset)
     if (!this.byCategory.has(cat)) this.byCategory.set(cat, [])
-    this.byCategory.get(cat)!.push(asset.metadata.id)
+    this.byCategory.get(cat)!.push(id)
     if (!this.subcategories.has(cat)) this.subcategories.set(cat, new Set())
     this.subcategories.get(cat)!.add(asset.metadata.subcategory)
   }
@@ -63,14 +74,15 @@ export class SampleLibrary {
     return this.samples.get(id)
   }
 
-  /** List sampleIds matching the query, in manifest order. */
+  /** List sampleIds matching the query, in manifest order. Returns a copy. */
   query(q: LibraryQuery): SampleId[] {
     if (q.category) {
       const ids = this.byCategory.get(q.category) ?? []
       if (q.subcategory) {
         return ids.filter((id) => this.samples.get(id)?.metadata.subcategory === q.subcategory)
       }
-      return ids
+      // FIX: return a copy so callers can't mutate the internal index.
+      return [...ids]
     }
     return Array.from(this.samples.keys())
   }

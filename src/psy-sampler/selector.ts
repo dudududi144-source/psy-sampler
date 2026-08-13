@@ -34,11 +34,12 @@ const PITCHED_ROLES: Set<SampleRole> = new Set(['bass', 'lead'])
 /**
  * Pitch ratio from a source MIDI note to a target MIDI note.
  * ratio = 2^((target - source) / 12)
- * Safe fallback: if source is NaN/0, returns 1.0.
+ * Safe fallback: if source is NaN/0 (uninitialized), returns 1.0.
+ * targetMidi=0 (C-1) is valid and computes a real ratio.
  */
 export function pitchRatio(sourceMidi: number, targetMidi: number): number {
   if (!Number.isFinite(sourceMidi) || sourceMidi === 0) return 1.0
-  if (!Number.isFinite(targetMidi) || targetMidi === 0) return 1.0
+  if (!Number.isFinite(targetMidi)) return 1.0
   return Math.pow(2, (targetMidi - sourceMidi) / 12)
 }
 
@@ -179,6 +180,10 @@ export class SelectionPolicy {
     pan: number
   } {
     const variants = rule.variants
+    // Guard: variants < 2 would divide by zero (half = (variants-1)/2 = 0).
+    if (variants < 2) {
+      return { pitch: 1.0, gain: 1.0, pan: 0 }
+    }
     const half = (variants - 1) / 2
     const microVar = (variant % variants) - half
 

@@ -99,5 +99,10 @@ export function createSamplerDevice(opts: CreateSamplerOptions): SamplerBundle {
       opts.onLoaded?.(result)
       return result
     },
+    dispose: () => {
+      scheduler.stop()
+      voicePool.panic()
+      audioGraph.dispose()
+    },
   }
 }
