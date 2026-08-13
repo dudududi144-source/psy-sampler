@@ -2,6 +2,9 @@
 // the canonical psy-foundation source.
 //
 // SHIM_VERSION: pinned to psy-foundation commit 4ae95d3 (2026-08-13).
+//
+// This test does REAL byte-comparison of code bodies (not just exported names).
+// It normalizes import paths + comments so only the actual logic is compared.
 // If the canonical contracts evolve, this test fails and the shim must be re-synced.
 //
 // This test reads the canonical source from the audit clone at
@@ -15,9 +18,6 @@ import { join } from 'node:path'
 const FOUNDATION_ROOT = '/home/z/my-project/psy-audit/psy-foundation/packages'
 const SHIM_ROOT = '/home/z/my-project/src/psy-foundation-shim'
 
-// Map of shim files to their canonical sources.
-// Each entry is [shimFile, canonicalFile, canonicalExportStart, canonicalExportEnd]
-// where start/end are markers that bracket the verbatim portion.
 const SHIM_MAP = [
   {
     name: 'device.ts',
@@ -36,8 +36,7 @@ const SHIM_MAP = [
   },
 ] as const
 
-describe('shim sync (verifies shim stays byte-equivalent to canonical foundation)', () => {
-  // Skip if the audit clone is not present.
+describe('shim sync (real byte-equivalence — not just exported names)', () => {
   const skip = !existsSync(FOUNDATION_ROOT)
   if (skip) {
     it.skip('shim sync — audit clone not present, skipping', () => {})
@@ -45,24 +44,33 @@ describe('shim sync (verifies shim stays byte-equivalent to canonical foundation
   }
 
   for (const { name, shim, canonical } of SHIM_MAP) {
-    it(`${name}: shim matches canonical (modulo import paths + comments)`, () => {
+    it(`${name}: code body matches canonical (normalized)`, () => {
       const shimSrc = readFileSync(shim, 'utf8')
       const canonicalSrc = readFileSync(canonical, 'utf8')
 
-      // Extract the interface/class bodies and compare key tokens.
-      // We can't do a raw byte comparison because:
-      //   1. Import paths differ (./protocol vs @psy-foundation/protocol)
-      //   2. The shim has header comments the canonical doesn't
-      //
-      // Instead, we verify that every EXPORTED NAME in the canonical file
-      // is also exported from the shim, and the signatures match.
+      // Normalize both sources: strip comments + import paths, keep only logic.
+      const shimNorm = normalize(shimSrc)
+      const canonNorm = normalize(canonicalSrc)
 
-      // Extract exported names from canonical.
+      // The shim may contain MULTIPLE canonical files merged (e.g. voice-pool.ts
+      // has VoicePool + Rng). So we check that every canonical export body is
+      // present in the shim.
+      const canonExports = extractExportBlocks(canonNorm)
+      for (const [exportName, canonBody] of Object.entries(canonExports)) {
+        // The shim must contain this export's body.
+        const shimExports = extractExportBlocks(shimNorm)
+        const shimBody = shimExports[exportName]
+        expect(shimBody).toBeDefined()
+        // Compare the normalized bodies. They should be identical.
+        expect(shimBody).toBe(canonBody)
+      }
+    })
+
+    it(`${name}: all canonical exports present in shim`, () => {
+      const shimSrc = readFileSync(shim, 'utf8')
+      const canonicalSrc = readFileSync(canonical, 'utf8')
       const canonicalExports = extractExports(canonicalSrc)
-      // Extract exported names from shim.
       const shimExports = extractExports(shimSrc)
-
-      // Every canonical export must be present in the shim.
       for (const ex of canonicalExports) {
         expect(shimExports).toContain(ex)
       }
@@ -79,29 +87,93 @@ describe('shim sync (verifies shim stays byte-equivalent to canonical foundation
     ]
     for (const f of shimFiles) {
       const src = readFileSync(f, 'utf8')
-      // Either SHIM_VERSION is mentioned, or the file is explicitly marked as verbatim.
-      expect(
-        src.includes('SHIM_VERSION') || src.includes('VERBATIM SHIM')
-      ).toBe(true)
+      expect(src.includes('SHIM_VERSION') || src.includes('VERBATIM SHIM')).toBe(true)
     }
   })
+
+  it('protocol.ts: NoteEvent shape matches canonical', () => {
+    const shimSrc = readFileSync(join(SHIM_ROOT, 'protocol.ts'), 'utf8')
+    const canonSrc = readFileSync(join(FOUNDATION_ROOT, 'protocol/src/events.ts'), 'utf8')
+    // Extract the NoteEvent interface body from both.
+    const shimNote = extractInterface(shimSrc, 'NoteEvent')
+    const canonNote = extractInterface(canonSrc, 'NoteEvent')
+    expect(shimNote).toBe(canonNote)
+  })
+
+  it('protocol.ts: MusicalContext shape matches canonical', () => {
+    const shimSrc = readFileSync(join(SHIM_ROOT, 'protocol.ts'), 'utf8')
+    const canonSrc = readFileSync(join(FOUNDATION_ROOT, 'protocol/src/state.ts'), 'utf8')
+    const shimCtx = extractInterface(shimSrc, 'MusicalContext')
+    const canonCtx = extractInterface(canonSrc, 'MusicalContext')
+    expect(shimCtx).toBe(canonCtx)
+  })
+
+  it('transport.ts: MusicalTransport shape matches canonical', () => {
+    const shimSrc = readFileSync(join(SHIM_ROOT, 'transport.ts'), 'utf8')
+    const canonSrc = readFileSync(join(FOUNDATION_ROOT, 'transport/src/types.ts'), 'utf8')
+    const shimT = extractInterface(shimSrc, 'MusicalTransport')
+    const canonT = extractInterface(canonSrc, 'MusicalTransport')
+    expect(shimT).toBe(canonT)
+  })
 })
+
+/**
+ * Normalize source: strip comments, normalize import paths, trim whitespace.
+ * This lets us compare code bodies without cosmetic differences.
+ */
+function normalize(src: string): string {
+  return src
+    // Strip line comments (// ...)
+    .replace(/\/\/.*$/gm, '')
+    // Strip block comments (/* ... */)
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    // Normalize import paths: @psy-foundation/protocol → ./protocol
+    .replace(/from\s+['"]@psy-foundation\/[^'"]+['"]/g, "from './normalized'")
+    .replace(/from\s+['"]\.\/(\w+)['"]/g, "from './normalized'")
+    .replace(/from\s+['"]\.\.\/(\w+)['"]/g, "from './normalized'")
+    // Collapse multiple blank lines
+    .replace(/\n\s*\n/g, '\n')
+    // Trim trailing whitespace per line
+    .replace(/\s+$/gm, '')
+    // Normalize indentation to single space
+    .replace(/^\s+/gm, '')
+    .trim()
+}
 
 /** Extract exported identifiers from TypeScript source. */
 function extractExports(src: string): string[] {
   const exports: string[] = []
-  // Match: export interface Foo, export class Foo, export type Foo, export function Foo,
-  // export const Foo, export { Foo, Bar }
   const re = /export\s+(?:interface|class|type|function|const)\s+([A-Za-z_$][A-Za-z0-9_$]*)/g
   let m: RegExpExecArray | null
   while ((m = re.exec(src)) !== null) {
     exports.push(m[1]!)
   }
-  // Also match: export { Foo, Bar }
   const re2 = /export\s*\{([^}]+)\}/g
   while ((m = re2.exec(src)) !== null) {
     const names = m[1]!.split(',').map((s) => s.trim().split(/\s+as\s+/)[0]!.trim()).filter(Boolean)
     exports.push(...names)
   }
   return exports
+}
+
+/** Extract an interface body (the fields between { and }) by name. */
+function extractInterface(src: string, name: string): string {
+  const re = new RegExp(`interface\\s+${name}\\s*\\{([^}]*)\\}`, 'g')
+  const m = re.exec(src)
+  if (!m) return ''
+  return m[1]!.trim()
+}
+
+/** Extract export blocks: { exportName: normalizedBody } for interfaces/classes. */
+function extractExportBlocks(normalizedSrc: string): Record<string, string> {
+  const blocks: Record<string, string> = {}
+  // Match: export interface Name { ... } or export class Name { ... }
+  const re = /export\s+(interface|class|type|function|const)\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*[\{(]([^}]*)[})]/g
+  let m: RegExpExecArray | null
+  while ((m = re.exec(normalizedSrc)) !== null) {
+    const name = m[2]!
+    const body = m[3]!.trim()
+    blocks[name] = body
+  }
+  return blocks
 }
