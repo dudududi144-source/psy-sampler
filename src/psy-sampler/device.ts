@@ -77,7 +77,9 @@ export class SamplerDevice implements PsyDevice {
       outputs: 1,
       voices: this.opts.voiceCount,
       latencyMs: 12,
-      roles: ['sampler'],
+      // Roles advertise what the device can realize (for host discovery via findByRole).
+      // Must match samplerCapabilities in sampler-factory.ts.
+      roles: ['sampler', 'kick', 'bass', 'hat', 'perc', 'snare', 'clap', 'lead', 'fx'],
     }
   }
 
