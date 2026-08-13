@@ -13,6 +13,13 @@ export interface AudioGraphOptions {
   delaySend?: number
   reverbSend?: number
   enableAnalyser?: boolean
+  /**
+   * External output node to connect to (instead of ctx.destination).
+   * When a host provides a shared bus input, the sampler connects its
+   * master chain → outputNode. This enables shared master/limiter/ducking.
+   * If null (default), connects to ctx.destination (standalone mode).
+   */
+  outputNode?: AudioNode | null
 }
 
 interface Bus {
@@ -51,12 +58,14 @@ export class AudioGraph {
     this.analyser = opts.enableAnalyser !== false ? ctx.createAnalyser() : null
     if (this.analyser) this.analyser.fftSize = 256
 
+    // Connect master chain → outputNode (if provided) or ctx.destination.
+    const outputTarget = opts.outputNode ?? ctx.destination
     this.master.connect(this.compressor)
     if (this.analyser) {
       this.compressor.connect(this.analyser)
-      this.analyser.connect(ctx.destination)
+      this.analyser.connect(outputTarget)
     } else {
-      this.compressor.connect(ctx.destination)
+      this.compressor.connect(outputTarget)
     }
 
     // Delay (ping-pong-ish via feedback loop).

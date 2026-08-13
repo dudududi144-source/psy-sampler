@@ -1,17 +1,18 @@
 // PSY Sampler — SelectionPolicy.
 // Deterministic sample selection. Genuinely seeded — no mutable counters, no fake parameters.
 //
-// Inputs that drive selection: role, bank, velocity, phrasePosition, seed.
+// Inputs that drive selection: role, bank, velocity, phraseIndex, seed.
 // All five genuinely participate. No dead inputs.
 //
 // Determinism contract:
-//   Same (seed, role, bank, velocity, phrasePosition) + same library → same output, always.
+//   Same (seed, role, bank, velocity, phraseIndex) + same library → same output, always.
 //   No Math.random(). No mutable internal state. Stateless derivation.
 //
-// What was removed (honesty fix):
-//   section / energy / style were accepted but never used. Removed from the API.
-//   When real context-aware selection is needed (e.g. "softer kicks in BREAK"),
-//   add them back WITH genuine participation — not as theater.
+// Pitch handling:
+//   Pitched roles (bass, lead) use pitchRatio(rootNote, targetMidi).
+//   Unpitched roles (kick, hat-closed, hat-open, clap, perc, texture, fx) skip pitchRatio
+//   entirely — they play at native pitch (playbackRate = 1.0 × variance only).
+//   This fixes the kick-2-octaves-up bug where note.midi ?? 60 was treated as authoritative.
 
 import { Rng } from '../psy-foundation-shim/voice-pool'
 import type { SampleLibrary } from './library'
@@ -25,12 +26,19 @@ import type {
 import { DEFAULT_VARIANCE_RULES, type VarianceRule } from './variance-rules'
 
 /**
+ * Roles that are pitched — they use pitchRatio(rootNote, targetMidi).
+ * All other roles are unpitched — they play at native pitch.
+ */
+const PITCHED_ROLES: Set<SampleRole> = new Set(['bass', 'lead'])
+
+/**
  * Pitch ratio from a source MIDI note to a target MIDI note.
  * ratio = 2^((target - source) / 12)
  * Safe fallback: if source is NaN/0, returns 1.0.
  */
 export function pitchRatio(sourceMidi: number, targetMidi: number): number {
   if (!Number.isFinite(sourceMidi) || sourceMidi === 0) return 1.0
+  if (!Number.isFinite(targetMidi) || targetMidi === 0) return 1.0
   return Math.pow(2, (targetMidi - sourceMidi) / 12)
 }
 
@@ -44,12 +52,11 @@ export interface SelectionPolicyOptions {
 /**
  * Deterministic, stateless sample selection.
  *
- * The variant index is derived purely from (seed, role, phrasePosition) via
- * a seeded Rng — NO mutable counters. Same inputs always produce the same
- * variant, the same pitch/gain/pan variance, and the same sampleId.
+ * The variant index is derived purely from (seed, role, phraseIndex) via
+ * a seeded Rng — NO mutable counters, NO O(n) loops. O(1) hash-based derivation.
  *
- * This replaces the previous RoundRobinBank which had mutable internal state
- * and produced different outputs for identical inputs.
+ * Same inputs always produce the same variant, the same pitch/gain/pan variance,
+ * and the same sampleId.
  */
 export class SelectionPolicy {
   private readonly defaultDecay: Partial<Record<SampleRole, number>>
@@ -85,8 +92,7 @@ export class SelectionPolicy {
     const candidates = this.findCandidates(input.role, input.bank)
     if (candidates.length === 0) return null
 
-    // 2. Derive variant index purely from (seed, role, phraseIndex).
-    //    Stateless: no mutable counters. Same inputs → same variant.
+    // 2. Derive variant index purely from (seed, role, phraseIndex). O(1).
     const variant = this.deriveVariant(input.seed, input.role, input.phraseIndex)
 
     // 3. Pick the sampleId at the variant index (wrap if fewer samples than variants).
@@ -106,12 +112,26 @@ export class SelectionPolicy {
   }
 
   /**
-   * Select with an explicit target MIDI note (for pitched roles).
-   * Combines variant pitch variance with note-derived pitch ratio.
+   * Select with an explicit target MIDI note.
+   *
+   * For PITCHED roles (bass, lead): combines variant pitch variance with
+   * note-derived pitch ratio (pitchRatio(rootNote, targetMidi)).
+   *
+   * For UNPITCHED roles (kick, hat, clap, perc, texture, fx): ignores targetMidi
+   * entirely — plays at native pitch. This fixes the bug where note.midi ?? 60
+   * was treated as authoritative pitch for unpitched voices, causing kicks to
+   * play 2 octaves up.
    */
   selectWithNote(input: SelectionInput, targetMidi: number): SelectionOutput | null {
     const base = this.select(input)
     if (base === null) return null
+
+    // Unpitched roles: no pitch shifting. Return base (variant variance only).
+    if (!PITCHED_ROLES.has(input.role)) {
+      return base
+    }
+
+    // Pitched roles: apply pitchRatio(rootNote, targetMidi).
     const asset = this.library.get(base.sampleId)
     if (!asset) return base
     const rootNote = asset.metadata.character.rootNote
@@ -134,30 +154,19 @@ export class SelectionPolicy {
 
   /**
    * Derive a variant index deterministically from (seed, role, phraseIndex).
-   * Uses a seeded Rng (mulberry32). Stateless — no mutable counters.
+   * O(1) — hash-based, no loop. Uses a single Rng.next() call.
    *
    * The variant is stable for all bars within a phrase (same phraseIndex →
-   * same variant), and changes when phraseIndex advances. This gives
-   * phrase-locked round-robin rotation without mutable state.
+   * same variant), and changes when phraseIndex advances.
    */
   private deriveVariant(seed: number, role: SampleRole, phraseIndex: number): number {
     const rule = this.varianceRules[role] ?? DEFAULT_VARIANCE_RULES[role]
     const variants = rule.variants
 
-    // Derive a per-role, per-seed sub-RNG. The role string is hashed into
-    // the seed so different roles at the same phraseIndex get different
-    // variants (otherwise kick and hat would always pick the same index).
-    const roleSeed = this.hashSeed(seed, role)
-    const rng = new Rng(roleSeed)
-
-    // Advance the RNG (phraseIndex + 1) times and pick the last value.
-    // This gives a stable per-phrase variant that rotates on phrase boundary.
-    const idx = Math.max(0, Math.floor(phraseIndex))
-    let variant = 0
-    for (let i = 0; i <= idx; i++) {
-      variant = rng.int(0, variants - 1)
-    }
-    return variant
+    // Combine seed + role + phraseIndex into a single hash → one Rng call.
+    const combinedSeed = this.hashSeed3(seed, role, Math.max(0, Math.floor(phraseIndex)))
+    const rng = new Rng(combinedSeed)
+    return rng.int(0, variants - 1)
   }
 
   /**
@@ -193,9 +202,9 @@ export class SelectionPolicy {
     return candidates
   }
 
-  /** Hash a role string into a 32-bit integer to combine with the seed. */
-  private hashSeed(seed: number, role: string): number {
-    let h = seed >>> 0
+  /** Hash (seed, role, phraseIndex) into a single 32-bit integer. O(1). */
+  private hashSeed3(seed: number, role: string, phraseIndex: number): number {
+    let h = (seed >>> 0) ^ (phraseIndex * 0x9e3779b9)
     for (let i = 0; i < role.length; i++) {
       h = Math.imul(h ^ role.charCodeAt(i), 0x01000193) >>> 0
     }

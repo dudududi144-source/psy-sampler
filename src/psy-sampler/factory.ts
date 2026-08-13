@@ -16,6 +16,12 @@ export interface CreateSamplerOptions {
   manifestUrl: string
   voiceCount?: number
   masterGain?: number
+  /**
+   * External output node (for shared AudioContext with host).
+   * If provided, the sampler's master chain connects here instead of ctx.destination.
+   * This enables shared master/limiter/ducking when the host provides a bus input.
+   */
+  outputNode?: AudioNode | null
   onLoaded?: (result: { loaded: number; skipped: number; total: number }) => void
 }
 
@@ -42,8 +48,11 @@ export function createSamplerDevice(opts: CreateSamplerOptions): SamplerBundle {
   const ctx = opts.audioContext
   const voiceCount = opts.voiceCount ?? 32
 
-  // 1. Audio graph (buses + FX + master).
-  const audioGraph = new AudioGraph(ctx, { masterGain: opts.masterGain ?? 0.85 })
+  // 1. Audio graph (buses + FX + master). Connects to outputNode if provided.
+  const audioGraph = new AudioGraph(ctx, {
+    masterGain: opts.masterGain ?? 0.85,
+    outputNode: opts.outputNode ?? null,
+  })
 
   // 2. Voice pool — preallocate `voiceCount` SampleVoices, all connected to the drum bus by default.
   //    The device re-routes each voice to the correct bus per event.

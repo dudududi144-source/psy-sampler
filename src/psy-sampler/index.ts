@@ -66,16 +66,3 @@ export { SamplerDevice, wireSchedulerTrigger, type SamplerDeviceOptions } from '
 
 // Factory
 export { createSamplerDevice, type CreateSamplerOptions, type SamplerBundle } from './factory'
-
-// Registry (family integration seam)
-export {
-  DeviceRegistry,
-  type DeviceFactory,
-  type RegistryEntry,
-} from './registry'
-
-// Sampler factory (registry-compatible)
-export {
-  samplerDeviceFactory,
-  samplerCapabilities,
-} from './sampler-factory'

@@ -58,6 +58,3 @@ export {
   VoicePool,
   Rng,
 } from './voice-pool'
-
-// Reference device (for testing/coexistence)
-export { ReferenceDevice, type ReferenceDeviceOptions } from './reference'

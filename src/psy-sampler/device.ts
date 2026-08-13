@@ -59,6 +59,8 @@ export class SamplerDevice implements PsyDevice {
   eventsReceived = 0
   notesTriggered = 0
   notesSkipped = 0
+  /** Last event processed (for debug overlay). */
+  lastEvent: { channel: string; note: number; velocity: number; at: number; sampleId?: string; triggered: boolean } | null = null
 
   /** Last received transport (for diagnostics/integration tests). */
   get lastTransport(): MusicalTransport | null { return this.transport }
@@ -77,9 +79,8 @@ export class SamplerDevice implements PsyDevice {
       outputs: 1,
       voices: this.opts.voiceCount,
       latencyMs: 12,
-      // Roles advertise what the device can realize (for host discovery via findByRole).
-      // Must match samplerCapabilities in sampler-factory.ts.
-      roles: ['sampler', 'kick', 'bass', 'hat', 'perc', 'snare', 'clap', 'lead', 'fx'],
+      // Roles match the SampleRole enum in types.ts exactly.
+      roles: ['sampler', 'kick', 'bass', 'lead', 'hat-closed', 'hat-open', 'clap', 'perc', 'texture', 'fx'],
     }
   }
 
@@ -144,6 +145,7 @@ export class SamplerDevice implements PsyDevice {
 
     if (selection === null) {
       this.notesSkipped += 1
+      this.lastEvent = { channel: event.channel, note: event.note, velocity: event.velocity, at: event.at, triggered: false }
       // Graceful: no sample for this role — skip silently. No invented music.
       return
     }
@@ -151,8 +153,11 @@ export class SamplerDevice implements PsyDevice {
     const asset = this.opts.library.get(selection.sampleId)
     if (!asset) {
       this.notesSkipped += 1
+      this.lastEvent = { channel: event.channel, note: event.note, velocity: event.velocity, at: event.at, triggered: false }
       return
     }
+
+    this.lastEvent = { channel: event.channel, note: event.note, velocity: event.velocity, at: event.at, sampleId: selection.sampleId, triggered: true }
 
     const decay = this.opts.selectionPolicy.decayFor(parsed.role)
 
