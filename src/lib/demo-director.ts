@@ -9,6 +9,7 @@
 // just consumes NoteEvents.
 
 import type { DeviceHost, MusicalContext, NoteEvent } from '@/psy-foundation-shim'
+import { Rng } from '@/psy-foundation-shim'
 import type { DemoTransport } from './demo-transport'
 import type { SampleRole } from '@/psy-sampler'
 import { createTimerWorker } from './timer-worker'
@@ -75,6 +76,10 @@ export class DemoDirector {
   private running = false
   private readonly onStep?: (step: number) => void
   private swing = 0 // 0 = straight, 0.7 = 70% swing
+  private evolveEnabled = false
+  private evolveSeed = 42
+  private evolveBarCounter = 0
+  private readonly evolveInterval = 4 // mutate every 4 bars
 
   constructor(opts: DirectorOptions, onStep?: (step: number) => void) {
     this.host = opts.host
@@ -117,6 +122,51 @@ export class DemoDirector {
 
   get currentSwing(): number {
     return this.swing
+  }
+
+  // ─── Auto-evolve ────────────────────────────────────────────────────────────
+
+  setEvolveEnabled(enabled: boolean): void {
+    this.evolveEnabled = enabled
+    this.evolveBarCounter = 0
+  }
+
+  get isEvolveEnabled(): boolean {
+    return this.evolveEnabled
+  }
+
+  setEvolveSeed(seed: number): void {
+    this.evolveSeed = seed
+  }
+
+  get currentEvolveSeed(): number {
+    return this.evolveSeed
+  }
+
+  /**
+   * Mutate the pattern: toggle 1-2 cells per role using a seeded RNG.
+   * Same seed + same pattern → same mutation (deterministic).
+   */
+  private evolvePattern(): void {
+    const seed = this.evolveSeed * 1000 + this.evolveBarCounter
+    const rng = new Rng(seed >>> 0)
+    const mutated = structuredClone(this.pattern)
+    const roles = Object.keys(mutated) as SampleRole[]
+    for (const role of roles) {
+      const row = mutated[role]
+      if (!row) continue
+      // 30% chance to toggle a cell in this role.
+      if (rng.next() < 0.3) {
+        const cellIdx = rng.int(0, STEPS - 1)
+        row[cellIdx] = !row[cellIdx]
+      }
+      // 15% chance to toggle a second cell.
+      if (rng.next() < 0.15) {
+        const cellIdx = rng.int(0, STEPS - 1)
+        row[cellIdx] = !row[cellIdx]
+      }
+    }
+    this.pattern = mutated
   }
 
   setContext(ctx: Partial<MusicalContext>): void {
@@ -162,6 +212,14 @@ export class DemoDirector {
       this.scheduleStep(this.step, this.nextNoteTime + swingOffset)
       this.onStep?.(this.step)
       this.step = (this.step + 1) % STEPS
+      // Auto-evolve: mutate pattern every evolveInterval bars (when step wraps to 0).
+      if (this.step === 0 && this.evolveEnabled) {
+        this.evolveBarCounter += 1
+        if (this.evolveBarCounter >= this.evolveInterval) {
+          this.evolveBarCounter = 0
+          this.evolvePattern()
+        }
+      }
       this.nextNoteTime += secPerStep
     }
     // Push transport snapshot periodically (every tick).

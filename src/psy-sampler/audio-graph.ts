@@ -1,7 +1,8 @@
 // PSY Sampler — AudioGraph.
-// Bus routing + FX sends. Minimal for MVP:
+// Bus routing + FX sends + sidechain ducking.
 //   - 3 buses: drum, music, atmos
 //   - Per-bus gain + delay/reverb sends
+//   - Sidechain ducking: kick triggers gain dip on music + atmos buses
 //   - Master chain: master gain → compressor → analyser → destination
 //
 // The sampler device creates this graph and routes voices to buses per role.
@@ -13,20 +14,15 @@ export interface AudioGraphOptions {
   delaySend?: number
   reverbSend?: number
   enableAnalyser?: boolean
-  /**
-   * External output node to connect to (instead of ctx.destination).
-   * When a host provides a shared bus input, the sampler connects its
-   * master chain → outputNode. This enables shared master/limiter/ducking.
-   * If null (default), connects to ctx.destination (standalone mode).
-   */
   outputNode?: AudioNode | null
 }
 
 interface Bus {
   input: GainNode
+  /** Duck gain node — inserted between input and master. Sidechain dips this. */
+  duckGain: GainNode
   delaySend: GainNode
   reverbSend: GainNode
-  /** Last user-set gain (for un-mute). */
   userGain: number
   muted: boolean
 }
@@ -42,6 +38,10 @@ export class AudioGraph {
   readonly reverb: ConvolverNode
   readonly reverbReturn: GainNode
   private readonly buses = new Map<BusName, Bus>()
+  private sidechainEnabled = false
+  private sidechainDepth = 0.6 // 0=none, 1=full mute
+  private sidechainAttack = 0.008 // 8ms
+  private sidechainRelease = 0.15 // 150ms
 
   constructor(ctx: AudioContext, opts: AudioGraphOptions = {}) {
     this.ctx = ctx
@@ -61,7 +61,6 @@ export class AudioGraph {
     this.analyser = opts.enableAnalyser !== false ? ctx.createAnalyser() : null
     if (this.analyser) this.analyser.fftSize = 256
 
-    // Connect master chain → outputNode (if provided) or ctx.destination.
     const outputTarget = opts.outputNode ?? ctx.destination
     this.master.connect(this.compressor)
     if (this.analyser) {
@@ -71,7 +70,7 @@ export class AudioGraph {
       this.compressor.connect(outputTarget)
     }
 
-    // Delay (ping-pong-ish via feedback loop).
+    // Delay.
     this.delay = ctx.createDelay(2.0)
     this.delay.delayTime.value = 0.3
     this.delayFeedback = ctx.createGain()
@@ -83,7 +82,7 @@ export class AudioGraph {
     this.delay.connect(this.delayReturn)
     this.delayReturn.connect(this.master)
 
-    // Reverb (convolver with synthesized impulse).
+    // Reverb.
     this.reverb = ctx.createConvolver()
     this.reverb.buffer = this.makeImpulse(1.8, 2.4)
     this.reverbReturn = ctx.createGain()
@@ -91,7 +90,7 @@ export class AudioGraph {
     this.reverb.connect(this.reverbReturn)
     this.reverbReturn.connect(this.master)
 
-    // Buses.
+    // Buses — each has input → duckGain → master + sends.
     const busConfig: Array<{ name: BusName; gain: number; delay: number; reverb: number }> = [
       { name: 'drum', gain: 0.9, delay: 0.05, reverb: 0.1 },
       { name: 'music', gain: 0.85, delay: 0.2, reverb: 0.25 },
@@ -100,32 +99,33 @@ export class AudioGraph {
     for (const cfg of busConfig) {
       const input = ctx.createGain()
       input.gain.value = cfg.gain
+      const duckGain = ctx.createGain()
+      duckGain.gain.value = 1.0 // no ducking by default
       const ds = ctx.createGain()
-      ds.gain.value = cfg.delay * delaySendAmt * 4 // scale to audible
+      ds.gain.value = cfg.delay * delaySendAmt * 4
       const rs = ctx.createGain()
       rs.gain.value = cfg.reverb * reverbSendAmt * 4
-      input.connect(this.master)
-      input.connect(ds)
+      // Routing: input → duckGain → master + sends (sends tap after duck so ducked signal doesn't send)
+      input.connect(duckGain)
+      duckGain.connect(this.master)
+      duckGain.connect(ds)
       ds.connect(this.delay)
-      input.connect(rs)
+      duckGain.connect(rs)
       rs.connect(this.reverb)
-      this.buses.set(cfg.name, { input, delaySend: ds, reverbSend: rs, userGain: cfg.gain, muted: false })
+      this.buses.set(cfg.name, { input, duckGain, delaySend: ds, reverbSend: rs, userGain: cfg.gain, muted: false })
     }
   }
 
-  /** Get the input node for a bus (voices connect here). */
   getBusInput(name: BusName): AudioNode {
     const bus = this.buses.get(name)
     if (!bus) throw new Error(`Unknown bus: ${name}`)
     return bus.input
   }
 
-  /** Set master gain. */
   setMasterGain(value: number): void {
     this.master.gain.setTargetAtTime(value, this.ctx.currentTime, 0.01)
   }
 
-  /** Set the user-facing gain for a bus (0..1.5). Respects mute state. */
   setBusGain(name: BusName, value: number): void {
     const bus = this.buses.get(name)
     if (!bus) return
@@ -135,7 +135,6 @@ export class AudioGraph {
     }
   }
 
-  /** Mute/unmute a bus. Mute overrides userGain. */
   setBusMuted(name: BusName, muted: boolean): void {
     const bus = this.buses.get(name)
     if (!bus) return
@@ -143,38 +142,82 @@ export class AudioGraph {
     bus.input.gain.setTargetAtTime(muted ? 0 : bus.userGain, this.ctx.currentTime, 0.01)
   }
 
-  /** Get the last user-set gain for a bus (0..1.5). */
   getBusGain(name: BusName): number {
     const bus = this.buses.get(name)
     return bus ? bus.userGain : 0
   }
 
-  /** True if the bus is currently muted. */
   isBusMuted(name: BusName): boolean {
     const bus = this.buses.get(name)
     return bus ? bus.muted : false
   }
 
-  /** Apply solo state: when any bus is soloed, mute all others. */
   applySolo(soloed: BusName[]): void {
     const soloSet = new Set(soloed)
     const anySoloed = soloSet.size > 0
     for (const [name, bus] of this.buses.entries()) {
-      // If a bus is muted by the user, it stays muted regardless of solo.
-      // Otherwise: if any bus is soloed, mute non-soloed buses.
       const effectiveMuted = bus.muted || (anySoloed && !soloSet.has(name))
       bus.input.gain.setTargetAtTime(effectiveMuted ? 0 : bus.userGain, this.ctx.currentTime, 0.01)
     }
   }
 
-  /** Sync delay time to BPM (dotted-eighth). Clamps bpm to prevent Infinity. */
   syncDelayToBpm(bpm: number): void {
     const safeBpm = Math.max(1, Math.min(400, bpm))
     const dottedEighth = (60 / safeBpm) * 0.75
     this.delay.delayTime.setTargetAtTime(dottedEighth, this.ctx.currentTime, 0.01)
   }
 
-  /** Synthesize a stereo impulse response for the convolver reverb. */
+  // ─── Sidechain ducking ─────────────────────────────────────────────────────
+
+  /** Enable/disable sidechain ducking. When enabled, triggerSidechain() dips music+atmos. */
+  setSidechainEnabled(enabled: boolean): void {
+    this.sidechainEnabled = enabled
+    if (!enabled) {
+      // Reset duck gains to 1.0.
+      const now = this.ctx.currentTime
+      for (const bus of this.buses.values()) {
+        bus.duckGain.gain.cancelScheduledValues(now)
+        bus.duckGain.gain.setTargetAtTime(1.0, now, 0.01)
+      }
+    }
+  }
+
+  get isSidechainEnabled(): boolean {
+    return this.sidechainEnabled
+  }
+
+  /** Set sidechain depth (0=none, 1=full mute). */
+  setSidechainDepth(depth: number): void {
+    this.sidechainDepth = Math.max(0, Math.min(1, depth))
+  }
+
+  get sidechainDepthValue(): number {
+    return this.sidechainDepth
+  }
+
+  /**
+   * Trigger a sidechain dip on music + atmos buses.
+   * Called by the device when a kick note fires.
+   * Dip = (1 - depth) of the current gain, recovering over sidechainRelease.
+   */
+  triggerSidechain(at: number): void {
+    if (!this.sidechainEnabled) return
+    const dipGain = 1.0 - this.sidechainDepth
+    const now = Math.max(at, this.ctx.currentTime)
+
+    // Duck music + atmos (not drum — the kick needs to cut through).
+    for (const name of ['music', 'atmos'] as BusName[]) {
+      const bus = this.buses.get(name)
+      if (!bus || bus.muted) continue
+      bus.duckGain.gain.cancelScheduledValues(now)
+      bus.duckGain.gain.setValueAtTime(bus.duckGain.gain.value, now)
+      bus.duckGain.gain.linearRampToValueAtTime(dipGain, now + this.sidechainAttack)
+      bus.duckGain.gain.linearRampToValueAtTime(1.0, now + this.sidechainAttack + this.sidechainRelease)
+    }
+  }
+
+  // ─── Internals ──────────────────────────────────────────────────────────────
+
   private makeImpulse(durationSec: number, decay: number): AudioBuffer {
     const rate = this.ctx.sampleRate
     const length = Math.floor(rate * durationSec)
@@ -189,7 +232,6 @@ export class AudioGraph {
     return impulse
   }
 
-  /** Disconnect everything (for disposal). */
   dispose(): void {
     this.master.disconnect()
     this.compressor.disconnect()
@@ -201,6 +243,7 @@ export class AudioGraph {
     this.reverbReturn.disconnect()
     for (const bus of this.buses.values()) {
       bus.input.disconnect()
+      bus.duckGain.disconnect()
       bus.delaySend.disconnect()
       bus.reverbSend.disconnect()
     }

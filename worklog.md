@@ -1222,3 +1222,31 @@ Stage Summary:
 - Fix 10 (font floor): globally replaced every `text-[7px]`→`text-[10px]`, `text-[8px]`→`text-[10px]`, `text-[9px]`→`text-[11px]` (38 occurrences total across badges, labels, log rows, mixer, slots, etc.) so no on-screen text drops below the ~10px readability floor on mobile.
 
 Net effect: every interactive control in PSY Sampler now meets the 44px touch-target guideline, the mixer stacks gracefully on phones, iOS zoom-on-focus is prevented, preset loads are confirmed via toast, the pattern editor has a one-tap Clear action, and the smallest text is bumped to a legible floor — all without rewriting the file (only targeted edits).
+
+---
+Task ID: STRATEGY-1
+Agent: product-strategist
+Task: Find the next 5 most impactful features
+
+Work Log:
+- Read /home/z/my-project/src/app/page.tsx (1606 lines, full UI): InitOverlay, DebugPanel, PatternEditor (binary on/off cells, no velocity), WaveformThumbnail, SampleLibrary (audition only — no per-step bank override), Mixer (3 buses · gain/mute/solo only — no sends, no EQ), PresetsPanel (6 genres), PatternSlots (4 save slots + autosave), Visualizer (DPR canvas, frequency bars, no ducking overlay).
+- Read /home/z/my-project/src/psy-sampler/{index, audio-graph, voice, device, selector, types, factory, library, variance-rules, realization-scheduler}.ts:
+  * AudioGraph already has delay + reverb nodes wired, but their sends + delay time are FIXED at construction — no setters exposed to UI. No BiquadFilter / EQ anywhere. No sidechain/ducking node — only one mention of "ducking" in a comment about outputNode.
+  * Voice: per-trigger playbackRate/gain/pan/decay only — no per-step velocity from the director.
+  * Selector: deterministic seeded round-robin — variant derived from (seed, role, phraseIndex). Variance rules give ±pitch/gain/pan but NO per-step velocity input is wired (the director sends a hardcoded velocity per role).
+- Read /home/z/my-project/src/lib/demo-director.ts: confirmed velocity is HARDCODED per role at line 180 (`kick=0.9, bass=0.7, else=0.6`). Pattern type is `Record<SampleRole, boolean[]>` — boolean cells, no velocity dimension. STEPS=16 hard-coded. setPattern exists; setSwing exists; no song-mode / arrangement / section chaining API.
+- Read /home/z/my-project/src/lib/pattern-persistence.ts: validates 9 roles × 16 booleans — pattern length is fixed in the schema too. No slot-chain metadata.
+- Read /home/z/my-project/src/lib/use-keyboard-shortcuts.ts: only Space + Escape. No step-nav, no role-select, no undo/redo.
+- Read /home/z/my-project/src/lib/wav-export.ts: 8-second FIXED real-time capture via MediaRecorder. No offline render, no loop-length export.
+- Read /home/z/my-project/public/samples/manifest.json: 19 samples — 3 kicks, 2 bass, 1 lead, 2 hat-closed, 3 hat-open, 3 claps, 4 perc, 1 texture, 1 fx. Lots of variants the user can't directly pick (SelectionPolicy picks deterministically — by design).
+- Grep-confirmed gaps: no `paint`/`onPointer`/`drag`/`onMouseDown` in page.tsx (single-click toggles only); no `BiquadFilter`/`lowpass`/`highpass` anywhere in src/; no `sidechain`/`duck` logic (only a comment); `STEPS=16` hard-coded in two files.
+- Cross-referenced prior worklog entries (BUG-1 bug audit, EDGE-1 journey QA, MOBILE-1/MOBILE-FIX) so as not to re-pitch fixes that already shipped. None of my 5 features overlap with shipped work — they're all genuine NEW capabilities.
+- Scored each candidate (per-step velocity, sidechain, song mode, pattern length + drag, per-bus FX controls, MIDI input, tap tempo, undo/redo, auto-evolve, sample-bank override) on 4 axes: producer need, audio quality, UX satisfaction, showcase value — then picked the 5 with the highest aggregate "wow" per unit effort.
+
+Stage Summary:
+- Top 5 most impactful next features, in priority order:
+  1. Sidechain ducking (kick → music + atmos buses) — M — instant "pro psytrance pump"
+  2. Per-step velocity + accent editor — M — turns a robotic loop into a breathing groove
+  3. Song mode: chain saved slots into A→B→A→C arrangement — L — transforms loop toy into track sketcher
+  4. Pattern length selector (8 / 16 / 32 steps) + drag-to-paint — M — unlocks 2-bar phrases + buttery UX
+  5. Generative auto-evolve mode (mutate pattern every 4 bars via seeded SelectionPolicy) — S — showcases the project's deterministic-selection USP

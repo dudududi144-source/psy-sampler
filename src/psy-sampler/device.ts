@@ -161,6 +161,11 @@ export class SamplerDevice implements PsyDevice {
 
     const decay = this.opts.selectionPolicy.decayFor(parsed.role)
 
+    // Trigger sidechain ducking when a kick fires (if enabled).
+    if (parsed.role === 'kick') {
+      this.opts.audioGraph.triggerSidechain(event.at)
+    }
+
     // Queue the voice trigger at event.at (device-local realization scheduling).
     // The scheduler does NOT decide musical timing — it only fires at the
     // AudioContext time the host already chose.
