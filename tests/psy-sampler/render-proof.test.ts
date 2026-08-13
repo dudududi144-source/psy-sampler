@@ -30,7 +30,8 @@ class RenderContext {
   currentTime = 0
   sampleRate = 44100
   destination = { _gain: 0 } as unknown as AudioNode
-  private nodes: Array<{ type: string; start?: number; gain?: number }> = []
+  /** Public so closures can access without `this` aliasing. */
+  nodes: Array<{ type: string; start?: number; gain?: number }> = []
 
   createGain() {
     const node = {
@@ -48,14 +49,13 @@ class RenderContext {
     return node as unknown as GainNode
   }
   createBufferSource() {
-    const self = this
     const node = {
       buffer: null as AudioBuffer | null,
       playbackRate: { value: 1 },
       connect: () => {},
       disconnect: () => {},
       start: (at: number) => {
-        self.nodes.push({ type: 'source', start: at })
+        this.nodes.push({ type: 'source', start: at })
       },
       stop: () => {},
       onended: null,
