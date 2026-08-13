@@ -1,12 +1,18 @@
-// PSY Sampler — demo musical director.
+// PSY Sampler — demo musical director (TEST HARNESS ONLY).
 //
-// A MINIMAL pattern player that generates NoteEvents on a 16-step grid.
-// This is NOT a real musical director — it makes NO compositional decisions.
-// It simply plays back a user-editable pattern.
+// ⚠️  THIS IS NOT PRODUCTION CODE.
+// ⚠️  This is a test harness for the demo playground UI.
+// ⚠️  In production, PSY4's CausalComposer replaces this entirely.
+// ⚠️  The sampler device is agnostic to the director — it just consumes NoteEvents.
 //
-// In a real PSY host, this would be replaced by foundation's CompositionEngine
-// + Arranger + Learner. The sampler device is agnostic to the director — it
-// just consumes NoteEvents.
+// This file simulates a host by generating NoteEvents from a 16-step pattern grid.
+// It is used by:
+//   - src/app/page.tsx (demo playground — standalone testing without PSY4)
+//   - tests/psy-sampler/ (integration tests without running PSY4)
+//
+// It is NOT part of the sampler device architecture.
+// It does NOT implement PsyDevice or any foundation contract.
+// It will be REMOVED when the sampler is fully integrated with PSY4.
 
 import type { DeviceHost, MusicalContext, NoteEvent } from '@/psy-foundation-shim'
 import { Rng } from '@/psy-foundation-shim'
