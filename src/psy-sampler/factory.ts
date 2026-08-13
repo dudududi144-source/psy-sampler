@@ -1,0 +1,94 @@
+// PSY Sampler — device factory.
+// Wires together all components into a ready-to-register SamplerDevice.
+
+import { SampleLibrary } from './library'
+import { SampleLoader } from './loader'
+import { SelectionPolicy } from './selector'
+import { RuntimeScheduler } from './scheduler'
+import { AudioGraph } from './audio-graph'
+import { SampleVoice } from './voice'
+import { SamplerDevice, wireSchedulerTrigger } from './device'
+import { VoicePool } from '../psy-foundation-shim'
+import type { BusName } from './types'
+
+export interface CreateSamplerOptions {
+  audioContext: AudioContext
+  manifestUrl: string
+  voiceCount?: number
+  masterGain?: number
+  onLoaded?: (result: { loaded: number; skipped: number; total: number }) => void
+}
+
+export interface SamplerBundle {
+  device: SamplerDevice
+  library: SampleLibrary
+  selectionPolicy: SelectionPolicy
+  scheduler: RuntimeScheduler
+  audioGraph: AudioGraph
+  voicePool: VoicePool<SampleVoice>
+  /** Load samples from the manifest. Must be called before the device can play. */
+  load: () => Promise<{ loaded: number; skipped: number; total: number }>
+}
+
+/**
+ * Create a fully-wired SamplerDevice bundle.
+ *
+ * Usage:
+ *   const bundle = createSamplerDevice({ audioContext, manifestUrl: '/samples/manifest.json' })
+ *   await bundle.load()
+ *   host.register(bundle.device)
+ */
+export function createSamplerDevice(opts: CreateSamplerOptions): SamplerBundle {
+  const ctx = opts.audioContext
+  const voiceCount = opts.voiceCount ?? 32
+
+  // 1. Audio graph (buses + FX + master).
+  const audioGraph = new AudioGraph(ctx, { masterGain: opts.masterGain ?? 0.85 })
+
+  // 2. Voice pool — preallocate `voiceCount` SampleVoices, all connected to the drum bus by default.
+  //    The device re-routes each voice to the correct bus per event.
+  const defaultBus = audioGraph.getBusInput('drum' as BusName)
+  const voicePool = new VoicePool<SampleVoice>(
+    () => new SampleVoice({ audioContext: ctx, output: defaultBus }),
+    voiceCount
+  )
+
+  // 3. Sample library + loader.
+  const loader = new SampleLoader(ctx)
+  const library = new SampleLibrary(loader)
+
+  // 4. Selection policy (deterministic).
+  const selectionPolicy = new SelectionPolicy(library)
+
+  // 5. Runtime scheduler (lookahead).
+  const scheduler = new RuntimeScheduler(ctx)
+
+  // 6. Wire the scheduler's trigger function to the voice pool + audio graph.
+  wireSchedulerTrigger(scheduler, voicePool, audioGraph)
+
+  // 7. The device.
+  const device = new SamplerDevice({
+    audioContext: ctx,
+    library,
+    selectionPolicy,
+    scheduler,
+    audioGraph,
+    voicePool,
+    voiceCount,
+    manifestUrl: opts.manifestUrl,
+  })
+
+  return {
+    device,
+    library,
+    selectionPolicy,
+    scheduler,
+    audioGraph,
+    voicePool,
+    load: async () => {
+      const result = await library.load(opts.manifestUrl)
+      opts.onLoaded?.(result)
+      return result
+    },
+  }
+}

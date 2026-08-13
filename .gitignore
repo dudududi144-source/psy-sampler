@@ -52,3 +52,14 @@ prompt
 server.log
 # Skills directory
 /skills/
+
+# PSY Sampler — audit workspace (cloned repos, not deliverable)
+/psy-audit/
+# PSY Sampler — uploaded credentials (NEVER commit)
+/upload/
+# PSY Sampler — tool results
+/tool-results/
+# PSY Sampler — download dir
+/download/
+# PSY Sampler — db
+/db/
