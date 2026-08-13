@@ -4,11 +4,7 @@
 //
 // Shortcuts:
 //   Space       → play/stop
-//   1-6         → toggle step in current row (kick/bass/lead/hat/clap/perc)
-//   V           → not used (reserved for future variate)
-//   R           → not used (reserved for future record)
-//   M           → mute all
-//   Escape      → stop + panic
+//   Escape      → stop
 
 import * as React from 'react'
 

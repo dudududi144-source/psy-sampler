@@ -1075,3 +1075,18 @@ Files modified:
 - src/lib/wav-export.ts — refactored renderAndDownloadWav to accept sourceNode + mimeType fallback chain (~80 lines)
 
 Build verification: ✓ TypeScript clean (excluding pre-existing bun:test test errors), ✓ ESLint clean, ✓ Next.js production build compiles in 9.1s.
+
+---
+Task ID: FINAL-1
+Agent: production-readiness-audit
+Task: Find remaining real bugs in the expanded UI
+
+Work Log:
+- Read all 7 target files in full (page.tsx in 4 chunks = 1539 lines; audio-graph.ts 209 lines; voice.ts 158 lines; demo-director.ts 196 lines; pattern-persistence.ts 215 lines; wav-export.ts 156 lines; use-keyboard-shortcuts.ts 49 lines).
+- Cross-referenced supporting files: psy-sampler/index.ts, types.ts, device.ts, factory.ts, library.ts, realization-scheduler.ts; psy-foundation-shim/{index,host,protocol,device,transport,voice-pool}.ts; lib/{demo-transport,timer-worker}.ts; components/{error-boundary,ui/slider,ui/badge,ui/button}.tsx; next.config.ts; app/layout.tsx.
+- Verified each feature end-to-end by tracing the call graph: init → register → load → play → tick → publish → onEvent → select → schedule → trigger → bus → master → compressor → analyser → destination.
+- Specifically audited: (a) sample audition path, (b) mixer setBusGain/setBusMuted/applySolo path, (c) WAV export MediaRecorder + decodeAudioData path, (d) voice steal 5ms fade path, (e) keyboard shortcut wiring, (f) pattern save/load/autosave path, (g) React hooks usage + state updater purity, (h) StrictMode config (confirmed `reactStrictMode: false` in next.config.ts — so dev-mode double-invocation is dormant).
+- Confirmed 7 user-facing breakage bugs + 6 moderate bugs + 1 latent anti-pattern.
+
+Stage Summary:
+- 14 real bugs found (7 user-facing breakage, 6 moderate, 1 latent). Details in the returned report.

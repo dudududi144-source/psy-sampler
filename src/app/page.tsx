@@ -28,6 +28,7 @@ import {
   type SampleRole,
   type BusName,
   parseChannel,
+  roleToBus,
 } from '@/psy-sampler'
 import {
   DeviceHost,
@@ -49,7 +50,7 @@ import {
   PATTERN_PRESETS,
   type PatternPreset,
 } from '@/lib/pattern-persistence'
-import { renderAndDownloadWav } from '@/lib/wav-export'
+import { renderAndDownloadWavLive } from '@/lib/wav-export'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { Badge } from '@/components/ui/badge'
@@ -951,7 +952,6 @@ export default function Home() {
   const eventLogIdRef = React.useRef(0)
   const lastEventAtRef = React.useRef<number>(-1) // tracks dev.lastEvent.at to dedup
   const initializingRef = React.useRef(false)
-  const masterGainAppliedRef = React.useRef(false)
 
   // Refresh slot names from localStorage.
   const refreshSlots = React.useCallback(() => {
@@ -1047,7 +1047,6 @@ export default function Home() {
 
       // Apply master volume + initial bus state.
       bundle.audioGraph.setMasterGain(masterVolume)
-      masterGainAppliedRef.current = true
       for (const name of BUS_NAMES) {
         const s = busState[name]
         bundle.audioGraph.setBusGain(name, s.gain)
@@ -1134,9 +1133,13 @@ export default function Home() {
 
   // ─── Transport controls ────────────────────────────────────────────────────
 
+  const exportStartedRef = React.useRef(false)
+
   const togglePlay = React.useCallback(() => {
     const director = directorRef.current
     if (!director) return
+    // FIX Bug 7: clear exportStartedRef so the export's finally block doesn't kill user playback.
+    exportStartedRef.current = false
     if (director.isRunning) {
       director.stop()
       setIsPlaying(false)
@@ -1195,63 +1198,69 @@ export default function Home() {
 
   const auditionSample = React.useCallback((asset: SampleAsset) => {
     const ctx = ctxRef.current
-    if (!ctx) return
+    const graph = bundleRef.current?.audioGraph
+    if (!ctx || !graph) return
     try {
+      // FIX Bug 1: route through the bus (not ctx.destination) so mixer/master/analyser apply.
+      const cat = asset.metadata.category as SampleRole
+      const busInput = graph.getBusInput(roleToBus(cat))
       const source = ctx.createBufferSource()
       source.buffer = asset.audioBuffer
       const gain = ctx.createGain()
       gain.gain.value = 0.7
       source.connect(gain)
-      gain.connect(ctx.destination)
+      gain.connect(busInput)
       source.start()
+      // FIX Bug 2: disconnect gain on source end to prevent leak.
+      source.onended = () => {
+        try { gain.disconnect() } catch { /* */ }
+      }
       // Highlight the row briefly.
-      const cat = asset.metadata.category as SampleRole
       setNowPlaying({ role: cat, sampleId: asset.metadata.id, at: Date.now() })
     } catch (err) {
       console.warn('[psy-sampler] Audition failed:', err)
     }
   }, [])
 
-  // ─── Mixer controls ────────────────────────────────────────────────────────
+  // ─── Mixer controls (FIX Bug 14: side effects OUT of state updater) ────────
+
+  const busStateRef = React.useRef(busState)
+  React.useEffect(() => { busStateRef.current = busState }, [busState])
 
   const onBusGain = React.useCallback((name: BusName, value: number) => {
-    setBusState((prev) => {
-      const next = { ...prev, [name]: { ...prev[name], gain: value } }
-      const graph = bundleRef.current?.audioGraph
-      if (graph) {
-        graph.setBusGain(name, value)
-        const soloed = BUS_NAMES.filter((n) => next[n].solo)
-        if (soloed.length > 0) graph.applySolo(soloed)
-      }
-      return next
-    })
+    const graph = bundleRef.current?.audioGraph
+    if (graph) {
+      graph.setBusGain(name, value)
+      const soloed = BUS_NAMES.filter((n) => busStateRef.current[n].solo)
+      if (soloed.length > 0) graph.applySolo(soloed)
+    }
+    setBusState((prev) => ({ ...prev, [name]: { ...prev[name], gain: value } }))
   }, [])
 
   const onBusMute = React.useCallback((name: BusName) => {
-    setBusState((prev) => {
-      const newMuted = !prev[name].muted
-      const next = { ...prev, [name]: { ...prev[name], muted: newMuted } }
-      const graph = bundleRef.current?.audioGraph
-      if (graph) {
-        graph.setBusMuted(name, newMuted)
-        const soloed = BUS_NAMES.filter((n) => next[n].solo)
-        if (soloed.length > 0) graph.applySolo(soloed)
-      }
-      return next
-    })
+    const newMuted = !busStateRef.current[name].muted
+    const graph = bundleRef.current?.audioGraph
+    if (graph) {
+      graph.setBusMuted(name, newMuted)
+      const soloed = BUS_NAMES.filter((n) => busStateRef.current[n].solo)
+      if (soloed.length > 0) graph.applySolo(soloed)
+    }
+    setBusState((prev) => ({ ...prev, [name]: { ...prev[name], muted: newMuted } }))
   }, [])
 
   const onBusSolo = React.useCallback((name: BusName) => {
-    setBusState((prev) => {
-      const newSolo = !prev[name].solo
-      const next = { ...prev, [name]: { ...prev[name], solo: newSolo } }
-      const graph = bundleRef.current?.audioGraph
-      if (graph) {
-        const soloed = BUS_NAMES.filter((n) => next[n].solo)
+    const newSolo = !busStateRef.current[name].solo
+    const next = { ...busStateRef.current, [name]: { ...busStateRef.current[name], solo: newSolo } }
+    const soloed = BUS_NAMES.filter((n) => next[n].solo)
+    const graph = bundleRef.current?.audioGraph
+    if (graph) {
+      if (soloed.length > 0) {
         graph.applySolo(soloed)
+      } else {
+        BUS_NAMES.forEach((n) => graph.setBusGain(n, next[n].gain))
       }
-      return next
-    })
+    }
+    setBusState(next)
   }, [])
 
   // ─── Pattern presets ───────────────────────────────────────────────────────
@@ -1309,7 +1318,8 @@ export default function Home() {
     }
   }, [refreshSlots])
 
-  // ─── WAV export ────────────────────────────────────────────────────────────
+  // ─── WAV export (FIX Bug 7: don't kill user-started playback) ──────────────
+
 
   const handleExportWav = React.useCallback(async () => {
     const ctx = ctxRef.current
@@ -1318,22 +1328,26 @@ export default function Home() {
     setExporting(true)
     // Auto-start playback if not playing, so we capture something.
     const wasPlaying = directorRef.current?.isRunning ?? false
+    exportStartedRef.current = false
     if (!wasPlaying) {
       directorRef.current?.start()
       setIsPlaying(true)
+      exportStartedRef.current = true
     }
     try {
       const durationSec = 8 // ~2 bars at 145 BPM
       const filename = `psy-sampler-${Date.now()}.wav`
-      await renderAndDownloadWav(ctx, durationSec, filename, bundle.audioGraph.master)
+      // FIX Bug 3: use renderAndDownloadWavLive (browser-portable, mimeType fallback).
+      await renderAndDownloadWavLive(ctx, bundle.audioGraph.master, durationSec, filename)
     } catch (err) {
       console.error('[psy-sampler] WAV export failed:', err)
       alert(`WAV export failed: ${err instanceof Error ? err.message : String(err)}`)
     } finally {
-      // Stop playback if we auto-started it.
-      if (!wasPlaying) {
+      // Only stop if WE started it AND the user didn't take over during export.
+      if (exportStartedRef.current) {
         directorRef.current?.stop()
         setIsPlaying(false)
+        exportStartedRef.current = false
       }
       setExporting(false)
     }
