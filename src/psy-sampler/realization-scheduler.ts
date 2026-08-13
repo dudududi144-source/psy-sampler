@@ -1,19 +1,27 @@
-// PSY Sampler — RuntimeScheduler.
+// PSY Sampler — RealizationScheduler.
 //
-// Fills GAP-S4: foundation's scheduler is offline-only (pure function
-// schedule(plan) → events[]). A sampler device needs RUNTIME lookahead
-// scheduling to fire voices at precise AudioContext times.
+// DEVICE-LOCAL REALIZATION SCHEDULING — NOT a musical scheduler.
 //
-// Design (standard Web Audio look-ahead pattern, matching psy/psy3-clean/PSY6-ULTIMATE):
+// This is NOT a family-level runtime scheduler. It does NOT decide musical
+// timing. The host (composer + transport) already decided WHEN each note
+// should sound (NoteEvent.at). This scheduler only ensures the AudioBufferSourceNode
+// is started at that exact AudioContext time.
+//
+// Why it exists: Web Audio requires AudioBufferSourceNode.start(at) to be called
+// from the main thread, slightly ahead of `at` (you can't start a source in the
+// past). The host publishes NoteEvents with .at in the near future; this
+// scheduler drains its queue as time advances and fires voices at the right moment.
+//
+// Design:
 //   - Timer: Web Worker (Blob URL) firing postMessage('tick') every 25ms.
 //     (Main-thread setInterval fallback if Worker unavailable.)
 //   - Horizon: 100ms lookahead (audioCtx.currentTime + 0.1).
 //   - Queue: sorted array of scheduled events by .at ascending.
-//   - tick(): drains all events with .at < currentTime + horizon.
-//   - Stale events (.at < currentTime) are dropped (not fired late).
+//   - tick(): drains all events with .at <= currentTime + horizon.
+//   - Stale events (.at < currentTime - 50ms) are dropped (not fired late).
 //
-// Timing rule: AudioContext.currentTime is the ONLY musical clock.
-// The 25ms timer only WAKES the scheduler — it is never the musical clock.
+// Timing rule: AudioContext.currentTime is the ONLY clock. The 25ms timer only
+// WAKES the drain loop — it is never the musical clock.
 
 import type { SampleId } from './types'
 import type { VoiceTriggerOptions } from './types'
@@ -34,7 +42,7 @@ const HORIZON_SEC = 0.1
 
 const WORKER_SRC = `let iv=null;self.onmessage=function(e){const d=e.data;if(d.cmd==='start'){if(iv)clearInterval(iv);iv=setInterval(()=>self.postMessage('tick'),d.ms)}else if(d.cmd==='stop'){if(iv)clearInterval(iv);iv=null}};`
 
-export class RuntimeScheduler {
+export class RealizationScheduler {
   private readonly ctx: AudioContext
   private triggerFn: VoiceTriggerFn
   private queue: ScheduledSampleEvent[] = []

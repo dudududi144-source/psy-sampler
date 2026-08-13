@@ -3,10 +3,10 @@
 // The PSY Sampler Device is a canonical family member implementing PsyDevice.
 // It consumes MusicalTransport, MusicalContext, and MusicalEvent (NoteEvent)
 // from the foundation, and renders sample-based audio via a pooled voice
-// architecture with deterministic selection.
+// architecture with genuinely deterministic selection.
 //
-// See PSY-SAMPLER-ARCHITECTURE-AUDIT.md and PSY-SAMPLER-IMPLEMENTATION-PLAN.md
-// for the full design.
+// See PSY-SAMPLER-FAMILY-INTEGRATION-RECONCILIATION.md for the current
+// integration status and ownership boundaries.
 
 // Types
 export type {
@@ -45,23 +45,18 @@ export { SampleLibrary, type LibraryQuery, type LibraryLoadResult } from './libr
 // Voice
 export { SampleVoice, type SampleVoiceInit } from './voice'
 
-// Round-robin
-export {
-  RoundRobinBank,
-  DEFAULT_VARIANCE_RULES,
-  type VarianceRule,
-  type RoundRobinResult,
-} from './round-robin'
+// Variance rules
+export { DEFAULT_VARIANCE_RULES, type VarianceRule } from './variance-rules'
 
 // Selector
 export { SelectionPolicy, pitchRatio, type SelectionPolicyOptions } from './selector'
 
-// Scheduler
+// Realization scheduler (device-local — NOT a family scheduler)
 export {
-  RuntimeScheduler,
+  RealizationScheduler,
   type ScheduledSampleEvent,
   type VoiceTriggerFn,
-} from './scheduler'
+} from './realization-scheduler'
 
 // Audio graph
 export { AudioGraph, type AudioGraphOptions } from './audio-graph'

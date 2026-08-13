@@ -5,6 +5,7 @@ import {
   validateManifest,
   validateProvenance,
   ProvenanceError,
+  ManifestError,
   isCommerciallyUsable,
 } from '../../src/psy-sampler'
 import type { SampleManifestEntry } from '../../src/psy-sampler'
@@ -27,6 +28,7 @@ function makeValidEntry(overrides: Partial<SampleManifestEntry> = {}): SampleMan
     genreFit: ['psytrance'],
     bpmRange: [120, 160],
     rootNote: 33,
+    verification: 'PROCEDURAL',
     ...overrides,
   }
 }
@@ -122,5 +124,67 @@ describe('validateManifest', () => {
       samples: [makeValidEntry({ source: '' })],
     }
     expect(() => validateManifest(manifest)).toThrow(ProvenanceError)
+  })
+
+  it('skips UNKNOWN verification samples (provenance policy)', () => {
+    const manifest = {
+      version: '1.0.0',
+      samples: [
+        makeValidEntry({ id: 'ok', verification: 'PROCEDURAL' }),
+        makeValidEntry({ id: 'unknown', verification: 'UNKNOWN' }),
+      ],
+    }
+    const result = validateManifest(manifest)
+    expect(result.samples.length).toBe(1)
+    expect(result.samples[0].id).toBe('ok')
+  })
+
+  it('skips QUARANTINED verification samples (provenance policy)', () => {
+    const manifest = {
+      version: '1.0.0',
+      samples: [
+        makeValidEntry({ id: 'ok', verification: 'VERIFIED' }),
+        makeValidEntry({ id: 'quarantined', verification: 'QUARANTINED' }),
+      ],
+    }
+    const result = validateManifest(manifest)
+    expect(result.samples.length).toBe(1)
+    expect(result.samples[0].id).toBe('ok')
+  })
+
+  it('accepts VERIFIED samples', () => {
+    const manifest = {
+      version: '1.0.0',
+      samples: [makeValidEntry({ verification: 'VERIFIED' })],
+    }
+    const result = validateManifest(manifest)
+    expect(result.samples.length).toBe(1)
+  })
+
+  it('accepts PROCEDURAL samples', () => {
+    const manifest = {
+      version: '1.0.0',
+      samples: [makeValidEntry({ verification: 'PROCEDURAL' })],
+    }
+    const result = validateManifest(manifest)
+    expect(result.samples.length).toBe(1)
+  })
+
+  it('throws if verification field is missing', () => {
+    const entry = makeValidEntry()
+    const { verification, ...withoutVerification } = entry
+    const manifest = {
+      version: '1.0.0',
+      samples: [withoutVerification],
+    }
+    expect(() => validateManifest(manifest)).toThrow(ManifestError)
+  })
+
+  it('throws if verification value is invalid', () => {
+    const manifest = {
+      version: '1.0.0',
+      samples: [makeValidEntry({ verification: 'MAYBE' as never })],
+    }
+    expect(() => validateManifest(manifest)).toThrow(ManifestError)
   })
 })

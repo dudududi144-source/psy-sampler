@@ -1,17 +1,20 @@
 // PSY Sampler — SamplerDevice.
-// Implements the canonical PsyDevice interface (verbatim from psy-foundation).
+// Implements the canonical PsyDevice interface (verbatim from psy-foundation via shim).
 //
 // Responsibilities (HOW layer only — never WHAT):
-//   - Receive MusicalTransport (bpm, origin.audioTime) for scheduling.
-//   - Receive MusicalContext (section, energy, style) for selection.
-//   - Receive MusicalEvent (NoteEvent) → select sample → schedule voice.
-//   - Own its SampleLibrary, VoicePool, SelectionPolicy, RuntimeScheduler, AudioGraph.
+//   - Receive MusicalTransport (bpm) for delay-sync.
+//   - Receive MusicalContext (section, energy, style) — currently observed but
+//     NOT used for selection (see selector.ts honesty fix). Kept for future
+//     context-aware selection.
+//   - Receive MusicalEvent (NoteEvent) → select sample → schedule voice trigger at event.at.
+//   - Own its SampleLibrary, VoicePool, SelectionPolicy, RealizationScheduler, AudioGraph.
 //
 // The device NEVER:
-//   - Decides WHAT to play (host's musical director decides via NoteEvents).
-//   - Decides WHEN to play (host sets NoteEvent.at).
-//   - Touches the transport (host owns DemoTransport/TransportClock).
-//   - Generates composition (foundation's music package does that).
+//   - Decides WHAT to play (host's composer decides via NoteEvents).
+//   - Decides WHEN to play musically (host sets NoteEvent.at — device only
+//     realizes at that AudioContext time).
+//   - Touches the transport (host owns it).
+//   - Generates composition (zero publish() calls in this package).
 
 import type {
   PsyDevice,
@@ -24,23 +27,23 @@ import type {
 import type { VoicePool } from '../psy-foundation-shim'
 import type { SampleLibrary } from './library'
 import type { SelectionPolicy } from './selector'
-import type { RuntimeScheduler, ScheduledSampleEvent } from './scheduler'
+import type { RealizationScheduler, ScheduledSampleEvent } from './realization-scheduler'
 import type { AudioGraph } from './audio-graph'
 import type { SampleVoice } from './voice'
-import { parseChannel, roleToBus, type SampleRole } from './types'
+import { parseChannel, roleToBus } from './types'
 
 export interface SamplerDeviceOptions {
   audioContext: AudioContext
   library: SampleLibrary
   selectionPolicy: SelectionPolicy
-  scheduler: RuntimeScheduler
+  scheduler: RealizationScheduler
   audioGraph: AudioGraph
   voicePool: VoicePool<SampleVoice>
   /** Max voices (for capabilities report). */
   voiceCount: number
   /** Manifest URL (for re-loading). */
   manifestUrl: string
-  /** Whether the device has been started. */
+  /** Called when the device has been started. */
   onReady?: () => void
 }
 
@@ -50,10 +53,8 @@ export class SamplerDevice implements PsyDevice {
   private context: MusicalContext | null = null
   private started = false
   private readonly opts: SamplerDeviceOptions
-  /** Phrase bar counter — increments each bar, resets at phrase boundary (every 8 bars). */
-  private phraseBar = 0
+  /** Bars per phrase — used to derive phraseIndex from transport.bar. */
   private readonly barsPerPhrase = 8
-  private lastBar = -1
   /** Counters for observability. */
   eventsReceived = 0
   notesTriggered = 0
@@ -75,25 +76,21 @@ export class SamplerDevice implements PsyDevice {
       inputs: 0,
       outputs: 1,
       voices: this.opts.voiceCount,
-      latencyMs: 12, // 25ms timer / 2 + scheduling jitter
-      roles: ['sampler', 'kick', 'bass', 'hat', 'perc', 'snare', 'clap', 'lead', 'fx'],
+      latencyMs: 12,
+      roles: ['sampler'],
     }
   }
 
   onTransport(transport: MusicalTransport): void {
     this.transport = transport
-    // Detect bar change → advance phrase position.
-    if (transport.bar !== this.lastBar) {
-      if (this.lastBar >= 0) {
-        this.phraseBar = (this.phraseBar + 1) % this.barsPerPhrase
-      }
-      this.lastBar = transport.bar
-    }
-    // Sync delay to BPM.
+    // Sync delay to BPM (realization concern — delay time follows tempo).
     this.opts.audioGraph.syncDelayToBpm(transport.bpm)
   }
 
   onContext(context: MusicalContext): void {
+    // Context is received but NOT currently used for selection.
+    // Kept for future context-aware selection (e.g. softer kicks in BREAK).
+    // See selector.ts honesty fix.
     this.context = context
   }
 
@@ -113,9 +110,6 @@ export class SamplerDevice implements PsyDevice {
     this.started = false
     this.opts.scheduler.stop()
     this.opts.voicePool.panic()
-    this.opts.selectionPolicy.reset()
-    this.phraseBar = 0
-    this.lastBar = -1
   }
 
   reportLatencyMs?(): number {
@@ -125,31 +119,30 @@ export class SamplerDevice implements PsyDevice {
   // ─── internals ──────────────────────────────────────────────────────────────
 
   private handleNoteEvent(event: NoteEvent): void {
-    if (!this.transport) {
-      this.notesSkipped += 1
-      return
-    }
     const parsed = parseChannel(event.channel)
     const bus = roleToBus(parsed.role)
 
-    // Selection — deterministic.
+    // Selection — genuinely deterministic (seeded, stateless).
+    // seed comes from transport.revision (stable per transport state).
+    // phraseIndex is derived statelessly from transport.bar (read-only).
+    const seed = this.transport?.revision ?? 0
+    const phraseIndex = this.transport
+      ? Math.floor(Math.max(0, this.transport.bar) / this.barsPerPhrase)
+      : 0
     const selection = this.opts.selectionPolicy.selectWithNote(
       {
         role: parsed.role,
         bank: parsed.bank,
         velocity: event.velocity,
-        section: this.context?.section ?? 'DROP',
-        energy: this.context?.energy ?? 0.7,
-        style: this.context?.style ?? 'psytrance',
-        phrasePosition: this.phraseBar,
-        seed: this.transport.revision,
+        phraseIndex,
+        seed,
       },
       event.note
     )
 
     if (selection === null) {
       this.notesSkipped += 1
-      // Graceful: no sample for this role — skip silently.
+      // Graceful: no sample for this role — skip silently. No invented music.
       return
     }
 
@@ -161,7 +154,9 @@ export class SamplerDevice implements PsyDevice {
 
     const decay = this.opts.selectionPolicy.decayFor(parsed.role)
 
-    // Schedule the voice trigger.
+    // Queue the voice trigger at event.at (device-local realization scheduling).
+    // The scheduler does NOT decide musical timing — it only fires at the
+    // AudioContext time the host already chose.
     const scheduledEvent: ScheduledSampleEvent = {
       at: event.at,
       sampleId: selection.sampleId,
@@ -199,11 +194,11 @@ export class SamplerDevice implements PsyDevice {
 }
 
 /**
- * Wire the trigger callback: when the scheduler fires an event, allocate a
- * voice from the pool, route it to the correct bus, and trigger it.
+ * Wire the trigger callback: when the realization scheduler fires an event,
+ * allocate a voice from the pool, route it to the correct bus, and trigger it.
  */
 export function wireSchedulerTrigger(
-  scheduler: RuntimeScheduler,
+  scheduler: RealizationScheduler,
   voicePool: VoicePool<SampleVoice>,
   audioGraph: AudioGraph
 ): void {

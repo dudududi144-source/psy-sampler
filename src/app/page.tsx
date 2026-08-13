@@ -19,13 +19,13 @@ import {
 import {
   DeviceHost,
   InMemoryChannel,
-  DemoTransport,
   type PsyDevice,
   type MusicalContext,
   type DeviceCapabilities,
   type MusicalEvent,
   type MusicalTransport,
 } from '@/psy-foundation-shim'
+import { DemoTransport } from '@/lib/demo-transport'
 import { DemoDirector, DEFAULT_PATTERN, type Pattern } from '@/lib/demo-director'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'

@@ -4,7 +4,7 @@
 import { SampleLibrary } from './library'
 import { SampleLoader } from './loader'
 import { SelectionPolicy } from './selector'
-import { RuntimeScheduler } from './scheduler'
+import { RealizationScheduler } from './realization-scheduler'
 import { AudioGraph } from './audio-graph'
 import { SampleVoice } from './voice'
 import { SamplerDevice, wireSchedulerTrigger } from './device'
@@ -23,7 +23,7 @@ export interface SamplerBundle {
   device: SamplerDevice
   library: SampleLibrary
   selectionPolicy: SelectionPolicy
-  scheduler: RuntimeScheduler
+  scheduler: RealizationScheduler
   audioGraph: AudioGraph
   voicePool: VoicePool<SampleVoice>
   /** Load samples from the manifest. Must be called before the device can play. */
@@ -60,8 +60,8 @@ export function createSamplerDevice(opts: CreateSamplerOptions): SamplerBundle {
   // 4. Selection policy (deterministic).
   const selectionPolicy = new SelectionPolicy(library)
 
-  // 5. Runtime scheduler (lookahead).
-  const scheduler = new RuntimeScheduler(ctx)
+  // 5. Realization scheduler (device-local — fires voices at host-decided event.at).
+  const scheduler = new RealizationScheduler(ctx)
 
   // 6. Wire the scheduler's trigger function to the voice pool + audio graph.
   wireSchedulerTrigger(scheduler, voicePool, audioGraph)

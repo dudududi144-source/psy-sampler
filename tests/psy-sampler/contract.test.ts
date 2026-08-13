@@ -13,7 +13,7 @@ import {
 import {
   SampleLibrary,
   SelectionPolicy,
-  RuntimeScheduler,
+  RealizationScheduler,
   AudioGraph,
   SampleVoice,
   SamplerDevice,
@@ -113,7 +113,7 @@ function makeBundle(ctx: StubAudioContext) {
   const loader = new SampleLoader(ctx as unknown as AudioContext)
   const library = new SampleLibrary(loader)
   const selectionPolicy = new SelectionPolicy(library)
-  const scheduler = new RuntimeScheduler(ctx as unknown as AudioContext)
+  const scheduler = new RealizationScheduler(ctx as unknown as AudioContext)
   wireSchedulerTrigger(scheduler, voicePool, audioGraph)
   return { audioGraph, voicePool, loader, library, selectionPolicy, scheduler }
 }

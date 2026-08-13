@@ -9,7 +9,7 @@
 // just consumes NoteEvents.
 
 import type { DeviceHost, MusicalContext, NoteEvent } from '@/psy-foundation-shim'
-import type { DemoTransport } from '@/psy-foundation-shim'
+import type { DemoTransport } from './demo-transport'
 import type { SampleRole } from '@/psy-sampler'
 
 export type Pattern = Record<SampleRole, boolean[]>

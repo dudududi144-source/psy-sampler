@@ -50,10 +50,6 @@ export type {
   TransportClockOptions,
 } from './transport'
 
-export {
-  DemoTransport,
-} from './transport'
-
 export type {
   Voice,
 } from './voice-pool'

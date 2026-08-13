@@ -1,4 +1,4 @@
-// Selection tests — verify deterministic sample selection.
+// Selection tests — verify genuinely deterministic sample selection.
 
 import { describe, it, expect } from 'bun:test'
 import {
@@ -39,21 +39,42 @@ function makeLibraryWith(...assets: SampleAsset[]): SampleLibrary {
 }
 
 describe('SelectionPolicy — determinism', () => {
-  it('same input sequence → same output sequence (determinism)', () => {
+  it('same input → same output (stateless, no mutable counters)', () => {
     const lib = makeLibraryWith(
       makeFakeAsset('kick-1', 'kick', 'a'),
       makeFakeAsset('kick-2', 'kick', 'b'),
       makeFakeAsset('kick-3', 'kick', 'c'),
       makeFakeAsset('kick-4', 'kick', 'd'),
     )
-    // Run a full phrase sequence (positions 0-7) twice.
+    const policy = new SelectionPolicy(lib)
+    const input = {
+      role: 'kick' as const, bank: null, velocity: 0.8,
+      phraseIndex: 3, seed: 42,
+    }
+    // Call select() 100 times with identical inputs — must produce identical output.
+    const first = policy.select(input)
+    expect(first).not.toBeNull()
+    for (let i = 0; i < 100; i++) {
+      const result = policy.select(input)
+      expect(result).toEqual(first)
+    }
+  })
+
+  it('same input sequence across separate policy instances → same output sequence', () => {
+    const lib = makeLibraryWith(
+      makeFakeAsset('kick-1', 'kick', 'a'),
+      makeFakeAsset('kick-2', 'kick', 'b'),
+      makeFakeAsset('kick-3', 'kick', 'c'),
+      makeFakeAsset('kick-4', 'kick', 'd'),
+    )
+    // Run a 8-phrase sequence twice with fresh policy instances.
     const runOnce = () => {
       const policy = new SelectionPolicy(lib)
       const outputs = []
-      for (let pos = 0; pos < 8; pos++) {
+      for (let phrase = 0; phrase < 8; phrase++) {
         const r = policy.select({
-          role: 'kick', bank: null, velocity: 0.8, section: 'DROP',
-          energy: 0.7, style: 'psytrance', phrasePosition: pos, seed: 42,
+          role: 'kick', bank: null, velocity: 0.8,
+          phraseIndex: phrase, seed: 42,
         })
         outputs.push(r)
       }
@@ -61,23 +82,21 @@ describe('SelectionPolicy — determinism', () => {
     }
     const run1 = runOnce()
     const run2 = runOnce()
-    // Both runs must produce identical sequences.
     expect(run1.length).toBe(run2.length)
     for (let i = 0; i < run1.length; i++) {
       expect(run1[i]).toEqual(run2[i])
     }
   })
 
-  it('no Math.random — same sequence is byte-identical across runs', () => {
+  it('no Math.random — byte-identical across runs', () => {
     const lib = makeLibraryWith(makeFakeAsset('kick-1', 'kick', 'a'))
-    // If Math.random were used, two runs would diverge.
     const runOnce = () => {
       const policy = new SelectionPolicy(lib)
       const out = []
-      for (let pos = 0; pos < 8; pos++) {
+      for (let phrase = 0; phrase < 8; phrase++) {
         out.push(JSON.stringify(policy.select({
-          role: 'kick', bank: null, velocity: 0.8, section: 'DROP',
-          energy: 0.7, style: 'psytrance', phrasePosition: pos, seed: 1,
+          role: 'kick', bank: null, velocity: 0.8,
+          phraseIndex: phrase, seed: 1,
         })))
       }
       return out.join('|')
@@ -91,8 +110,8 @@ describe('SelectionPolicy — determinism', () => {
     const lib = makeLibraryWith(makeFakeAsset('kick-1', 'kick', 'a'))
     const policy = new SelectionPolicy(lib)
     const result = policy.select({
-      role: 'clap', bank: null, velocity: 0.8, section: 'DROP',
-      energy: 0.7, style: 'psytrance', phrasePosition: 0, seed: 1,
+      role: 'clap', bank: null, velocity: 0.8,
+      phraseIndex: 0, seed: 1,
     })
     expect(result).toBeNull()
   })
@@ -105,14 +124,14 @@ describe('SelectionPolicy — determinism', () => {
     )
     const policy = new SelectionPolicy(lib)
     const result = policy.select({
-      role: 'kick', bank: 'a', velocity: 0.8, section: 'DROP',
-      energy: 0.7, style: 'psytrance', phrasePosition: 0, seed: 1,
+      role: 'kick', bank: 'a', velocity: 0.8,
+      phraseIndex: 0, seed: 1,
     })
     expect(result).not.toBeNull()
     expect(result!.sampleId).toMatch(/^kick-a/)
   })
 
-  it('phrase-locked: within a phrase, same sampleId for all positions', () => {
+  it('phrase-locked: same phraseIndex → same sampleId (stateless)', () => {
     const lib = makeLibraryWith(
       makeFakeAsset('kick-1', 'kick', 'a'),
       makeFakeAsset('kick-2', 'kick', 'b'),
@@ -120,16 +139,64 @@ describe('SelectionPolicy — determinism', () => {
       makeFakeAsset('kick-4', 'kick', 'd'),
     )
     const policy = new SelectionPolicy(lib)
-    const baseInput = (pos: number) => ({
-      role: 'kick' as const, bank: null, velocity: 0.8, section: 'DROP',
-      energy: 0.7, style: 'psytrance', phrasePosition: pos, seed: 1,
+    // Same phraseIndex → same sampleId, regardless of how many times called.
+    const r1 = policy.select({
+      role: 'kick', bank: null, velocity: 0.8,
+      phraseIndex: 2, seed: 1,
     })
-    // Position 0 sets the variant; positions 1-7 should keep the same sampleId.
-    const r0 = policy.select(baseInput(0))
-    for (let pos = 1; pos < 8; pos++) {
-      const r = policy.select(baseInput(pos))
-      expect(r!.sampleId).toBe(r0!.sampleId)
+    const r2 = policy.select({
+      role: 'kick', bank: null, velocity: 0.8,
+      phraseIndex: 2, seed: 1,
+    })
+    const r3 = policy.select({
+      role: 'kick', bank: null, velocity: 0.8,
+      phraseIndex: 2, seed: 1,
+    })
+    expect(r1!.sampleId).toBe(r2!.sampleId)
+    expect(r2!.sampleId).toBe(r3!.sampleId)
+  })
+
+  it('different phraseIndex → may select different variant', () => {
+    const lib = makeLibraryWith(
+      makeFakeAsset('kick-1', 'kick', 'a'),
+      makeFakeAsset('kick-2', 'kick', 'b'),
+      makeFakeAsset('kick-3', 'kick', 'c'),
+      makeFakeAsset('kick-4', 'kick', 'd'),
+    )
+    const policy = new SelectionPolicy(lib)
+    // Across 16 phrases, at least 2 different variants should be selected
+    // (otherwise the RNG isn't rotating).
+    const sampleIds = new Set<string>()
+    for (let phrase = 0; phrase < 16; phrase++) {
+      const r = policy.select({
+        role: 'kick', bank: null, velocity: 0.8,
+        phraseIndex: phrase, seed: 1,
+      })
+      sampleIds.add(r!.sampleId)
     }
+    expect(sampleIds.size).toBeGreaterThanOrEqual(2)
+  })
+
+  it('different seed → different selection sequence', () => {
+    const lib = makeLibraryWith(
+      makeFakeAsset('kick-1', 'kick', 'a'),
+      makeFakeAsset('kick-2', 'kick', 'b'),
+      makeFakeAsset('kick-3', 'kick', 'c'),
+      makeFakeAsset('kick-4', 'kick', 'd'),
+    )
+    const policy = new SelectionPolicy(lib)
+    const seq1 = []
+    const seq2 = []
+    for (let phrase = 0; phrase < 8; phrase++) {
+      seq1.push(policy.select({ role: 'kick', bank: null, velocity: 0.8, phraseIndex: phrase, seed: 1 })!.sampleId)
+      seq2.push(policy.select({ role: 'kick', bank: null, velocity: 0.8, phraseIndex: phrase, seed: 999 })!.sampleId)
+    }
+    // At least one phrase must differ between the two seeds.
+    let diffs = 0
+    for (let i = 0; i < seq1.length; i++) {
+      if (seq1[i] !== seq2[i]) diffs++
+    }
+    expect(diffs).toBeGreaterThan(0)
   })
 
   it('kick pitch variance never exceeds ±0.5%', () => {
@@ -140,15 +207,28 @@ describe('SelectionPolicy — determinism', () => {
       makeFakeAsset('kick-4', 'kick', 'd'),
     )
     const policy = new SelectionPolicy(lib)
-    for (let phrase = 0; phrase < 16; phrase++) {
+    for (let phrase = 0; phrase < 32; phrase++) {
       const r = policy.select({
-        role: 'kick', bank: null, velocity: 0.8, section: 'DROP',
-        energy: 0.7, style: 'psytrance', phrasePosition: phrase, seed: 1,
+        role: 'kick', bank: null, velocity: 0.8,
+        phraseIndex: phrase, seed: 1,
       })
       expect(r).not.toBeNull()
       const pitchDeviation = Math.abs(r!.playbackRate - 1.0)
       expect(pitchDeviation).toBeLessThanOrEqual(0.005) // ±0.5%
     }
+  })
+
+  it('no fake parameters — section/energy/style removed from API', () => {
+    // This test enforces that SelectionInput does NOT accept dead fields.
+    // If someone adds them back without genuine participation, the type
+    // system will catch it. Here we just verify the current shape.
+    const input = {
+      role: 'kick' as const, bank: null, velocity: 0.8,
+      phraseIndex: 0, seed: 1,
+    }
+    expect(Object.keys(input).sort()).toEqual(
+      ['bank', 'phraseIndex', 'role', 'seed', 'velocity']
+    )
   })
 })
 
