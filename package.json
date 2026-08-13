@@ -78,7 +78,10 @@
     "vaul": "^1.1.2",
     "z-ai-web-dev-sdk": "^0.0.18",
     "zod": "^4.0.2",
-    "zustand": "^5.0.6"
+    "zustand": "^5.0.6",
+    "@psy-foundation/device-sdk": "file:/tmp/psy-foundation/packages/device-sdk",
+    "@psy-foundation/protocol": "file:/tmp/psy-foundation/packages/protocol",
+    "@psy-foundation/transport": "file:/tmp/psy-foundation/packages/transport"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

@@ -59,6 +59,11 @@ export class SamplerDevice implements PsyDevice {
   notesTriggered = 0
   notesSkipped = 0
 
+  /** Last received transport (for diagnostics/integration tests). */
+  get lastTransport(): MusicalTransport | null { return this.transport }
+  /** Last received context (for diagnostics/integration tests). */
+  get lastContext(): MusicalContext | null { return this.context }
+
   constructor(opts: SamplerDeviceOptions) {
     this.opts = opts
   }
@@ -71,7 +76,7 @@ export class SamplerDevice implements PsyDevice {
       outputs: 1,
       voices: this.opts.voiceCount,
       latencyMs: 12, // 25ms timer / 2 + scheduling jitter
-      roles: ['sampler'],
+      roles: ['sampler', 'kick', 'bass', 'hat', 'perc', 'snare', 'clap', 'lead', 'fx'],
     }
   }
 
