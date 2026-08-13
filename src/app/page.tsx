@@ -50,6 +50,7 @@ import {
   PATTERN_PRESETS,
   type PatternPreset,
 } from '@/lib/pattern-persistence'
+import { saveSessionState, loadSessionState, type SessionState } from '@/lib/session-persistence'
 import { renderAndDownloadWavLive } from '@/lib/wav-export'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
@@ -1138,17 +1139,20 @@ export default function Home() {
   const togglePlay = React.useCallback(() => {
     const director = directorRef.current
     const bundle = bundleRef.current
+    const ctx = ctxRef.current
     if (!director) return
     exportStartedRef.current = false
     if (director.isRunning) {
       director.stop()
-      // FIX Bug 1: actually stop audio — stop scheduler + panic voices.
       bundle?.scheduler.stop()
       bundle?.voicePool.panic()
       setIsPlaying(false)
     } else {
+      // P2: Resume AudioContext (browser may have suspended it on tab-switch).
+      if (ctx && ctx.state === 'suspended') {
+        ctx.resume().catch(() => {})
+      }
       director.start()
-      // FIX Bug 1: restart scheduler for new playback.
       bundle?.scheduler.start()
       setIsPlaying(true)
     }
@@ -1372,6 +1376,12 @@ export default function Home() {
   })
 
   // ─── Cleanup ───────────────────────────────────────────────────────────────
+
+  // P1: Autosave session state (BPM, swing, master, section, energy, busState).
+  React.useEffect(() => {
+    const state: SessionState = { bpm, swing, masterVolume, section, energy, busState }
+    saveSessionState(state)
+  }, [bpm, swing, masterVolume, section, energy, busState])
 
   React.useEffect(() => {
     return () => {

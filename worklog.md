@@ -1140,3 +1140,37 @@ Stage Summary:
 - Top bug: STOP doesn't immediately stop audio (active voices decay for up to 1.5s after STOP).
 - Second bug: BPM changes mid-bar are dropped by host's revision-based transport dedup.
 - Third bug: event log only shows ~1 entry per step (dedup by `at`).
+
+---
+Task ID: EDGE-1
+Agent: user-journey-qa
+Task: Simulate 12 real user journeys and find what breaks
+
+Work Log:
+- Read /home/z/my-project/src/app/page.tsx (1564 lines, full UI).
+- Read /home/z/my-project/src/lib/demo-director.ts (DemoDirector: setPattern, setBpm, setContext, tick, scheduler lookahead 120ms).
+- Read /home/z/my-project/src/lib/demo-transport.ts (DemoTransport: setBpm re-anchors origin, snapshot derives revision from bar).
+- Read /home/z/my-project/src/lib/pattern-persistence.ts (saveToSlot/loadFromSlot/autosavePattern/loadAutosave, validatePattern enforces 9 roles × 16 booleans).
+- Read /home/z/my-project/src/lib/use-keyboard-shortcuts.ts (Space → togglePlay, Escape → stop; ignores INPUT/SELECT/TEXTAREA focus).
+- Read /home/z/my-project/src/lib/wav-export.ts (renderAndDownloadWavLive: MediaRecorder + MediaStreamDestination, 8s real-time, disconnects dest on stop/error).
+- Read /home/z/my-project/src/psy-sampler/audio-graph.ts (setBusGain respects mute; applySolo mutes non-soloed buses via input.gain; no separate solo-muted state).
+- Read /home/z/my-project/src/psy-sampler/device.ts (onTransport syncs delay to BPM; onContext stores but doesn't use; lastContext/lastTransport exposed for debug).
+- Read /home/z/my-project/src/psy-sampler/realization-scheduler.ts (120ms lookahead, drops stale events >50ms late, 25ms timer tick).
+- Read /home/z/my-project/src/psy-sampler/voice.ts (per-source gain fade-out on steal; panic() stops current source).
+- Read /home/z/my-project/src/psy-foundation-shim/host.ts (pushTransport dedup disabled via transportDedupByRevision:false in page.tsx line 987; pushContext always propagates).
+- Read /home/z/my-project/src/app/layout.tsx (NO viewport export — relies on Next.js default meta).
+- Verified each of the 12 scenarios against the actual code paths.
+
+Stage Summary:
+- Scenarios that BREAK: 0 (no crashes, no hard failures).
+- Scenarios that are PARTIAL: 2 (#10 mobile layout, #11 autosave scope).
+- Scenarios that WORK: 10 (#1, #2, #3, #4, #5, #6, #7, #8, #9, #12).
+- Notable UX issues found (not crashes):
+  * #1: ~120ms transition lag when switching presets mid-playback (scheduler lookahead already queued old-pattern events).
+  * #2: No "clear pattern" button exists in UI — CLR on slots clears the slot, not the pattern editor.
+  * #3: If user was NOT playing, clicks EXPORT, then clicks STOP mid-export → export records silence for remaining duration (exportStartedRef reset by togglePlay, but MediaRecorder keeps running).
+  * #5: Rapid BPM drag causes minor timing artifact (pending queued events fire at old times; new events use new BPM) — no glitch, acceptable.
+  * #7: Space intercepted correctly when focus is on INPUT/SELECT/TEXTAREA; Radix Slider thumb (span) does NOT intercept Space — could accidentally toggle play if user presses Space while a slider is focused.
+  * #8: 60ms intentional gap on PLAY restart (nextNoteTime = currentTime + 0.06).
+  * #10: Pattern grid buttons ~14px on 375px width (below 44px touch target); mixer M/S buttons ~30px tall (borderline); slot SAVE/LOAD/CLR buttons ~22px tall (too small).
+  * #11: Only pattern is autosaved; BPM, swing, master volume, section, energy, and bus state are NOT persisted to localStorage — lost on reload.

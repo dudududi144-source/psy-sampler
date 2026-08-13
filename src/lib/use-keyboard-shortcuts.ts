@@ -26,6 +26,10 @@ export function useKeyboardShortcuts(opts: KeyboardShortcutsOptions): void {
       if (target.tagName === 'INPUT' || target.tagName === 'SELECT' || target.tagName === 'TEXTAREA') {
         return
       }
+      // P3: Don't intercept if user is interacting with a slider (role="slider").
+      if (target.getAttribute('role') === 'slider') {
+        return
+      }
 
       switch (e.code) {
         case 'Space':
