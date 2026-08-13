@@ -28,6 +28,7 @@ import {
   SamplerDevice,
   wireSchedulerTrigger,
   parseChannel,
+  type SampleCategory,
 } from '../../src/psy-sampler'
 import { SampleLoader } from '../../src/psy-sampler/loader'
 import { VoicePool } from '../../src/psy-foundation-shim'
@@ -158,7 +159,7 @@ class TestSamplerBridge {
 
 // ─── Fake sample assets for testing (no real WAV decode) ─────────────────────
 
-function makeFakeAsset(id: string, category: string, rootNote = 33): import('../../src/psy-sampler').SampleAsset {
+function makeFakeAsset(id: string, category: SampleCategory, rootNote = 33): import('../../src/psy-sampler').SampleAsset {
   const fakeBuffer = {
     duration: 0.3, sampleRate: 44100, numberOfChannels: 1, length: 13230,
     getChannelData: () => new Float32Array(13230),

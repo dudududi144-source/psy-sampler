@@ -34,6 +34,8 @@ export interface SamplerBundle {
   voicePool: VoicePool<SampleVoice>
   /** Load samples from the manifest. Must be called before the device can play. */
   load: () => Promise<{ loaded: number; skipped: number; total: number }>
+  /** Dispose all resources (scheduler, voice pool, audio graph). */
+  dispose: () => void
 }
 
 /**

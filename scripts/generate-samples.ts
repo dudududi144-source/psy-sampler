@@ -14,9 +14,11 @@
  */
 
 import { writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { join, dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const SAMPLE_RATE = 44100
+// @ts-ignore — import.meta.dir is a Bun runtime API
 const OUTPUT_DIR = join(import.meta.dir, '..', 'public', 'samples')
 
 // ─── WAV writer (16-bit PCM, mono) ───────────────────────────────────────────

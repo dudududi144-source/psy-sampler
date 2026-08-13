@@ -20,7 +20,7 @@ import {
   wireSchedulerTrigger,
 } from '../../src/psy-sampler'
 import { VoicePool, InMemoryChannel, DeviceHost } from '../../src/psy-foundation-shim'
-import type { SampleAsset, SampleManifestEntry } from '../../src/psy-sampler'
+import type { SampleAsset, SampleManifestEntry, SampleCategory } from '../../src/psy-sampler'
 
 // ─── Stub AudioContext that supports offline rendering ──────────────────────
 // We can't use real OfflineAudioContext in bun:test (no DOM), so we simulate
@@ -102,7 +102,7 @@ class RenderContext {
 
 // ─── Fake sample assets ──────────────────────────────────────────────────────
 
-function makeFakeAsset(id: string, category: string, rootNote = 33): SampleAsset {
+function makeFakeAsset(id: string, category: SampleCategory, rootNote = 33): SampleAsset {
   const fakeBuffer = {
     duration: 0.3, sampleRate: 44100, numberOfChannels: 1, length: 13230,
     getChannelData: () => new Float32Array(13230),

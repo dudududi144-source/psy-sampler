@@ -57,7 +57,7 @@ describe('VoicePool<TestVoice>', () => {
   })
 
   it('never creates more voices than maxVoices', () => {
-    const allocations = []
+    const allocations: TestVoice[] = []
     for (let i = 0; i < 100; i++) {
       const v = pool.allocate()
       v.active = true

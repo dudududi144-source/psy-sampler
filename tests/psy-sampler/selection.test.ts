@@ -7,11 +7,11 @@ import {
   SampleLibrary,
   SampleLoader,
 } from '../../src/psy-sampler'
-import type { SampleAsset, SampleManifestEntry } from '../../src/psy-sampler'
+import type { SampleAsset, SampleManifestEntry, SampleCategory, SelectionOutput } from '../../src/psy-sampler'
 import { Rng } from '../../src/psy-foundation-shim'
 
 // Minimal in-memory sample for testing (no AudioBuffer needed for selection logic).
-function makeFakeAsset(id: string, category: string, subcategory: string, rootNote = 33): SampleAsset {
+function makeFakeAsset(id: string, category: SampleCategory, subcategory: string, rootNote = 33): SampleAsset {
   const fakeBuffer = {
     duration: 0.3, sampleRate: 44100, numberOfChannels: 1, length: 13230,
     getChannelData: () => new Float32Array(13230),
@@ -70,7 +70,7 @@ describe('SelectionPolicy — determinism', () => {
     // Run a 8-phrase sequence twice with fresh policy instances.
     const runOnce = () => {
       const policy = new SelectionPolicy(lib)
-      const outputs = []
+      const outputs: Array<SelectionOutput | null> = []
       for (let phrase = 0; phrase < 8; phrase++) {
         const r = policy.select({
           role: 'kick', bank: null, velocity: 0.8,
@@ -92,7 +92,7 @@ describe('SelectionPolicy — determinism', () => {
     const lib = makeLibraryWith(makeFakeAsset('kick-1', 'kick', 'a'))
     const runOnce = () => {
       const policy = new SelectionPolicy(lib)
-      const out = []
+      const out: string[] = []
       for (let phrase = 0; phrase < 8; phrase++) {
         out.push(JSON.stringify(policy.select({
           role: 'kick', bank: null, velocity: 0.8,
@@ -185,8 +185,8 @@ describe('SelectionPolicy — determinism', () => {
       makeFakeAsset('kick-4', 'kick', 'd'),
     )
     const policy = new SelectionPolicy(lib)
-    const seq1 = []
-    const seq2 = []
+    const seq1: string[] = []
+    const seq2: string[] = []
     for (let phrase = 0; phrase < 8; phrase++) {
       seq1.push(policy.select({ role: 'kick', bank: null, velocity: 0.8, phraseIndex: phrase, seed: 1 })!.sampleId)
       seq2.push(policy.select({ role: 'kick', bank: null, velocity: 0.8, phraseIndex: phrase, seed: 999 })!.sampleId)
