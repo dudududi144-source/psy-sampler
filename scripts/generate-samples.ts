@@ -163,9 +163,122 @@ function genBassDeep(): Float32Array {
   return out
 }
 
+// ─── Additional sample generators ────────────────────────────────────────────
+
+/** Snare: noise burst + tone body, fast decay. */
+function genSnare(): Float32Array {
+  const dur = 0.2
+  const n = Math.floor(SAMPLE_RATE * dur)
+  const out = new Float32Array(n)
+  for (let i = 0; i < n; i++) {
+    const t = i / SAMPLE_RATE
+    const env = expEnv(t, 0.08)
+    const noiseBurst = noise() * env * 0.6
+    const tone = sine(180, t) * expEnv(t, 0.05) * 0.3
+    out[i] = (noiseBurst + tone) * 0.8
+  }
+  return out
+}
+
+/** Shaker: filtered noise with short decay, softer than hat. */
+function genShaker(): Float32Array {
+  const dur = 0.08
+  const n = Math.floor(SAMPLE_RATE * dur)
+  const out = new Float32Array(n)
+  let prev = 0
+  const lpCoeff = 0.15
+  for (let i = 0; i < n; i++) {
+    const t = i / SAMPLE_RATE
+    const env = expEnv(t, 0.03)
+    prev = prev + (noise() - prev) * lpCoeff
+    out[i] = prev * env * 0.5
+  }
+  return out
+}
+
+/** Tom: sine with pitch drop 250→150 Hz, medium decay. */
+function genTom(): Float32Array {
+  const dur = 0.3
+  const n = Math.floor(SAMPLE_RATE * dur)
+  const out = new Float32Array(n)
+  for (let i = 0; i < n; i++) {
+    const t = i / SAMPLE_RATE
+    const freq = 250 * Math.exp(-t * 5) + 150
+    const env = expEnv(t, 0.15)
+    out[i] = sine(freq, t) * env * 0.7
+  }
+  return out
+}
+
+/** Ride: metallic ping (multiple high sines + noise). */
+function genRide(): Float32Array {
+  const dur = 0.5
+  const n = Math.floor(SAMPLE_RATE * dur)
+  const out = new Float32Array(n)
+  for (let i = 0; i < n; i++) {
+    const t = i / SAMPLE_RATE
+    const env = expEnv(t, 0.3)
+    const metallic = (sine(1200, t) + sine(1800, t) * 0.6 + sine(2400, t) * 0.3) / 1.9
+    const shimmer = noise() * 0.2
+    out[i] = (metallic + shimmer) * env * 0.4
+  }
+  return out
+}
+
+/** Open hat: longer noise decay with HP filter simulation. */
+function genOpenHat(): Float32Array {
+  const dur = 0.3
+  const n = Math.floor(SAMPLE_RATE * dur)
+  const out = new Float32Array(n)
+  let prev = 0
+  const hpCoeff = 0.02
+  for (let i = 0; i < n; i++) {
+    const t = i / SAMPLE_RATE
+    const env = expEnv(t, 0.15)
+    const raw = noise()
+    prev = prev + (raw - prev) * hpCoeff
+    const hp = raw - prev
+    out[i] = hp * env * 0.4
+  }
+  return out
+}
+
+/** FX sweep: rising filter sweep for transitions. */
+function genFxSweep(): Float32Array {
+  const dur = 1.0
+  const n = Math.floor(SAMPLE_RATE * dur)
+  const out = new Float32Array(n)
+  let prev = 0
+  for (let i = 0; i < n; i++) {
+    const t = i / SAMPLE_RATE
+    const env = Math.min(1, t / 0.2) * Math.exp(-t / 0.8)
+    // Rising filter cutoff
+    const cutoff = 0.01 + (t / dur) * 0.3
+    prev = prev + (noise() - prev) * cutoff
+    out[i] = prev * env * 0.5
+  }
+  return out
+}
+
+/** Clap variant: multi-burst noise for variety. */
+function genClapVariant(): Float32Array {
+  const dur = 0.15
+  const n = Math.floor(SAMPLE_RATE * dur)
+  const out = new Float32Array(n)
+  for (let i = 0; i < n; i++) {
+    const t = i / SAMPLE_RATE
+    // 3 quick bursts
+    const burst1 = t < 0.01 ? noise() * expEnv(t, 0.005) : 0
+    const burst2 = t >= 0.01 && t < 0.02 ? noise() * expEnv(t - 0.01, 0.005) : 0
+    const burst3 = t >= 0.02 ? noise() * expEnv(t - 0.02, 0.08) : 0
+    out[i] = (burst1 + burst2 + burst3) * 0.5
+  }
+  return out
+}
+
 // ─── Main ────────────────────────────────────────────────────────────────────
 
-console.log('Generating procedural samples for PSY Sampler MVP library...')
+console.log('Generating procedural samples for PSY Sampler library...')
 
 const samples: Array<{ name: string; gen: () => Float32Array }> = [
   { name: 'kick_deep.wav', gen: genKickDeep },
@@ -174,6 +287,13 @@ const samples: Array<{ name: string; gen: () => Float32Array }> = [
   { name: 'perc_2.wav', gen: genPerc2 },
   { name: 'texture_pad.wav', gen: genTexturePad },
   { name: 'bass_deep.wav', gen: genBassDeep },
+  { name: 'snare.wav', gen: genSnare },
+  { name: 'shaker.wav', gen: genShaker },
+  { name: 'tom.wav', gen: genTom },
+  { name: 'ride.wav', gen: genRide },
+  { name: 'open_hat_gen.wav', gen: genOpenHat },
+  { name: 'fx_sweep.wav', gen: genFxSweep },
+  { name: 'clap_variant.wav', gen: genClapVariant },
 ]
 
 for (const s of samples) {

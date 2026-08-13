@@ -36,6 +36,8 @@ import { DemoDirector, DEFAULT_PATTERN, type Pattern } from '@/lib/demo-director
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { Badge } from '@/components/ui/badge'
+import { ErrorBoundary } from '@/components/error-boundary'
+import { useKeyboardShortcuts } from '@/lib/use-keyboard-shortcuts'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -600,6 +602,16 @@ export default function Home() {
     setPattern(structuredClone(directorRef.current!.getPattern()))
   }, [])
 
+  // Keyboard shortcuts (Space=play/stop, Escape=stop+panic)
+  useKeyboardShortcuts({
+    onTogglePlay: togglePlay,
+    onStop: () => {
+      directorRef.current?.stop()
+      setIsPlaying(false)
+    },
+    enabled: initialized,
+  })
+
   // ─── Cleanup ───────────────────────────────────────────────────────────────
 
   React.useEffect(() => {
@@ -615,10 +627,15 @@ export default function Home() {
   // ─── Render ────────────────────────────────────────────────────────────────
 
   if (!initialized) {
-    return <InitOverlay onInit={initializeAudio} />
+    return (
+      <ErrorBoundary>
+        <InitOverlay onInit={initializeAudio} />
+      </ErrorBoundary>
+    )
   }
 
   return (
+    <ErrorBoundary>
     <div className="relative min-h-screen overflow-hidden bg-zinc-950 text-zinc-100">
       {/* Ambient gradient */}
       <div
@@ -717,5 +734,6 @@ export default function Home() {
         </footer>
       </div>
     </div>
+    </ErrorBoundary>
   )
 }
