@@ -1250,3 +1250,42 @@ Stage Summary:
   3. Song mode: chain saved slots into A→B→A→C arrangement — L — transforms loop toy into track sketcher
   4. Pattern length selector (8 / 16 / 32 steps) + drag-to-paint — M — unlocks 2-bar phrases + buttery UX
   5. Generative auto-evolve mode (mutate pattern every 4 bars via seeded SelectionPolicy) — S — showcases the project's deterministic-selection USP
+
+---
+Task ID: SPLIT-1
+Agent: react-refactoring-expert
+Task: Split page.tsx monolith into 9 component files
+
+Work Log:
+- Read /home/z/my-project/src/app/page.tsx (1644 lines) end-to-end to map component boundaries.
+- Captured baseline verification: tsc --noEmit → 10 errors all from `bun:test` (excluded by task rules); eslint → 0 errors; bun test tests/psy-sampler/ → 112 pass / 1 skip / 0 fail.
+- Inspected tsconfig.json (paths `@/*` → `./src/*`), eslint.config.mjs (no-unused-vars off, no-explicit-any off), package.json scripts (lint = `eslint .`), and existing `src/components/error-boundary.tsx` + `ui/*` shadcn primitives to match conventions.
+- Created `/home/z/my-project/src/components/types.ts` — pure type/const module exporting DeviceStats, EventLogEntry, LoadProgress, BusMixerState plus the shared constants ROLES, STEPS, ROLE_COLORS, ROLE_LABEL, BUS_NAMES, BUS_COLORS, BUS_ROLES, SECTIONS, EVENT_LOG_MAX, NOW_PLAYING_MS. Imports only types from `@/psy-sampler` and `@/psy-foundation-shim`.
+- Created `/home/z/my-project/src/components/init-overlay.tsx` (111 lines) — `InitOverlay` (loading progress, error state, retry, keyboard hint). 'use client'. Imports Button + LoadProgress type.
+- Created `/home/z/my-project/src/components/stat-badge.tsx` (19 lines) — `Stat` colour-mapped value/label tile. 'use client'.
+- Created `/home/z/my-project/src/components/debug-panel.tsx` (162 lines) — `DebugPanel` with stats grid + last-event + transport/context + capabilities + scrollable event log (auto-scroll). 'use client'. Imports Stat, parseChannel, ROLE_COLORS, EVENT_LOG_MAX, DeviceStats, EventLogEntry.
+- Created `/home/z/my-project/src/components/pattern-editor.tsx` (120 lines) — `PatternEditor` 9×16 step grid with current-step + now-playing-row highlight + CLR button. 'use client'. Imports ROLES, STEPS, ROLE_COLORS, ROLE_LABEL, NOW_PLAYING_MS.
+- Created `/home/z/my-project/src/components/sample-library.tsx` (131 lines) — `WaveformThumbnail` (DPR-aware mini canvas from Float32Array mono data) + `SampleLibrary` (audition list with COMMERCIAL/NON-COMM badge + now-playing glow). 'use client'. Imports Badge, ROLE_COLORS, NOW_PLAYING_MS.
+- Created `/home/z/my-project/src/components/visualizer.tsx` (86 lines) — `Visualizer` DPR-aware canvas frequency-bar analyser with ResizeObserver + trail-clear + emerald/fuchsia/violet hue zones. 'use client'.
+- Created `/home/z/my-project/src/components/mixer.tsx` (106 lines) — `Mixer` 3-bus panel (gain slider + mute + solo + roles indicator). 'use client'. Imports Slider, BUS_NAMES, BUS_COLORS, BUS_ROLES, ROLE_COLORS, ROLE_LABEL, BusMixerState.
+- Created `/home/z/my-project/src/components/presets-panel.tsx` (95 lines) — `PresetsPanel` (6 genre preset buttons) + `PatternSlots` (4-slot save/load/clear). 'use client'. Imports PATTERN_PRESETS + PatternPreset from pattern-persistence.
+- Rewrote `/home/z/my-project/src/app/page.tsx` (807 lines) to import the 8 components + types from `@/components/*`. Kept the StubDevice class, all Home state (20 useState + 14 useRef), initializeAudio, transport/handler callbacks (togglePlay, stopPlayback, onBpmChange, onSwingChange, onMasterVolumeChange, onSectionChange, onEnergyChange, onToggleStep, onClearPattern, auditionSample, onBusGain, onBusMute, onBusSolo, loadPreset, saveToSlotN, loadFromSlotN, clearSlotN, handleExportWav), useKeyboardShortcuts, cleanup effects, the full JSX layout (header + transport bar + PatternEditor/DebugPanel grid + Mixer/PresetsPanel/PatternSlots grid + SampleLibrary/Visualizer grid + footer), and the presetNameFor helper. Removed now-unused Badge + PATTERN_PRESETS imports from page.tsx. Kept the previously-unused `loadSessionState` + `MusicalContext` + `MusicalTransport` imports exactly as they were (lint config has no-unused-vars off; no functional change).
+- Re-ran all three verification gates after the split: `npx tsc --noEmit` → only the 10 pre-existing `bun:test` errors (excluded); `bun run lint` → 0 errors; `bun test tests/psy-sampler/` → 112 pass / 1 skip / 0 fail (identical to baseline).
+- Confirmed all 9 created files are self-contained (each has 'use client' where React hooks or browser APIs are used: every component file; types.ts has no directive since it's a pure module).
+- No functionality, styling, props, handlers, comments, or behaviour changed — code was moved verbatim into the new files with only the import lists adjusted to reference the new module locations.
+
+Stage Summary:
+- page.tsx reduced from 1644 → 807 lines (the Home component body + StubDevice class + presetNameFor helper + transport-bar JSX + audio-init function).
+- 8 component files + 1 shared types file created under /home/z/my-project/src/components/:
+  - types.ts (100 lines) — shared types + constants
+  - init-overlay.tsx (111 lines) — InitOverlay
+  - stat-badge.tsx (19 lines) — Stat
+  - debug-panel.tsx (162 lines) — DebugPanel
+  - pattern-editor.tsx (120 lines) — PatternEditor
+  - sample-library.tsx (131 lines) — SampleLibrary + WaveformThumbnail
+  - visualizer.tsx (86 lines) — Visualizer
+  - mixer.tsx (106 lines) — Mixer
+  - presets-panel.tsx (95 lines) — PresetsPanel + PatternSlots
+- Total split-file LOC = 930; page.tsx = 807; combined = 1737 (slightly more than the original 1644 due to per-file import boilerplate + 'use client' directives + section comment headers — expected for a split).
+- All three verification gates pass identically to baseline: tsc (10 pre-existing bun:test errors only), lint (0 errors), tests (112 pass / 1 skip / 0 fail, 4502 expects).
+- Note: page.tsx came in at 807 lines rather than the ~300-400 estimate. The remaining bulk is intrinsic to Home: ~20 useState + 14 useRef + a 165-line initializeAudio async function + 18 transport/handler useCallbacks + ~110-line transport-bar JSX + ~75-line main render layout. Hitting 300-400 would require extracting either the audio-init orchestrator into a hook or the transport bar into its own component — out of scope for this task which specified exactly 9 files (8 components + types.ts). Functionality is 100% preserved.
