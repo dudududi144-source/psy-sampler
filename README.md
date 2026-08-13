@@ -1,147 +1,164 @@
 # PSY Sampler Device
 
-> A canonical family member of the PSY music device family, implementing the `PsyDevice` interface from `psy-foundation`.
+> A canonical realization device in the PSY family. Consumes `MusicalEvent`s from a `DeviceHost` and renders them as sample-based audio.
 
 ```
-                 MUSICAL MODEL
-                       │
-                  FOUNDATION
-                       │
-                  DEVICE HOST
-                       │
-        ┌──────────────┼──────────────┐
-        │              │              │
-      SYNTH           DRUMS        SAMPLER  ← this repo
-        │              │              │
-        └──────────────┼──────────────┘
-                       │
-                   AUDIO GRAPH
-                       │
-                    OUTPUT
+                 PSY4 (Host)
+                 │
+           CausalComposer
+                 │
+         CausalNoteEvent
+                 │
+          ┌──────┴──────┐
+          │             │
+    MaterialRealizer   SamplerBridge
+    (PSY4 synth)       │
+                      DeviceHost
+                        │
+                    SamplerDevice
+                      (HOW only)
+                        │
+                  SampleVoice + VoicePool
+                        │
+                    AudioGraph
+                        │
+                  PSY4 Engine Bus
+                  (shared master)
 ```
 
-## What this is
+## What This Is
 
-The PSY Sampler is a **device** (HOW layer) — not a synthesizer, not a composer, not a transport. It consumes canonical `MusicalEvent`s (`NoteEvent`) from a `DeviceHost` and renders them as sample-based audio via a pooled voice architecture with deterministic selection.
+The PSY Sampler is a **realization device** — it receives `NoteEvent`s from a host (PSY4) and renders them as audio using sample playback. It does NOT compose, schedule, or own transport. It is a pure HOW layer.
 
-It fills the documented gap in the PSY family architecture: the third device alongside SYNTH and DRUMS.
+**Host:** PSY4 (via `SamplerBridge` → `DeviceHost` → `SamplerDevice`)
+**Audio:** Shared `AudioContext` + shared engine bus (no duplicate audio graph)
+**Transport:** Consumed from host (no `DemoTransport` in production)
+**Samples:** 19 procedural samples, all commercially usable
 
 ## Architecture
 
-See the two deliverable docs for the full design:
+| Layer | Owner | What |
+|---|---|---|
+| **WHAT** (composition) | PSY4 `CausalComposer` | Decides what notes to play, when |
+| **Contract** | `PsyDevice` interface | `onTransport`, `onContext`, `onEvent` |
+| **Routing** | `DeviceHost` + `InMemoryChannel` | Fan-out events to registered devices |
+| **HOW** (realization) | `SamplerDevice` | Sample selection, voice allocation, audio rendering |
+| **Audio** | Shared `AudioContext` | One context per host, injected into device |
 
-- **[`PSY-SAMPLER-ARCHITECTURE-AUDIT.md`](./PSY-SAMPLER-ARCHITECTURE-AUDIT.md)** — deep audit of all 6 PSY family repos, contract mapping, REUSE/ADAPT/REWRITE/REJECT classification, gap analysis, repo selection rationale.
-- **[`PSY-SAMPLER-IMPLEMENTATION-PLAN.md`](./PSY-SAMPLER-IMPLEMENTATION-PLAN.md)** — file-by-file implementation plan, test matrix, performance criteria, acceptance checklist.
+## Integration with PSY4
 
-### Key decisions
+PSY4's `page.tsx` loads the sampler bundle and wires it:
 
-| Decision | Rationale |
-|---|---|
-| New dedicated repo (not inside `psy-foundation`) | Foundation's CONTRIBUTING.md rule #6: "No device policy. Another device does not belong here." |
-| Implements `PsyDevice` verbatim (via shim) | Canonical contract, not a fork. Shim is a verbatim copy with file-of-origin headers. |
-| Main-thread `AudioBufferSourceNode` (not AudioWorklet) | Native Web Audio primitive for sample playback. Worklet is for custom DSP — not justified by audit. |
-| Deterministic `SelectionPolicy` (seeded `Rng`) | No `Math.random()` in selection path. Same inputs → same output. |
-| Phrase-locked round-robin | Variants rotate only on phrase boundary. Kick pitch variance ≤ ±0.5% (phase-safe). |
-| Sample bank in private `Map` (not `MaterialLibrary`) | Foundation has no `'sample'` Material kind (GAP-S1). Documented as a gap to lobby for. |
+```ts
+const { SamplerBridge } = await import('../lib/sampler-bridge')
+const bridge = new SamplerBridge()
+e.attachSamplerBridge(bridge)
 
-## Quickstart
+// On audio ready:
+const samplerModule = await import('/psy-sampler.js')
+const bundle = samplerModule.createSamplerDevice({
+  audioContext: e.audioContext,      // SHARED
+  manifestUrl: '/samples/manifest.json',
+  outputNode: e.engineBusInput,      // SHARED master bus
+})
+bridge.register(bundle.device)
+bundle.device.onStart?.()
+await bundle.load()
+```
+
+PSY4's `psyLive.ts` publishes events:
+```ts
+// In scheduleStep(), after MaterialRealizer:
+if (this.samplerBridge) {
+  this.samplerBridge.publishNote(ev.at, {
+    voice: ev.channel, midi: ev.note, velocity: ev.velocity
+  }, false, ev.duration)
+}
+```
+
+## Features
+
+- **19 procedural samples** (kick/bass/lead/hat/clap/perc/texture/fx) — all CC0/no-copyright
+- **Deterministic selection** — stateless, seeded (mulberry32). Same inputs → same output
+- **Voice pool** — 32 preallocated voices, per-source gain for click-free stealing
+- **Sidechain ducking** — kick ducks music+atmos buses (8ms attack, 150ms release)
+- **3-bus mixer** — drum/music/atmos with gain/mute/solo
+- **6 genre presets** — Psytrance/Techno/Progressive/Breaks/Minimal/Dark
+- **Pattern save/load** — 4 localStorage slots + autosave
+- **WAV export** — MediaRecorder with mimeType fallback (browser-portable)
+- **Mobile UX** — 44px touch targets, responsive layout, no iOS zoom
+- **ErrorBoundary** — graceful recovery from render errors
+- **Keyboard shortcuts** — Space=play/stop, Escape=stop
+
+## Key Files
+
+```
+src/psy-sampler/           ← the device package (HOW only)
+├── device.ts              ← SamplerDevice implements PsyDevice
+├── selector.ts            ← Deterministic, stateless sample selection
+├── voice.ts               ← SampleVoice (per-source gain, click-free steal)
+├── realization-scheduler.ts ← Device-local timing (fires at host-decided event.at)
+├── audio-graph.ts         ← 3-bus mixer + sidechain + FX
+├── library.ts             ← Parallel sample loading (concurrency 6)
+├── loader.ts              ← fetch + decodeAudioData + feature extraction
+├── manifest.ts            ← Verification-gated loader (VERIFIED/PROCEDURAL only)
+├── provenance.ts          ← License enforcement
+├── variance-rules.ts      ← Phase-safe pitch/gain/pan rules
+├── factory.ts             ← createSamplerDevice() + dispose()
+└── index.ts               ← Public API barrel
+
+src/psy-foundation-shim/   ← Verbatim canonical contracts (PsyDevice, DeviceHost, etc.)
+src/lib/                   ← Demo harness (DemoDirector, DemoTransport — test only)
+src/app/page.tsx           ← Demo playground UI
+public/psy-sampler.js      ← UMD bundle for cross-repo loading
+public/samples/             ← 19 procedural WAVs + manifest.json
+tests/psy-sampler/          ← 98 tests (contract, selection, voice, stress, render-proof)
+```
+
+## Foundation Contract
+
+The sampler implements the canonical `PsyDevice` interface from `psy-foundation`:
+
+```typescript
+interface PsyDevice {
+  id: string
+  capabilities(): DeviceCapabilities
+  onTransport(transport: MusicalTransport): void
+  onContext(context: MusicalContext): void
+  onEvent(event: MusicalEvent): void
+  onStart?(): void
+  onStop?(): void
+  reportLatencyMs?(): number
+}
+```
+
+Via a **verbatim shim** (pinned to foundation commit `4ae95d3`). The shim is a temporary adapter — when `@psy-foundation/*` is published to npm, replace `@/psy-foundation-shim` imports with real package imports.
+
+## Determinism
+
+- `SelectionPolicy` is stateless — same `(seed, role, phraseIndex)` → same sample
+- `Rng` is mulberry32 (from foundation)
+- No `Math.random()` in selection path
+- Same event stream + same library → same audio output
+
+## Testing
 
 ```bash
-bun install
-bun run dev        # http://localhost:3000
+bun test tests/psy-sampler/  # 98 tests, 0 failures
+bun run lint                  # ESLint clean
+npx tsc --noEmit              # 0 TypeScript errors
 ```
 
-Click "Initialize Audio" → the device stack boots:
-1. `AudioContext` created
-2. `InMemoryChannel` + `DeviceHost` instantiated
-3. `SamplerDevice` created + registered with host
-4. `ReferenceDevice` stub registered (proves multi-device coexistence)
-5. `DemoDirector` instantiated (mini pattern player)
-6. MVP sample library loaded from `/samples/manifest.json` (12 samples, all commercially usable)
-
-Press **PLAY** → the director fires `NoteEvent`s on a 16-step grid → the sampler selects samples deterministically → voices trigger → audio plays.
-
-## Structure
-
-```
-src/
-├── psy-foundation-shim/       ← verbatim canonical contracts (PsyDevice, DeviceHost, VoicePool, Rng, MusicalEvent, MusicalTransport, MusicalContext, Channel)
-├── psy-sampler/               ← the device package
-│   ├── types.ts               ← SampleId, SampleMetadata, SampleAsset, SelectionInput, ...
-│   ├── provenance.ts          ← license validation (enforces "no sample without provenance")
-│   ├── manifest.ts            ← manifest schema + validation
-│   ├── loader.ts              ← fetch + decodeAudioData + feature extraction
-│   ├── library.ts             ← SampleLibrary (Map-backed store)
-│   ├── voice.ts               ← SampleVoice (AudioBufferSourceNode, linear interp, equal-power pan)
-│   ├── round-robin.ts         ← RoundRobinBank (phrase-locked, phase-safe)
-│   ├── selector.ts            ← SelectionPolicy (deterministic, context-aware)
-│   ├── scheduler.ts           ← RuntimeScheduler (25ms Worker timer, 100ms lookahead)
-│   ├── audio-graph.ts         ← bus routing (drum/music/atmos) + delay/reverb sends
-│   ├── device.ts              ← SamplerDevice implements PsyDevice
-│   ├── factory.ts             ← createSamplerDevice() wiring
-│   └── index.ts               ← public API barrel
-├── lib/
-│   └── demo-director.ts       ← mini musical director (16-step pattern player)
-└── app/
-    └── page.tsx               ← demo host UI
-
-public/samples/                ← MVP sample library (12 WAVs + manifest.json)
-tests/psy-sampler/             ← test matrix (59 tests, all passing)
-scripts/generate-samples.ts    ← procedural sample generator
-```
-
-## Tests
-
-```bash
-bun test tests/psy-sampler/
-```
-
-59 tests across 4 files:
-- `contract.test.ts` — PsyDevice implementation, DeviceHost registration, transport/context/event reception, multi-device coexistence
-- `selection.test.ts` — determinism, phrase-locking, pitch variance, Rng
-- `voice.test.ts` — VoicePool allocation/stealing, RoundRobinBank variance rules
-- `samples.test.ts` — manifest validation, provenance enforcement, missing-sample handling
-
-## WHAT/HOW boundary
-
-The sampler **never**:
-- Decides WHAT to play (host's director decides via `NoteEvent`s)
-- Decides WHEN to play (host sets `NoteEvent.at`)
-- Touches the transport (host owns `DemoTransport`/`TransportClock`)
-- Generates composition (foundation's music package does that)
-
-The sampler **does**:
-- Decide which sample variant to use (`SelectionPolicy`)
-- Decide pitch/gain/pan variance (`RoundRobinBank`)
-- Manage voice allocation (`VoicePool`)
-- Render audio (`SampleVoice` + `AudioGraph`)
-
-## Timing
-
-`AudioContext.currentTime` is the **only** musical clock. The 25ms Web Worker timer only wakes the scheduler — it is never the musical clock. No `Date.now()`, no `setInterval` as musical clock, no `Math.random()` in the selection path.
-
-## Sample provenance
-
-Every sample in `public/samples/manifest.json` carries full provenance:
-- `source`, `author`, `license`, `licenseUrl`, `commercialUse`, `attribution`, `dateAcquired`, `usageRestrictions`
-
-The sampler **refuses to load** any sample with `commercialUse: false`. Policy: "NEVER assume a random downloaded sample is commercially usable."
-
-The 12 MVP samples are:
-- 6 PSY3 procedural samples (licensed "no copyright restriction")
-- 6 procedurally generated by `scripts/generate-samples.ts` (licensed "no copyright restriction")
-
-## Foundation gaps documented
-
-The audit identified 10 gaps in `psy-foundation` for a sampler device. All are documented in `PSY-SAMPLER-ARCHITECTURE-AUDIT.md` §11. The most critical:
-
-| Gap | Workaround |
-|---|---|
-| No `'sample'` Material kind | Sampler keeps bank in private `Map<SampleId, SampleAsset>` |
-| `NoteEvent` too thin (no bank/slice) | Channel string convention: `"role:bank"` |
-| No runtime scheduler | `RuntimeScheduler` built (lookahead pattern) |
-| `PsyDevice.onTransport` takes v0 | Consume v0 today; migrate when foundation wires v1 |
+Test coverage:
+- Contract (11): PsyDevice implementation, DeviceHost registration, multi-device coexistence
+- Selection (20): Determinism, phrase-locking, pitch variance, bank filter
+- Voice (13): Pool allocation, stealing, panic, bounded concurrency
+- Samples (23): Manifest validation, provenance enforcement, verification gating
+- Stress (12): 1000 events, concurrent devices, memory stability
+- Render-proof (7): Pitch correctness, voice leak, determinism
+- Shim-sync (4): Foundation contract byte-equivalence
+- Integration (8): Cross-repo event flow simulation
 
 ## License
 
-MIT (matching `psy-foundation`). Samples are individually licensed per their manifest entries (all "no copyright restriction" for MVP).
+MIT. All samples are procedurally generated (no copyright restriction).
