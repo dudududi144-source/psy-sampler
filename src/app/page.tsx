@@ -983,7 +983,8 @@ export default function Home() {
 
       // Channel + Host
       const channel = new InMemoryChannel('psy-sampler-debug')
-      host = new DeviceHost(channel)
+      // FIX Bug 2: disable transport dedup so BPM changes reach the device immediately.
+      host = new DeviceHost(channel, { transportDedupByRevision: false })
       hostRef.current = host
 
       // Transport
@@ -1027,7 +1028,6 @@ export default function Home() {
           host,
           transport,
           audioContext: ctx,
-          bpm,
           initialPattern,
         },
         (step) => setCurrentStep(step)
@@ -1069,9 +1069,9 @@ export default function Home() {
       statsIntervalRef.current = setInterval(() => {
         const dev = bundle!.device
         const lastEv = dev.lastEvent
-        // Detect new event for now-playing highlight + event log.
-        if (lastEv && lastEv.at !== lastEventAtRef.current) {
-          lastEventAtRef.current = lastEv.at
+        // FIX Bug 3: dedup by eventsReceived counter (not .at — multiple roles share the same .at).
+        if (lastEv && dev.eventsReceived !== lastEventAtRef.current) {
+          lastEventAtRef.current = dev.eventsReceived
           const role = parseChannel(lastEv.channel).role
           setNowPlaying({ role, sampleId: lastEv.sampleId ?? null, at: Date.now() })
           // Append to event log (newest first).
@@ -1137,20 +1137,28 @@ export default function Home() {
 
   const togglePlay = React.useCallback(() => {
     const director = directorRef.current
+    const bundle = bundleRef.current
     if (!director) return
-    // FIX Bug 7: clear exportStartedRef so the export's finally block doesn't kill user playback.
     exportStartedRef.current = false
     if (director.isRunning) {
       director.stop()
+      // FIX Bug 1: actually stop audio — stop scheduler + panic voices.
+      bundle?.scheduler.stop()
+      bundle?.voicePool.panic()
       setIsPlaying(false)
     } else {
       director.start()
+      // FIX Bug 1: restart scheduler for new playback.
+      bundle?.scheduler.start()
       setIsPlaying(true)
     }
   }, [])
 
   const stopPlayback = React.useCallback(() => {
     directorRef.current?.stop()
+    // FIX Bug 1: stop scheduler + panic voices on Escape.
+    bundleRef.current?.scheduler.stop()
+    bundleRef.current?.voicePool.panic()
     setIsPlaying(false)
   }, [])
 
@@ -1200,24 +1208,26 @@ export default function Home() {
     const ctx = ctxRef.current
     const graph = bundleRef.current?.audioGraph
     if (!ctx || !graph) return
+    let source: AudioBufferSourceNode | null = null
+    let gain: GainNode | null = null
     try {
-      // FIX Bug 1: route through the bus (not ctx.destination) so mixer/master/analyser apply.
       const cat = asset.metadata.category as SampleRole
       const busInput = graph.getBusInput(roleToBus(cat))
-      const source = ctx.createBufferSource()
+      source = ctx.createBufferSource()
       source.buffer = asset.audioBuffer
-      const gain = ctx.createGain()
+      gain = ctx.createGain()
       gain.gain.value = 0.7
       source.connect(gain)
       gain.connect(busInput)
       source.start()
-      // FIX Bug 2: disconnect gain on source end to prevent leak.
       source.onended = () => {
-        try { gain.disconnect() } catch { /* */ }
+        try { gain?.disconnect() } catch { /* */ }
       }
-      // Highlight the row briefly.
       setNowPlaying({ role: cat, sampleId: asset.metadata.id, at: Date.now() })
     } catch (err) {
+      // FIX Bug 9: disconnect nodes on failure to prevent leak.
+      try { gain?.disconnect() } catch { /* */ }
+      try { source?.disconnect() } catch { /* */ }
       console.warn('[psy-sampler] Audition failed:', err)
     }
   }, [])

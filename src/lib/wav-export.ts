@@ -54,51 +54,6 @@ export function audioBufferToWavBlob(buffer: AudioBuffer): Blob {
 }
 
 /**
- * Render audio offline from a source node and trigger a WAV download.
- *
- * Creates an OfflineAudioContext, connects the source node to the offline
- * destination, renders, and downloads the result as a WAV file.
- *
- * This is browser-portable (no MediaRecorder needed).
- *
- * @param sourceNode The audio node to record (e.g. the master gain).
- * @param sampleRate The sample rate (from the live AudioContext).
- * @param durationSec How many seconds to render.
- * @param filename The download filename.
- */
-export async function renderAndDownloadWav(
-  sourceNode: AudioNode,
-  sampleRate: number,
-  durationSec: number,
-  filename: string
-): Promise<void> {
-  const length = Math.ceil(sampleRate * durationSec)
-  const offlineCtx = new OfflineAudioContext(2, length, sampleRate)
-
-  // Connect the source node to the offline destination.
-  // We create a temporary gain node as a tap point so we don't
-  // disconnect the source from its live destination.
-  const tap = offlineCtx.createGain()
-  tap.gain.value = 1
-
-  // We can't directly connect a node from a live AudioContext to an
-  // OfflineAudioContext. Instead, we use a MediaStreamAudioSourceNode
-  // from a MediaStreamDestination on the live context.
-  // But that requires real-time recording...
-  //
-  // Actually, the cleanest approach for a demo is to use MediaRecorder
-  // but with proper mimeType fallback. Let's do that.
-
-  // Find the live AudioContext from the sourceNode.
-  // Unfortunately, there's no public API to get the AudioContext from a node.
-  // The caller must pass it.
-  //
-  // Let's fall back to the MediaRecorder approach with mimeType fallback.
-
-  throw new Error('Use renderAndDownloadWavLive instead — needs the live AudioContext')
-}
-
-/**
  * Record audio from a live AudioContext's source node and download as WAV.
  *
  * Uses MediaRecorder with mimeType fallback chain for browser portability.
@@ -146,7 +101,7 @@ export async function renderAndDownloadWavLive(
   return new Promise((resolve, reject) => {
     recorder.onstop = async () => {
       try {
-        // Disconnect the tap.
+        // FIX Bug 6: disconnect the tap.
         try { sourceNode.disconnect(dest) } catch { /* */ }
 
         const blob = new Blob(chunks, { type: mimeType })
@@ -156,6 +111,8 @@ export async function renderAndDownloadWavLive(
         triggerDownload(wavBlob, filename)
         resolve()
       } catch (err) {
+        // FIX Bug 6: disconnect dest on error too.
+        try { sourceNode.disconnect(dest) } catch { /* */ }
         reject(err)
       }
     }

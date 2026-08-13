@@ -1090,3 +1090,53 @@ Work Log:
 
 Stage Summary:
 - 14 real bugs found (7 user-facing breakage, 6 moderate, 1 latent). Details in the returned report.
+
+---
+Task ID: RUTHLESS-1
+Agent: ruthless-qa
+Task: Final ruthless verification of all files
+
+Work Log:
+- Read /home/z/my-project/src/app/page.tsx (1553 lines, full UI).
+- Read /home/z/my-project/src/psy-sampler/voice.ts (voice steal logic).
+- Read /home/z/my-project/src/psy-sampler/audio-graph.ts (mixer methods).
+- Read /home/z/my-project/src/psy-sampler/realization-scheduler.ts.
+- Read /home/z/my-project/src/psy-sampler/device.ts.
+- Read /home/z/my-project/src/psy-sampler/selector.ts.
+- Read /home/z/my-project/src/psy-sampler/types.ts (parseChannel, roleToBus).
+- Read /home/z/my-project/src/psy-sampler/factory.ts, index.ts, library.ts, loader.ts, manifest.ts, provenance.ts, variance-rules.ts.
+- Read /home/z/my-project/src/lib/demo-director.ts.
+- Read /home/z/my-project/src/lib/demo-transport.ts.
+- Read /home/z/my-project/src/lib/wav-export.ts.
+- Read /home/z/my-project/src/lib/pattern-persistence.ts.
+- Read /home/z/my-project/src/lib/timer-worker.ts.
+- Read /home/z/my-project/src/lib/use-keyboard-shortcuts.ts.
+- Read /home/z/my-project/public/samples/manifest.json (19 samples).
+- Read /home/z/my-project/src/components/error-boundary.tsx.
+- Read /home/z/my-project/src/psy-foundation-shim/{host,device,protocol,transport,voice-pool,index}.ts.
+- Verified DemoDirector.setPattern() exists (line 136-138). ✓
+- Verified DemoDirector.setSwing() exists (line 115-117). ✓
+- Verified AudioGraph.setBusGain() clamps [0,1.5] and respects mute. ✓
+- Verified AudioGraph.applySolo() mutes non-soloed buses. ✓
+- Verified renderAndDownloadWavLive connects sourceNode to MediaStreamDestination. ✓
+- Verified DemoTransport.snapshot() derives revision from bar (revision = max(0,bar)+1). ✓
+- Verified ErrorBoundary catches render-lifecycle errors. ✓
+- Verified visualizer renders (DPR-aware canvas, RAF loop). ✓
+- Verified no React hooks violations (all hooks at top level, before conditional returns). ✓
+- FOUND: parseChannel does NOT validate role (blind cast). 
+- FOUND: pattern-persistence does NOT validate loaded patterns.
+- FOUND: director.stop() does NOT call device.onStop / scheduler.stop / voicePool.panic.
+- FOUND: host.pushTransport dedup drops same-revision pushes (BPM changes mid-bar dropped).
+- FOUND: event log dedup by lastEv.at misses multiple events sharing same `at` (one per step).
+- FOUND: onBusSolo uses non-functional setBusState (rapid clicks lose state).
+- FOUND: renderAndDownloadWavLive leaks dest node on early error (no try/finally).
+- FOUND: renderAndDownloadWav is dead code that always throws.
+- FOUND: DirectorOptions.bpm is a dead parameter (never read).
+- FOUND: auditionSample leaks nodes if source.start() throws.
+- FOUND: voice.connectTo during steal routes old source's fade-out tail to new bus.
+
+Stage Summary:
+- 10 real bugs found (1 MEDIUM, 9 LOW). No CRITICAL bugs. No crashes. App is functional but has UX/leak issues.
+- Top bug: STOP doesn't immediately stop audio (active voices decay for up to 1.5s after STOP).
+- Second bug: BPM changes mid-bar are dropped by host's revision-based transport dedup.
+- Third bug: event log only shows ~1 entry per step (dedup by `at`).

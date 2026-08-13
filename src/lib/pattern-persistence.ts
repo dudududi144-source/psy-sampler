@@ -46,13 +46,16 @@ export function saveToSlot(slot: number, name: string, pattern: Pattern): void {
   }
 }
 
-/** Load a pattern from a slot. Returns null if empty. */
+/** Load a pattern from a slot. Returns null if empty or invalid. */
 export function loadFromSlot(slot: number): PatternSlot | null {
   if (slot < 0 || slot >= SLOT_COUNT) return null
   try {
     const data = localStorage.getItem(`${STORAGE_PREFIX}slot-${slot}`)
     if (!data) return null
-    return JSON.parse(data) as PatternSlot
+    const parsed = JSON.parse(data) as PatternSlot
+    // FIX Bug 4: validate the pattern shape before returning.
+    parsed.pattern = validatePattern(parsed.pattern)
+    return parsed
   } catch {
     return null
   }
@@ -78,17 +81,48 @@ export function autosavePattern(pattern: Pattern): void {
   }
 }
 
-/** Load the autosaved pattern. Returns null if none. */
+/** Load the autosaved pattern. Returns null if none or invalid. */
 export function loadAutosave(): Pattern | null {
   try {
     const data = localStorage.getItem(AUTOSAVE_KEY)
     if (!data) return null
     const parsed = JSON.parse(data) as PatternSlot
-    return parsed.pattern
+    // FIX Bug 4: validate the pattern shape.
+    return validatePattern(parsed.pattern)
   } catch {
     return null
   }
 }
+
+// ─── Pattern validation ──────────────────────────────────────────────────────
+
+const REQUIRED_ROLES: SampleRole[] = [
+  'kick', 'bass', 'lead', 'hat-closed', 'hat-open', 'clap', 'perc', 'texture', 'fx'
+]
+const STEPS = 16
+
+/**
+ * Validate a pattern object. Ensures all 9 roles exist and each has 16 booleans.
+ * Falls back to DEFAULT_PATTERN for missing/invalid roles.
+ */
+function validatePattern(obj: unknown): Pattern {
+  if (typeof obj !== 'object' || obj === null) {
+    return structuredClone(DEFAULT_PATTERN)
+  }
+  const result = structuredClone(DEFAULT_PATTERN)
+  const raw = obj as Record<string, unknown>
+  for (const role of REQUIRED_ROLES) {
+    const row = raw[role]
+    if (Array.isArray(row) && row.length === STEPS) {
+      result[role] = row.map((v) => v === true)
+    }
+    // else: keep the default (all false)
+  }
+  return result
+}
+
+// Import DEFAULT_PATTERN for fallback (lazy to avoid circular dependency).
+import { DEFAULT_PATTERN } from './demo-director'
 
 // ─── Pattern presets ─────────────────────────────────────────────────────────
 

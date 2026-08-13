@@ -19,7 +19,6 @@ export interface DirectorOptions {
   host: DeviceHost
   transport: DemoTransport
   audioContext: AudioContext
-  bpm: number
   initialPattern?: Pattern
   initialContext?: MusicalContext
 }
