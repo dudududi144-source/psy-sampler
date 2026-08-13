@@ -63,3 +63,4 @@ server.log
 /download/
 # PSY Sampler — db
 /db/.zscripts/
+/examples/
