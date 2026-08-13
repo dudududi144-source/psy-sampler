@@ -57,6 +57,7 @@ import { Slider } from '@/components/ui/slider'
 import { Badge } from '@/components/ui/badge'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { useKeyboardShortcuts } from '@/lib/use-keyboard-shortcuts'
+import { toast } from '@/hooks/use-toast'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -208,7 +209,7 @@ function InitOverlay({
                 }}
               />
             </div>
-            <div className="mt-1 text-right font-mono text-[9px] tabular-nums text-zinc-500">{pct}%</div>
+            <div className="mt-1 text-right font-mono text-[11px] tabular-nums text-zinc-500">{pct}%</div>
           </div>
         )}
 
@@ -254,7 +255,7 @@ function InitOverlay({
         )}
 
         {/* Keyboard hint */}
-        <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-zinc-600">
+        <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-zinc-600">
           shortcuts: <span className="text-zinc-400">[space]</span> play/stop · <span className="text-zinc-400">[esc]</span> stop
         </div>
       </div>
@@ -274,7 +275,7 @@ function Stat({ label, value, color = 'emerald' }: { label: string; value: strin
   }
   return (
     <div className={`flex flex-col gap-0.5 rounded border ${colorMap[color] ?? colorMap.emerald} bg-zinc-900/60 px-2.5 py-1.5`}>
-      <span className="font-mono text-[8px] uppercase tracking-[0.15em] text-zinc-500">{label}</span>
+      <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-zinc-500">{label}</span>
       <span className="font-mono text-sm font-bold tabular-nums">{value}</span>
     </div>
   )
@@ -312,7 +313,7 @@ function DebugPanel({ stats, eventLog }: { stats: DeviceStats; eventLog: EventLo
 
       {/* Last event — the key debug info */}
       <div className="mt-3 rounded border border-zinc-800 bg-zinc-900/50 p-3">
-        <div className="mb-1.5 font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-500">LAST EVENT</div>
+        <div className="mb-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500">LAST EVENT</div>
         {lastEv ? (
           <div className="space-y-0.5 font-mono text-[11px]">
             <div className="flex justify-between">
@@ -350,7 +351,7 @@ function DebugPanel({ stats, eventLog }: { stats: DeviceStats; eventLog: EventLo
       {/* Transport + Context */}
       <div className="mt-3 grid grid-cols-2 gap-2">
         <div className="rounded border border-zinc-800 bg-zinc-900/50 p-2">
-          <div className="mb-1 font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-500">TRANSPORT</div>
+          <div className="mb-1 font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500">TRANSPORT</div>
           {transport ? (
             <div className="space-y-0.5 font-mono text-[10px] text-zinc-400">
               <div>bpm: <span className="tabular-nums text-emerald-300">{transport.bpm}</span></div>
@@ -363,7 +364,7 @@ function DebugPanel({ stats, eventLog }: { stats: DeviceStats; eventLog: EventLo
           )}
         </div>
         <div className="rounded border border-zinc-800 bg-zinc-900/50 p-2">
-          <div className="mb-1 font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-500">CONTEXT</div>
+          <div className="mb-1 font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500">CONTEXT</div>
           {context ? (
             <div className="space-y-0.5 font-mono text-[10px] text-zinc-400">
               <div>section: <span className="text-emerald-300">{context.section}</span></div>
@@ -379,10 +380,10 @@ function DebugPanel({ stats, eventLog }: { stats: DeviceStats; eventLog: EventLo
 
       {/* Capabilities */}
       <div className="mt-3 rounded border border-zinc-800 bg-zinc-900/50 p-2">
-        <div className="mb-1.5 font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-500">CAPABILITIES · roles</div>
+        <div className="mb-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500">CAPABILITIES · roles</div>
         <div className="flex flex-wrap gap-1">
           {caps.roles.map((r) => (
-            <span key={r} className="rounded border border-zinc-700 bg-zinc-800/50 px-1.5 py-0.5 font-mono text-[9px] text-zinc-300">
+            <span key={r} className="rounded border border-zinc-700 bg-zinc-800/50 px-1.5 py-0.5 font-mono text-[11px] text-zinc-300">
               {r}
             </span>
           ))}
@@ -392,8 +393,8 @@ function DebugPanel({ stats, eventLog }: { stats: DeviceStats; eventLog: EventLo
       {/* Scrollable event log */}
       <div className="mt-3 rounded border border-zinc-800 bg-zinc-900/50 p-2">
         <div className="mb-1.5 flex items-center justify-between">
-          <div className="font-mono text-[8px] uppercase tracking-[0.2em] text-zinc-500">EVENT LOG · last {EVENT_LOG_MAX}</div>
-          <span className="font-mono text-[8px] tabular-nums text-zinc-600">{eventLog.length}</span>
+          <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500">EVENT LOG · last {EVENT_LOG_MAX}</div>
+          <span className="font-mono text-[10px] tabular-nums text-zinc-600">{eventLog.length}</span>
         </div>
         <div
           ref={logRef}
@@ -409,7 +410,7 @@ function DebugPanel({ stats, eventLog }: { stats: DeviceStats; eventLog: EventLo
               return (
                 <div
                   key={e.id}
-                  className="flex items-center gap-2 rounded px-1 py-0.5 font-mono text-[9px] hover:bg-zinc-800/40"
+                  className="flex items-center gap-2 rounded px-1 py-0.5 font-mono text-[11px] hover:bg-zinc-800/40"
                 >
                   <span className="w-1.5 shrink-0 rounded-full" style={{ backgroundColor: color, boxShadow: `0 0 6px ${color}80` }} />
                   <span className="w-12 shrink-0 tabular-nums text-zinc-600">{(e.receivedAt / 1000 % 1000).toFixed(2)}s</span>
@@ -438,20 +439,32 @@ function PatternEditor({
   onToggle,
   nowPlayingRole,
   nowPlayingAt,
+  onClearPattern,
 }: {
   pattern: Pattern
   currentStep: number
   onToggle: (role: SampleRole, step: number) => void
   nowPlayingRole: SampleRole | null
   nowPlayingAt: number
+  onClearPattern: () => void
 }) {
   const now = Date.now()
   const fresh = nowPlayingRole !== null && (now - nowPlayingAt) < NOW_PLAYING_MS
 
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-950/80 p-4">
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-fuchsia-300">PATTERN · 16 steps</h2>
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <h2 className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-fuchsia-300">PATTERN · 16 steps</h2>
+          <button
+            type="button"
+            onClick={onClearPattern}
+            title="Clear pattern (set all steps off)"
+            className="touch-manipulation min-h-[28px] rounded border border-amber-400/40 bg-amber-500/10 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-amber-300 transition-all hover:bg-amber-500/20"
+          >
+            CLR
+          </button>
+        </div>
         <span className="font-mono text-[10px] text-zinc-500">click to toggle</span>
       </div>
 
@@ -460,7 +473,7 @@ function PatternEditor({
         {Array.from({ length: STEPS }).map((_, i) => (
           <div
             key={i}
-            className="flex-1 text-center font-mono text-[8px] tabular-nums"
+            className="flex-1 text-center font-mono text-[10px] tabular-nums"
             style={{
               color: i === currentStep ? '#00ffc8' : i % 4 === 0 ? '#71717a' : '#3f3f46',
               textShadow: i === currentStep ? '0 0 8px rgba(0,255,200,0.8)' : 'none',
@@ -486,7 +499,7 @@ function PatternEditor({
               }}
             >
               <div
-                className="w-11 font-mono text-[9px] font-bold uppercase tracking-wider"
+                className="w-11 font-mono text-[11px] font-bold uppercase tracking-wider"
                 style={{
                   color,
                   textShadow: isNowPlaying ? `0 0 8px ${color}80` : 'none',
@@ -504,7 +517,7 @@ function PatternEditor({
                       key={step}
                       onClick={() => onToggle(role, step)}
                       aria-label={`${role} step ${step + 1} ${on ? 'on' : 'off'}`}
-                      className="aspect-square flex-1 rounded-sm border transition-all hover:brightness-125"
+                      className="aspect-square flex-1 min-h-[44px] min-w-[44px] rounded-sm border transition-all hover:brightness-125 touch-manipulation"
                       style={{
                         backgroundColor: isActive ? color : isBeat ? 'rgba(39,39,42,0.9)' : 'rgba(24,24,27,0.8)',
                         borderColor: isCurrent ? '#00ffc8' : isActive ? color : isBeat ? '#3f3f46' : '#27272a',
@@ -609,7 +622,7 @@ function SampleLibrary({
               <button
                 key={s.metadata.id}
                 onClick={() => onAudition(s)}
-                className="flex w-full items-center gap-2 rounded border bg-zinc-900/40 px-2 py-1 text-left transition-all hover:bg-zinc-800/60"
+                className="flex min-h-[44px] w-full touch-manipulation items-center gap-2 rounded border bg-zinc-900/40 px-2 py-1 text-left transition-all hover:bg-zinc-800/60"
                 style={{
                   borderColor: isPlaying ? color : '#27272a',
                   boxShadow: isPlaying ? `0 0 12px ${color}60, inset 0 0 8px ${color}20` : 'none',
@@ -617,26 +630,26 @@ function SampleLibrary({
                 }}
               >
                 <span
-                  className="w-10 shrink-0 font-mono text-[9px] font-bold uppercase"
+                  className="w-10 shrink-0 font-mono text-[11px] font-bold uppercase"
                   style={{ color, textShadow: isPlaying ? `0 0 6px ${color}80` : 'none' }}
                 >
                   {s.metadata.category}
                 </span>
                 <WaveformThumbnail data={s.monoData} color={isPlaying ? '#ffffff' : color} width={48} height={18} />
                 <span className="flex-1 truncate font-mono text-[10px] text-zinc-300">{s.metadata.id}</span>
-                <span className="font-mono text-[9px] tabular-nums text-zinc-500">
+                <span className="font-mono text-[11px] tabular-nums text-zinc-500">
                   {s.features.duration.toFixed(2)}s
                 </span>
                 {s.metadata.provenance.commercialUse ? (
-                  <Badge className="border border-emerald-400/30 bg-emerald-500/10 px-1 py-0 font-mono text-[7px] uppercase text-emerald-300">
+                  <Badge className="border border-emerald-400/30 bg-emerald-500/10 px-1 py-0 font-mono text-[10px] uppercase text-emerald-300">
                     COMMERCIAL
                   </Badge>
                 ) : (
-                  <Badge className="border border-amber-400/30 bg-amber-500/10 px-1 py-0 font-mono text-[7px] uppercase text-amber-300">
+                  <Badge className="border border-amber-400/30 bg-amber-500/10 px-1 py-0 font-mono text-[10px] uppercase text-amber-300">
                     NON-COMM
                   </Badge>
                 )}
-                <span className="font-mono text-[9px] text-zinc-600">▶</span>
+                <span className="font-mono text-[11px] text-zinc-600">▶</span>
               </button>
             )
           })
@@ -665,7 +678,7 @@ function Mixer({
         <h2 className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-amber-300">MIXER · 3 buses</h2>
         <span className="font-mono text-[10px] text-zinc-500">drum · music · atmos</span>
       </div>
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {BUS_NAMES.map((name) => {
           const state = busState[name]
           const color = BUS_COLORS[name]
@@ -680,11 +693,11 @@ function Mixer({
                 <span className="font-mono text-[10px] font-bold uppercase tracking-wider" style={{ color }}>
                   {name}
                 </span>
-                <span className="font-mono text-[8px] text-zinc-600">{roles.length} roles</span>
+                <span className="font-mono text-[10px] text-zinc-600">{roles.length} roles</span>
               </div>
               {/* Vertical-ish gain slider (horizontal for compactness) */}
               <div className="flex items-center gap-1">
-                <span className="font-mono text-[8px] text-zinc-600">G</span>
+                <span className="font-mono text-[10px] text-zinc-600">G</span>
                 <Slider
                   value={[state.gain]}
                   onValueChange={(v) => onGain(name, v[0]!)}
@@ -693,7 +706,7 @@ function Mixer({
                   step={0.01}
                   className="flex-1"
                 />
-                <span className="w-7 font-mono text-[9px] tabular-nums" style={{ color }}>
+                <span className="w-7 font-mono text-[11px] tabular-nums" style={{ color }}>
                   {state.gain.toFixed(2)}
                 </span>
               </div>
@@ -701,7 +714,8 @@ function Mixer({
               <div className="mt-2 flex gap-1">
                 <button
                   onClick={() => onMute(name)}
-                  className="flex-1 rounded border px-1 py-0.5 font-mono text-[9px] uppercase tracking-wider transition-all"
+                  title="Mute"
+                  className="flex-1 min-h-[44px] touch-manipulation rounded border px-1 py-2 font-mono text-[11px] uppercase tracking-wider transition-all"
                   style={{
                     borderColor: state.muted ? '#fbbf24' : '#3f3f46',
                     color: state.muted ? '#fbbf24' : '#71717a',
@@ -712,7 +726,8 @@ function Mixer({
                 </button>
                 <button
                   onClick={() => onSolo(name)}
-                  className="flex-1 rounded border px-1 py-0.5 font-mono text-[9px] uppercase tracking-wider transition-all"
+                  title="Solo"
+                  className="flex-1 min-h-[44px] touch-manipulation rounded border px-1 py-2 font-mono text-[11px] uppercase tracking-wider transition-all"
                   style={{
                     borderColor: state.solo ? '#00ffc8' : '#3f3f46',
                     color: state.solo ? '#00ffc8' : '#71717a',
@@ -725,7 +740,7 @@ function Mixer({
               {/* Roles indicator */}
               <div className="mt-1.5 flex flex-wrap gap-0.5">
                 {roles.map((r) => (
-                  <span key={r} className="font-mono text-[7px] uppercase tracking-wider" style={{ color: ROLE_COLORS[r] }}>
+                  <span key={r} className="font-mono text-[10px] uppercase tracking-wider" style={{ color: ROLE_COLORS[r] }}>
                     {ROLE_LABEL[r].trim()}
                   </span>
                 ))}
@@ -755,7 +770,7 @@ function PresetsPanel({ onLoad }: { onLoad: (preset: PatternPreset) => void }) {
             className="rounded border border-zinc-700 bg-zinc-900/60 px-2 py-2 font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-300 transition-all hover:border-emerald-400/50 hover:bg-emerald-500/10 hover:text-emerald-300"
           >
             <div>{preset.name}</div>
-            <div className="mt-0.5 text-[8px] font-normal text-zinc-500">{preset.bpm} BPM</div>
+            <div className="mt-0.5 text-[10px] font-normal text-zinc-500">{preset.bpm} BPM</div>
           </button>
         ))}
       </div>
@@ -786,11 +801,11 @@ function PatternSlots({
         {slotNames.map((name, i) => (
           <div key={i} className="rounded border border-zinc-800 bg-zinc-900/40 p-2">
             <div className="mb-1.5 flex items-center justify-between">
-              <span className="font-mono text-[9px] uppercase tracking-wider text-zinc-500">SLOT {i + 1}</span>
+              <span className="font-mono text-[11px] uppercase tracking-wider text-zinc-500">SLOT {i + 1}</span>
               {name ? (
-                <span className="rounded bg-emerald-500/10 px-1 font-mono text-[7px] uppercase text-emerald-300">SAVED</span>
+                <span className="rounded bg-emerald-500/10 px-1 font-mono text-[10px] uppercase text-emerald-300">SAVED</span>
               ) : (
-                <span className="rounded bg-zinc-800 px-1 font-mono text-[7px] uppercase text-zinc-600">EMPTY</span>
+                <span className="rounded bg-zinc-800 px-1 font-mono text-[10px] uppercase text-zinc-600">EMPTY</span>
               )}
             </div>
             <div className="mb-1.5 truncate font-mono text-[10px] text-zinc-300" title={name}>
@@ -799,21 +814,24 @@ function PatternSlots({
             <div className="flex gap-1">
               <button
                 onClick={() => onSave(i)}
-                className="flex-1 rounded border border-emerald-400/30 bg-emerald-500/10 px-1 py-0.5 font-mono text-[8px] uppercase text-emerald-300 hover:bg-emerald-500/20"
+                title="Save to slot"
+                className="flex-1 min-h-[44px] touch-manipulation rounded border border-emerald-400/30 bg-emerald-500/10 px-1 py-0.5 font-mono text-[10px] uppercase text-emerald-300 hover:bg-emerald-500/20"
               >
                 SAVE
               </button>
               <button
                 onClick={() => onLoad(i)}
                 disabled={!name}
-                className="flex-1 rounded border border-fuchsia-400/30 bg-fuchsia-500/10 px-1 py-0.5 font-mono text-[8px] uppercase text-fuchsia-300 hover:bg-fuchsia-500/20 disabled:opacity-30"
+                title="Load from slot"
+                className="flex-1 min-h-[44px] touch-manipulation rounded border border-fuchsia-400/30 bg-fuchsia-500/10 px-1 py-0.5 font-mono text-[10px] uppercase text-fuchsia-300 hover:bg-fuchsia-500/20 disabled:opacity-30"
               >
                 LOAD
               </button>
               <button
                 onClick={() => onClear(i)}
                 disabled={!name}
-                className="rounded border border-amber-400/30 bg-amber-500/10 px-1 py-0.5 font-mono text-[8px] uppercase text-amber-300 hover:bg-amber-500/20 disabled:opacity-30"
+                title="Clear saved slot"
+                className="min-h-[44px] touch-manipulation rounded border border-amber-400/30 bg-amber-500/10 px-1 py-0.5 font-mono text-[10px] uppercase text-amber-300 hover:bg-amber-500/20 disabled:opacity-30"
               >
                 CLR
               </button>
@@ -899,7 +917,7 @@ function Visualizer({ analyser, isPlaying }: { analyser: AnalyserNode | null; is
     <div ref={containerRef} className="rounded-lg border border-zinc-800 bg-zinc-950/80 p-4">
       <div className="mb-2 flex items-center justify-between">
         <h2 className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-amber-300">ANALYSER</h2>
-        <span className="font-mono text-[9px] text-zinc-600">
+        <span className="font-mono text-[11px] text-zinc-600">
           {isPlaying ? '● LIVE' : '○ IDLE'} · DPR-aware
         </span>
       </div>
@@ -1206,6 +1224,18 @@ export default function Home() {
     }
   }, [])
 
+  const onClearPattern = React.useCallback(() => {
+    const empty = structuredClone(DEFAULT_PATTERN)
+    directorRef.current?.setPattern(empty)
+    setPattern(empty)
+    // Autosave the cleared pattern (best-effort).
+    try {
+      autosavePattern(empty)
+    } catch {
+      // ignore — localStorage unavailable
+    }
+  }, [])
+
   // ─── Sample audition ───────────────────────────────────────────────────────
 
   const auditionSample = React.useCallback((asset: SampleAsset) => {
@@ -1292,6 +1322,7 @@ export default function Home() {
     } catch {
       // ignore
     }
+    toast({ title: `Loaded ${preset.name} · ${preset.bpm} BPM` })
   }, [])
 
   // ─── Pattern slots ─────────────────────────────────────────────────────────
@@ -1448,7 +1479,7 @@ export default function Home() {
           <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-950/80 p-3">
             <Button
               onClick={togglePlay}
-              className="h-10 gap-2 border font-mono text-xs font-bold uppercase tracking-[0.15em]"
+              className="h-11 gap-2 border font-mono text-xs font-bold uppercase tracking-[0.15em]"
               variant={isPlaying ? 'destructive' : 'default'}
               style={
                 isPlaying
@@ -1486,7 +1517,7 @@ export default function Home() {
               <select
                 value={section}
                 onChange={(e) => onSectionChange(e.target.value)}
-                className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-xs text-fuchsia-300"
+                className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-base sm:text-xs text-fuchsia-300"
               >
                 {SECTIONS.map((s) => (
                   <option key={s} value={s}>{s}</option>
@@ -1505,7 +1536,7 @@ export default function Home() {
             <Button
               onClick={handleExportWav}
               disabled={exporting}
-              className="h-10 gap-2 border border-violet-400/50 bg-zinc-900 font-mono text-xs font-bold uppercase tracking-[0.15em] text-violet-300 hover:bg-violet-500/10 disabled:opacity-50"
+              className="h-11 gap-2 border border-violet-400/50 bg-zinc-900 font-mono text-xs font-bold uppercase tracking-[0.15em] text-violet-300 hover:bg-violet-500/10 disabled:opacity-50"
               style={{ boxShadow: exporting ? '0 0 16px rgba(185,103,255,0.6)' : '0 0 8px rgba(185,103,255,0.2)' }}
             >
               {exporting ? '● EXPORTING…' : '⬇ EXPORT WAV'}
@@ -1520,6 +1551,7 @@ export default function Home() {
               onToggle={onToggleStep}
               nowPlayingRole={nowPlaying.role}
               nowPlayingAt={nowPlaying.at}
+              onClearPattern={onClearPattern}
             />
             {stats && <DebugPanel stats={stats} eventLog={eventLog} />}
           </div>
