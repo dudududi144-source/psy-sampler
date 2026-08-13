@@ -23,6 +23,8 @@ export interface CreateSamplerOptions {
    */
   outputNode?: AudioNode | null
   onLoaded?: (result: { loaded: number; skipped: number; total: number }) => void
+  /** Progress callback during sample loading (for UI progress bar). */
+  onProgress?: (loaded: number, total: number) => void
 }
 
 export interface SamplerBundle {
@@ -97,7 +99,7 @@ export function createSamplerDevice(opts: CreateSamplerOptions): SamplerBundle {
     audioGraph,
     voicePool,
     load: async () => {
-      const result = await library.load(opts.manifestUrl)
+      const result = await library.load(opts.manifestUrl, opts.onProgress)
       opts.onLoaded?.(result)
       return result
     },

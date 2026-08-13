@@ -28,24 +28,50 @@ export class SampleLibrary {
 
   /**
    * Load all samples from a manifest URL.
+   * - Parallel loading with concurrency limit (6 at a time).
    * - Skips entries that fail to fetch/decode (graceful).
    * - Skips entries with commercialUse=false (already filtered by validateManifest).
+   * - onProgress callback for loading UI.
    * - Returns a summary of loaded / skipped / total.
    */
-  async load(manifestUrl: string): Promise<LibraryLoadResult> {
+  async load(
+    manifestUrl: string,
+    onProgress?: (loaded: number, total: number) => void
+  ): Promise<LibraryLoadResult> {
     const manifest: SampleManifest = await loadManifest(manifestUrl)
     const total = manifest.samples.length
     let loaded = 0
     let skipped = 0
-    for (const entry of manifest.samples) {
-      const asset = await this.loader.load(entry)
-      if (asset === null) {
-        skipped += 1
-        continue
+    let completed = 0
+
+    // Parallel loading with concurrency limit of 6.
+    const CONCURRENCY = 6
+    const entries = manifest.samples
+    let nextIdx = 0
+
+    const loadNext = async (): Promise<void> => {
+      while (nextIdx < entries.length) {
+        const idx = nextIdx++
+        const entry = entries[idx]!
+        const asset = await this.loader.load(entry)
+        if (asset === null) {
+          skipped += 1
+        } else {
+          this.add(asset, entry)
+          loaded += 1
+        }
+        completed += 1
+        onProgress?.(completed, total)
       }
-      this.add(asset, entry)
-      loaded += 1
     }
+
+    // Start CONCURRENCY workers.
+    const workers: Promise<void>[] = []
+    for (let i = 0; i < Math.min(CONCURRENCY, entries.length); i++) {
+      workers.push(loadNext())
+    }
+    await Promise.all(workers)
+
     return { loaded, skipped, total }
   }
 

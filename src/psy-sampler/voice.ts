@@ -54,10 +54,15 @@ export class SampleVoice implements Voice {
    * Replaces any currently-sounding source on this voice (implicit steal).
    */
   trigger(buffer: AudioBuffer, opts: VoiceTriggerOptions): void {
-    // Stop any current source.
+    // Stop any current source — with 5ms fade-out to prevent click on steal.
     if (this.currentSource !== null) {
+      const now = this.ctx.currentTime
       try {
-        this.currentSource.stop()
+        // Quick fade-out to prevent click (5ms exponential ramp to ~0).
+        this.gainEnv.gain.cancelScheduledValues(now)
+        this.gainEnv.gain.setValueAtTime(this.gainEnv.gain.value, now)
+        this.gainEnv.gain.exponentialRampToValueAtTime(0.0001, now + 0.005)
+        this.currentSource.stop(now + 0.006)
       } catch {
         // already stopped
       }
@@ -75,10 +80,6 @@ export class SampleVoice implements Voice {
     this.panner.pan.value = Math.max(-1, Math.min(1, opts.pan))
 
     // Gain envelope: instant attack, exponential decay.
-    // psy4 used Math.exp(-t/decay) in worklet. Main-thread Web Audio equivalent:
-    //   gain.setValueAtTime(0, at)
-    //   gain.linearRampToValueAtTime(opts.gain, at + 0.001)   // 1ms attack
-    //   gain.exponentialRampToValueAtTime(0.0001, at + decay) // exp decay
     const at = Math.max(opts.at, this.ctx.currentTime)
     const gain = Math.max(0.0001, opts.gain)
     this.gainEnv.gain.cancelScheduledValues(at)

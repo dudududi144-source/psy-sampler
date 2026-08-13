@@ -26,6 +26,9 @@ interface Bus {
   input: GainNode
   delaySend: GainNode
   reverbSend: GainNode
+  /** Last user-set gain (for un-mute). */
+  userGain: number
+  muted: boolean
 }
 
 export class AudioGraph {
@@ -106,7 +109,7 @@ export class AudioGraph {
       ds.connect(this.delay)
       input.connect(rs)
       rs.connect(this.reverb)
-      this.buses.set(cfg.name, { input, delaySend: ds, reverbSend: rs })
+      this.buses.set(cfg.name, { input, delaySend: ds, reverbSend: rs, userGain: cfg.gain, muted: false })
     }
   }
 
@@ -120,6 +123,48 @@ export class AudioGraph {
   /** Set master gain. */
   setMasterGain(value: number): void {
     this.master.gain.setTargetAtTime(value, this.ctx.currentTime, 0.01)
+  }
+
+  /** Set the user-facing gain for a bus (0..1.5). Respects mute state. */
+  setBusGain(name: BusName, value: number): void {
+    const bus = this.buses.get(name)
+    if (!bus) return
+    bus.userGain = Math.max(0, Math.min(1.5, value))
+    if (!bus.muted) {
+      bus.input.gain.setTargetAtTime(bus.userGain, this.ctx.currentTime, 0.01)
+    }
+  }
+
+  /** Mute/unmute a bus. Mute overrides userGain. */
+  setBusMuted(name: BusName, muted: boolean): void {
+    const bus = this.buses.get(name)
+    if (!bus) return
+    bus.muted = muted
+    bus.input.gain.setTargetAtTime(muted ? 0 : bus.userGain, this.ctx.currentTime, 0.01)
+  }
+
+  /** Get the last user-set gain for a bus (0..1.5). */
+  getBusGain(name: BusName): number {
+    const bus = this.buses.get(name)
+    return bus ? bus.userGain : 0
+  }
+
+  /** True if the bus is currently muted. */
+  isBusMuted(name: BusName): boolean {
+    const bus = this.buses.get(name)
+    return bus ? bus.muted : false
+  }
+
+  /** Apply solo state: when any bus is soloed, mute all others. */
+  applySolo(soloed: BusName[]): void {
+    const soloSet = new Set(soloed)
+    const anySoloed = soloSet.size > 0
+    for (const [name, bus] of this.buses.entries()) {
+      // If a bus is muted by the user, it stays muted regardless of solo.
+      // Otherwise: if any bus is soloed, mute non-soloed buses.
+      const effectiveMuted = bus.muted || (anySoloed && !soloSet.has(name))
+      bus.input.gain.setTargetAtTime(effectiveMuted ? 0 : bus.userGain, this.ctx.currentTime, 0.01)
+    }
   }
 
   /** Sync delay time to BPM (dotted-eighth). Clamps bpm to prevent Infinity. */

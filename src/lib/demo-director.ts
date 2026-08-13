@@ -75,6 +75,7 @@ export class DemoDirector {
   private timer: { stop: () => void } | null = null
   private running = false
   private readonly onStep?: (step: number) => void
+  private swing = 0 // 0 = straight, 0.7 = 70% swing
 
   constructor(opts: DirectorOptions, onStep?: (step: number) => void) {
     this.host = opts.host
@@ -111,6 +112,14 @@ export class DemoDirector {
     this.host.pushTransport(this.transport.snapshot(this.ctx.currentTime), performance.now())
   }
 
+  setSwing(swing: number): void {
+    this.swing = Math.max(0, Math.min(0.7, swing))
+  }
+
+  get currentSwing(): number {
+    return this.swing
+  }
+
   setContext(ctx: Partial<MusicalContext>): void {
     this.context = { ...this.context, ...ctx }
     this.host.pushContext(this.context)
@@ -121,6 +130,11 @@ export class DemoDirector {
     const row = this.pattern[role]
     if (!row) return
     row[step] = !row[step]
+  }
+
+  /** Replace the entire pattern (used by preset + slot loading). */
+  setPattern(pattern: Pattern): void {
+    this.pattern = structuredClone(pattern)
   }
 
   getPattern(): Pattern {
@@ -143,7 +157,10 @@ export class DemoDirector {
     const secPerStep = (60 / this.transport.currentBpm) / 4 // 16th notes
     let guard = 0
     while (this.nextNoteTime < horizon && guard++ < 64) {
-      this.scheduleStep(this.step, this.nextNoteTime)
+      // Apply swing: delay odd 16th steps by swing * secPerStep * 0.5.
+      const isOffbeat = this.step % 2 === 1
+      const swingOffset = isOffbeat ? this.swing * secPerStep * 0.5 : 0
+      this.scheduleStep(this.step, this.nextNoteTime + swingOffset)
       this.onStep?.(this.step)
       this.step = (this.step + 1) % STEPS
       this.nextNoteTime += secPerStep

@@ -56,57 +56,83 @@ export function audioBufferToWavBlob(buffer: AudioBuffer): Blob {
 /**
  * Render audio offline and trigger a WAV download.
  *
- * @param ctx The AudioContext whose graph to render
- * @param durationSec How many seconds to render
+ * Uses MediaRecorder to capture `durationSec` of audio from the live AudioContext,
+ * then decodes the resulting WebM blob and re-encodes as 16-bit PCM WAV.
+ *
+ * @param ctx The AudioContext whose graph to record
+ * @param durationSec How many seconds to record
  * @param filename The download filename
+ * @param sourceNode Optional source node to connect to the recording destination.
+ *                   If provided, it will be connected at the start and disconnected at the end.
+ *                   If omitted, the caller must have already connected something that
+ *                   feeds `ctx.destination` (in which case the recording will be silent —
+ *                   because the MediaStreamDestination is a separate sink).
  */
 export async function renderAndDownloadWav(
   ctx: AudioContext,
   durationSec: number,
-  filename: string
+  filename: string,
+  sourceNode?: AudioNode | null
 ): Promise<void> {
   const sampleRate = ctx.sampleRate
-  const offlineCtx = new OfflineAudioContext(2, Math.ceil(sampleRate * durationSec), sampleRate)
-
-  // We can't easily clone the entire audio graph to the offline context.
-  // Instead, we use a MediaStreamDestination from the live context.
-  // For a true offline render, the caller would need to rebuild the graph
-  // on the offline context.
-  //
-  // For now, this is a placeholder that records from the live context's
-  // destination via a MediaRecorder. This is simpler and works for demo purposes.
-
   const dest = ctx.createMediaStreamDestination()
-  // Note: the caller must connect their master output to `dest` before calling.
-  // This is a limitation — a full implementation would clone the graph.
 
-  const recorder = new MediaRecorder(dest.stream, {
-    mimeType: 'audio/webm',
-  })
+  // Connect the source node (e.g. master gain) → dest if provided.
+  if (sourceNode) {
+    try {
+      sourceNode.connect(dest)
+    } catch (err) {
+      // Already connected or other AudioNode error — log and continue.
+      console.warn('[wav-export] Failed to connect sourceNode:', err)
+    }
+  }
+
+  // Pick the best available mimeType.
+  const mimeCandidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus']
+  let mimeType = ''
+  for (const m of mimeCandidates) {
+    if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(m)) {
+      mimeType = m
+      break
+    }
+  }
+
+  const recorder = mimeType
+    ? new MediaRecorder(dest.stream, { mimeType })
+    : new MediaRecorder(dest.stream)
 
   const chunks: Blob[] = []
   recorder.ondataavailable = (e) => {
     if (e.data.size > 0) chunks.push(e.data)
   }
 
-  return new Promise((resolve, reject) => {
-    recorder.onstop = async () => {
-      try {
-        const blob = new Blob(chunks, { type: 'audio/webm' })
-        // For WAV export, decode the webm and re-encode as WAV.
-        const arrayBuffer = await blob.arrayBuffer()
-        const audioBuffer = await ctx.decodeAudioData(arrayBuffer)
-        const wavBlob = audioBufferToWavBlob(audioBuffer)
-        triggerDownload(wavBlob, filename)
-        resolve()
-      } catch (err) {
-        reject(err)
+  try {
+    return await new Promise<void>((resolve, reject) => {
+      recorder.onstop = async () => {
+        try {
+          const blob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' })
+          const arrayBuffer = await blob.arrayBuffer()
+          const audioBuffer = await ctx.decodeAudioData(arrayBuffer)
+          const wavBlob = audioBufferToWavBlob(audioBuffer)
+          triggerDownload(wavBlob, filename)
+          resolve()
+        } catch (err) {
+          reject(err)
+        }
       }
-    }
 
-    recorder.start()
-    setTimeout(() => recorder.stop(), durationSec * 1000)
-  })
+      recorder.start()
+      setTimeout(() => {
+        try { recorder.stop() } catch { /* already stopped */ }
+      }, durationSec * 1000)
+    })
+  } finally {
+    // Disconnect the source node from the recording destination.
+    if (sourceNode) {
+      try { sourceNode.disconnect(dest) } catch { /* not connected */ }
+    }
+    try { dest.disconnect() } catch { /* not connected */ }
+  }
 }
 
 /**
