@@ -955,6 +955,8 @@ export default function Home() {
     at: 0,
   })
   const [exporting, setExporting] = React.useState(false)
+  const [pumpEnabled, setPumpEnabled] = React.useState(false)
+  const [evolveEnabled, setEvolveEnabled] = React.useState(false)
   const [busState, setBusState] = React.useState<Record<BusName, BusMixerState>>({
     drum: { gain: 0.9, muted: false, solo: false },
     music: { gain: 0.85, muted: false, solo: false },
@@ -1540,6 +1542,43 @@ export default function Home() {
               style={{ boxShadow: exporting ? '0 0 16px rgba(185,103,255,0.6)' : '0 0 8px rgba(185,103,255,0.2)' }}
             >
               {exporting ? '● EXPORTING…' : '⬇ EXPORT WAV'}
+            </Button>
+
+            {/* PUMP (sidechain) toggle + EVOLVE toggle */}
+            <Button
+              onClick={() => {
+                const newState = !pumpEnabled
+                setPumpEnabled(newState)
+                bundleRef.current?.audioGraph.setSidechainEnabled(newState)
+              }}
+              className="h-11 gap-2 border font-mono text-xs font-bold uppercase tracking-[0.15em]"
+              style={{
+                borderColor: pumpEnabled ? 'rgba(0,255,200,0.6)' : 'rgba(63,63,70,0.8)',
+                color: pumpEnabled ? '#00ffc8' : '#71717a',
+                background: pumpEnabled ? 'rgba(0,255,200,0.1)' : 'rgba(24,24,27,0.8)',
+                boxShadow: pumpEnabled ? '0 0 16px rgba(0,255,200,0.5)' : 'none',
+              }}
+              title="Sidechain ducking — kick ducks music+atmos"
+            >
+              {pumpEnabled ? '● PUMP' : '○ PUMP'}
+            </Button>
+
+            <Button
+              onClick={() => {
+                const newState = !evolveEnabled
+                setEvolveEnabled(newState)
+                directorRef.current?.setEvolveEnabled(newState)
+              }}
+              className="h-11 gap-2 border font-mono text-xs font-bold uppercase tracking-[0.15em]"
+              style={{
+                borderColor: evolveEnabled ? 'rgba(255,46,136,0.6)' : 'rgba(63,63,70,0.8)',
+                color: evolveEnabled ? '#ff2e88' : '#71717a',
+                background: evolveEnabled ? 'rgba(255,46,136,0.1)' : 'rgba(24,24,27,0.8)',
+                boxShadow: evolveEnabled ? '0 0 16px rgba(255,46,136,0.5)' : 'none',
+              }}
+              title="Auto-evolve — pattern mutates every 4 bars (deterministic)"
+            >
+              {evolveEnabled ? '● EVOLVE' : '○ EVOLVE'}
             </Button>
           </div>
 
