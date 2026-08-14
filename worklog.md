@@ -1396,3 +1396,26 @@ Stage Summary:
 - Bonus fix (1 source file): src/psy-sampler/audio-graph.ts — removed 2 redundant `as Float32Array` casts (lines 133 + 269) and tightened makeSaturationCurve return type to `Float32Array<ArrayBuffer>` to satisfy TS 5.7+ generic-Float32Array typing. Pre-existing errors from the EQ+saturate extension; not strictly in STUB-FIX scope but blocked the "0 tsc errors" goal, so fixed.
 - Final verification: `npx tsc --noEmit` → 0 errors (excluding pre-existing `bun:test` module errors). `bun test tests/psy-sampler/` → 143 pass / 1 skip / 0 fail. `bun run lint` → 0 errors.
 - All 12 new AudioGraph nodes per instance (3 buses × [3 BiquadFilter + 1 WaveShaper]) now construct cleanly under every test stub. The 9 BiquadFilterNode instances × 3 AudioParams each (frequency/Q/gain) all carry setTargetAtTime stubs so setBusEQ() works. The 3 WaveShaperNode instances accept Float32Array curve assignment so setBusSaturation() works.
+
+---
+Task ID: WORKSTREAM-AB
+Agent: main (Workstream A+B implementation)
+Task: Implement velocity layers + round-robin + per-bus EQ + saturation (ROADMAP-TO-100 Phase 2)
+
+Work Log:
+- Read selector.ts, variance-rules.ts, types.ts, loader.ts, library.ts, manifest.ts, audio-graph.ts, mixer.tsx, components/types.ts.
+- A2 (velocity layers): Added `velocityRange?: [number, number]` to SampleManifestEntry + SampleMetadata. Updated loader.ts to copy velocityRange from manifest entry to asset metadata. Added `filterByVelocity()` to SelectionPolicy — narrows candidates by event velocity, falls back to unlayered samples. Backward-compatible (absent = no layering).
+- A3 (round-robin): Added `hitIndex?: number` to SelectionInput. SamplerDevice now tracks per-role hit counters (Map<SampleRole, number>) that increment on every successful trigger. Counter is event-order-dependent (deterministic). Offline renderer mirrors the hit counter for end-to-end determinism. When hitIndex is provided and >1 candidate remains after velocity filtering, selector cycles by hitIndex (true per-hit round-robin). Falls back to phrase-locked variant when hitIndex absent.
+- B1 (per-bus 3-band EQ): Added eqLow (lowShelf @ 200Hz), eqMid (peaking @ 1kHz, Q=0.8), eqHigh (highShelf @ 4kHz) BiquadFilterNodes per bus. New bus chain: input → eqLow → eqMid → eqHigh → saturation → saturationGain → duckGain → master + sends. Exposed setBusEQ(name, {low, mid, high}) / getBusEQ(name). Gains in dB (-24..+24), clamped, click-free via setTargetAtTime.
+- B3 (saturation): Added WaveShaperNode per bus with tanh soft-clip curve (makeSaturationCurve). 2x oversample for alias reduction. Exposed setBusSaturation(name, drive) / getBusSaturation(name). Drive 0=bypass (linear curve), 1-10=soft-clip intensity. Auto makeup gain (1.0→1.3 ramp) compensates peak level reduction. Pure math (tanh) — deterministic, byte-identical.
+- UI: Extended BusMixerState with eqLow/eqMid/eqHigh/saturation. Rewrote Mixer component with gain + 3 EQ sliders + saturation slider per bus. Added onBusEQ + onBusSaturation callbacks in page.tsx. Updated offline renderer to accept + apply busEQ + busSaturation (render matches live mixer state).
+- Delegated test stub fixing to STUB-FIX subagent (6 test files updated with createBiquadFilter + createWaveShaper stubs).
+- Wrote 18 new tests in velocity-eq-saturation.test.ts: 5 velocity-layer (soft/hard selection, boundary, fallback, determinism), 4 round-robin (cycling, determinism, phraseIndex-independence, fallback), 5 EQ (defaults, set, individual bands, clamping, independence), 4 saturation (defaults, set, clamping, independence).
+- Browser-verified: Mixer panel renders with 5 sliders per bus (gain + 3 EQ + saturation). Zero console errors. Zero page errors. Init → full UI works.
+
+Stage Summary:
+- 161 tests pass (was 143, +18 new), 1 skip, 0 fail. 0 TS errors. 0 lint errors.
+- Workstream A (velocity layers + round-robin) closes the machine-gunning competitive gap vs Kontakt/SMPLR.
+- Workstream B (EQ + saturation) closes the FX-breadth competitive gap — now has per-bus tone shaping + harmonic saturation like a real mixer.
+- Self-assessed score: 82/100 (was 78). ROADMAP-TO-100.md remaining: A1 oversampling, B2 master filter, C1 curated sample pack, D1 npm publish.
+- Commit pushed. Dev server running.
