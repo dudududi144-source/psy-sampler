@@ -1523,3 +1523,24 @@ Stage Summary:
 - A2 (velocity layers) + A3 (round-robin) now exercised with REAL multi-velocity sample sets, not just stubs.
 - Self-assessed score: 94/100 (was 92).
 - Commit: just pushed.
+
+---
+Task ID: UX1-UX2-UX3
+Agent: main (drag-paint + undo/redo + tap tempo)
+Task: Implement UX1 (drag-paint), UX2 (undo/redo), UX3 (tap tempo)
+
+Work Log:
+- Created useUndoRedo hook (src/lib/use-undo-redo.ts): generic bounded history (50 entries), dedup via JSON.stringify, reset() for clearing on pattern load. Uses a single state object {current, undo, redo} to avoid setState-within-setState issues.
+- Replaced pattern useState with useUndoRedo in page.tsx. Updated all setPattern callers: onToggleStep/onPaintStep use set() (pushes history), preset/slot/autosave loads use reset() (fresh history).
+- Added PatternEditor drag-paint: onPointerDown starts drag with velocity (determined by modifier keys + current cell state), onPointerEnter continues drag, onPointerUp ends. Pointer capture for smooth dragging. Shift=accent, Alt=erase.
+- Fixed critical immutability bug: onToggleStep/onPaintStep were calling director.toggleStep() which mutates the pattern in-place, then structuredClone'd the MUTATED pattern. This corrupted the undo stack because the undo stack held references to previous state objects that were also mutated. Fixed: now clone the React state pattern first, mutate the clone, then director.setPattern(clone) + setPatternWithHistory(clone).
+- Added effect to sync director pattern when undo/redo changes React state (director was stale after undo because undo bypasses the director).
+- Added undo/redo/tap buttons to transport bar. Updated use-keyboard-shortcuts to handle Ctrl+Z, Ctrl+Shift+Z, Ctrl+Y, and T (tap tempo).
+- Tap tempo: tracks timestamps of last 4 taps, computes average interval → BPM. Drops taps older than 2s. Sanity bounds 40-300 BPM.
+- Wrote 12 tests in undo-redo.test.ts: hook tests (4) + logic simulation tests (8).
+- Browser-verified: cleared localStorage for clean test. off→click→velocity 100→undo→off ✓. Undo/redo buttons enable/disable correctly. Zero errors.
+
+Stage Summary:
+- 242 tests pass (was 230, +12 new), 1 skip, 0 fail. 0 TS errors. 0 lint errors.
+- UX1 (drag-paint), UX2 (undo/redo), UX3 (tap tempo) all complete and browser-verified.
+- Commit: 5ca4aaa
