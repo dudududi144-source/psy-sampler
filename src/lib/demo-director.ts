@@ -20,7 +20,12 @@ import type { DemoTransport } from './demo-transport'
 import type { SampleRole } from '@/psy-sampler'
 import { createTimerWorker } from './timer-worker'
 
-export type Pattern = Record<SampleRole, boolean[]>
+export type Pattern = Record<SampleRole, number[]>
+// Each cell is a velocity 0..127 (MIDI standard). 0 = off (no note).
+// 1..127 = on with that velocity (127 = max). The director normalizes to 0..1
+// for NoteEvent.velocity. This replaces the old boolean[] pattern — a binary
+// on/off grid can't express dynamics, which makes a groovebox feel robotic.
+// Per-step velocity is the single biggest UX upgrade for expressiveness.
 
 export interface DirectorOptions {
   host: DeviceHost
@@ -32,16 +37,21 @@ export interface DirectorOptions {
 
 const STEPS = 16
 
+// Velocity constants (MIDI standard 0..127).
+const VEL_OFF = 0
+const VEL_DEFAULT = 100 // default velocity when toggling a step on
+const VEL_ACCENT = 127 // accent velocity (max)
+
 const DEFAULT_PATTERN: Pattern = {
-  kick:       [true, false, false, false, true, false, false, false, true, false, false, false, true, false, false, false],
-  bass:       [true, false, true, false, true, false, true, false, true, false, true, false, true, false, true, false],
-  lead:       [false, false, false, false, false, false, true, false, false, false, false, false, false, false, true, false],
-  'hat-closed': [false, true, false, true, false, true, false, true, false, true, false, true, false, true, false, true],
-  'hat-open':   [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false],
-  clap:       [false, false, false, false, true, false, false, false, false, false, false, false, true, false, false, false],
-  perc:       [false, false, true, false, false, false, false, true, false, false, true, false, false, false, false, true],
-  texture:    [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
-  fx:         [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false],
+  kick:       [100, 0, 0, 0, 100, 0, 0, 0, 100, 0, 0, 0, 100, 0, 0, 0],
+  bass:       [100, 0, 80, 0, 100, 0, 80, 0, 100, 0, 80, 0, 100, 0, 80, 0],
+  lead:       [0, 0, 0, 0, 0, 0, 90, 0, 0, 0, 0, 0, 0, 0, 110, 0],
+  'hat-closed': [0, 70, 0, 70, 0, 70, 0, 70, 0, 70, 0, 70, 0, 70, 0, 70],
+  'hat-open':   [0, 0, 0, 0, 80, 0, 0, 0, 0, 0, 0, 0, 80, 0, 0, 0],
+  clap:       [0, 0, 0, 0, 100, 0, 0, 0, 0, 0, 0, 0, 100, 0, 0, 0],
+  perc:       [0, 0, 70, 0, 0, 0, 0, 80, 0, 0, 70, 0, 0, 0, 0, 80],
+  texture:    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  fx:         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 }
 
 const DEFAULT_CONTEXT: MusicalContext = {
@@ -161,15 +171,19 @@ export class DemoDirector {
     for (const role of roles) {
       const row = mutated[role]
       if (!row) continue
-      // 30% chance to toggle a cell in this role.
+      // 30% chance to mutate a cell in this role.
+      // Toggle: if off (0) → turn on at a random velocity (70..127).
+      //         If on (>0) → turn off (0).
       if (rng.next() < 0.3) {
         const cellIdx = rng.int(0, STEPS - 1)
-        row[cellIdx] = !row[cellIdx]
+        const current = row[cellIdx] ?? 0
+        row[cellIdx] = current > 0 ? VEL_OFF : rng.int(70, 127)
       }
-      // 15% chance to toggle a second cell.
+      // 15% chance to mutate a second cell.
       if (rng.next() < 0.15) {
         const cellIdx = rng.int(0, STEPS - 1)
-        row[cellIdx] = !row[cellIdx]
+        const current = row[cellIdx] ?? 0
+        row[cellIdx] = current > 0 ? VEL_OFF : rng.int(70, 127)
       }
     }
     this.pattern = mutated
@@ -184,7 +198,21 @@ export class DemoDirector {
     if (step < 0 || step >= STEPS) return
     const row = this.pattern[role]
     if (!row) return
-    row[step] = !row[step]
+    // Cycle: 0 (off) → VEL_DEFAULT (100) → VEL_ACCENT (127) → 0 (off).
+    // This gives 3 velocity tiers via repeated clicks — enough for dynamics
+    // without needing a separate velocity slider (though one could be added).
+    const current = row[step] ?? 0
+    if (current === 0) row[step] = VEL_DEFAULT
+    else if (current < VEL_ACCENT) row[step] = VEL_ACCENT
+    else row[step] = VEL_OFF
+  }
+
+  /** Set a step to an explicit velocity (0=off, 1..127=on). Used by drag-paint. */
+  setStep(role: SampleRole, step: number, velocity: number): void {
+    if (step < 0 || step >= STEPS) return
+    const row = this.pattern[role]
+    if (!row) return
+    row[step] = Math.max(0, Math.min(127, Math.round(velocity)))
   }
 
   /** Replace the entire pattern (used by preset + slot loading). */
@@ -236,12 +264,15 @@ export class DemoDirector {
     const secPerStep = (60 / this.transport.currentBpm) / 4
     for (const role of Object.keys(this.pattern) as SampleRole[]) {
       const row = this.pattern[role]
-      if (!row || !row[step]) continue
+      if (!row) continue
+      const velocity = row[step] ?? 0
+      if (velocity <= 0) continue // 0 = off (no note)
       const note = ROLE_NOTES[role] ?? 60
       const event: NoteEvent = {
         type: 'note',
         note,
-        velocity: role === 'kick' ? 0.9 : role === 'bass' ? 0.7 : 0.6,
+        // Normalize MIDI velocity (0..127) to 0..1 for NoteEvent.velocity.
+        velocity: velocity / 127,
         duration: secPerStep * 0.9,
         channel: role, // channel = role (sampler parses it)
         at,
@@ -256,4 +287,4 @@ export class DemoDirector {
   }
 }
 
-export { DEFAULT_PATTERN, DEFAULT_CONTEXT, ROLE_NOTES, STEPS }
+export { DEFAULT_PATTERN, DEFAULT_CONTEXT, ROLE_NOTES, STEPS, VEL_DEFAULT, VEL_ACCENT, VEL_OFF }

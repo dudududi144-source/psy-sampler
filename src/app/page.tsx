@@ -570,11 +570,13 @@ export default function Home() {
           const swingOffset = isOffbeat ? swingFactor * secPerStep * 0.5 : 0
           const at = barStart + step * secPerStep + swingOffset
           for (const role of roles) {
-            if (!pattern[role]?.[step]) continue
+            const vel = pattern[role]?.[step] ?? 0
+            if (vel <= 0) continue
             events.push({
               type: 'note',
               note: ROLE_NOTES[role] ?? 60,
-              velocity: role === 'kick' ? 0.9 : role === 'bass' ? 0.7 : 0.6,
+              // Normalize MIDI velocity (0..127) to 0..1.
+              velocity: vel / 127,
               duration: secPerStep * 0.9,
               channel: role,
               at,

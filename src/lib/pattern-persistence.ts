@@ -102,10 +102,12 @@ const REQUIRED_ROLES: SampleRole[] = [
 const STEPS = 16
 
 /**
- * Validate a pattern object. Ensures all 9 roles exist and each has 16 booleans.
+ * Validate a pattern object. Ensures all 9 roles exist and each has 16 numbers.
+ * Accepts BOTH legacy boolean[] patterns (true→100, false→0) and new number[] patterns
+ * — this is the migration path for autosaved/saved patterns from before E1.
  * Falls back to DEFAULT_PATTERN for missing/invalid roles.
  */
-function validatePattern(obj: unknown): Pattern {
+export function validatePattern(obj: unknown): Pattern {
   if (typeof obj !== 'object' || obj === null) {
     return structuredClone(DEFAULT_PATTERN)
   }
@@ -114,9 +116,14 @@ function validatePattern(obj: unknown): Pattern {
   for (const role of REQUIRED_ROLES) {
     const row = raw[role]
     if (Array.isArray(row) && row.length === STEPS) {
-      result[role] = row.map((v) => v === true)
+      // Migrate: boolean true → velocity 100, false → 0. number → clamp 0..127.
+      result[role] = row.map((v) => {
+        if (typeof v === 'boolean') return v ? 100 : 0
+        if (typeof v === 'number' && Number.isFinite(v)) return Math.max(0, Math.min(127, Math.round(v)))
+        return 0
+      })
     }
-    // else: keep the default (all false)
+    // else: keep the default (all zeros)
   }
   return result
 }
@@ -132,11 +139,11 @@ export interface PatternPreset {
   pattern: Pattern
 }
 
-function emptyRow(): boolean[] {
-  return new Array(16).fill(false)
+function emptyRow(): number[] {
+  return new Array(16).fill(0)
 }
 
-function makePattern(overrides: Partial<Record<SampleRole, boolean[]>>): Pattern {
+function makePattern(overrides: Partial<Record<SampleRole, number[]>>): Pattern {
   const base: Pattern = {
     kick: emptyRow(),
     bass: emptyRow(),
@@ -156,25 +163,25 @@ function makePattern(overrides: Partial<Record<SampleRole, boolean[]>>): Pattern
   return base
 }
 
-function fourOnFloor(steps: number[] = [0, 4, 8, 12]): boolean[] {
+function fourOnFloor(steps: number[] = [0, 4, 8, 12], velocity = 100): number[] {
   const row = emptyRow()
-  for (const s of steps) row[s] = true
+  for (const s of steps) row[s] = velocity
   return row
 }
 
-function offbeat(steps: number[] = [2, 6, 10, 14]): boolean[] {
+function offbeat(steps: number[] = [2, 6, 10, 14], velocity = 70): number[] {
   const row = emptyRow()
-  for (const s of steps) row[s] = true
+  for (const s of steps) row[s] = velocity
   return row
 }
 
-function everyStep(): boolean[] {
-  return new Array(16).fill(true)
+function everyStep(velocity = 100): number[] {
+  return new Array(16).fill(velocity)
 }
 
-function sparseSteps(steps: number[]): boolean[] {
+function sparseSteps(steps: number[], velocity = 100): number[] {
   const row = emptyRow()
-  for (const s of steps) row[s] = true
+  for (const s of steps) row[s] = velocity
   return row
 }
 

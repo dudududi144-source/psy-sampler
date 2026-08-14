@@ -1,9 +1,19 @@
 'use client'
 
-// PatternEditor — 9×16 step grid with current-step highlight + now-playing row glow.
+// PatternEditor — 9×16 step grid with per-step velocity (0..127, MIDI standard).
+//
+// Each cell shows its velocity via:
+//   - Opacity (0 = invisible/off, 100 = 79% opacity, 127 = full)
+//   - A tiny velocity number inside accent cells (≥110)
+//   - Border glow proportional to velocity
+//
+// Click cycles: 0 (off) → 100 (default) → 127 (accent) → 0 (off).
+// This gives 3 velocity tiers without needing a separate velocity slider —
+// enough to make a groovebox feel expressive (ghost notes, accents, dynamics).
 
 import type { SampleRole } from '@/psy-sampler'
 import type { Pattern } from '@/lib/demo-director'
+import { VEL_ACCENT } from '@/lib/demo-director'
 import {
   ROLES,
   STEPS,
@@ -44,7 +54,7 @@ export function PatternEditor({
             CLR
           </button>
         </div>
-        <span className="font-mono text-[10px] text-zinc-500">click to toggle</span>
+        <span className="font-mono text-[10px] text-zinc-500">click: off → vel → accent → off</span>
       </div>
 
       {/* Step indicator */}
@@ -87,27 +97,38 @@ export function PatternEditor({
                 {ROLE_LABEL[role]}
               </div>
               <div className="flex flex-1 gap-1">
-                {pattern[role]?.map((on, step) => {
-                  const isActive = on
+                {pattern[role]?.map((velocity, step) => {
+                  const isActive = velocity > 0
                   const isCurrent = step === currentStep
                   const isBeat = step % 4 === 0
+                  const isAccent = velocity >= VEL_ACCENT
+                  // Opacity scales with velocity: 0=0%, 100=79%, 127=100%.
+                  const opacity = isActive ? 0.35 + (velocity / 127) * 0.65 : 1
                   return (
                     <button
                       key={step}
                       onClick={() => onToggle(role, step)}
-                      aria-label={`${role} step ${step + 1} ${on ? 'on' : 'off'}`}
-                      className="aspect-square flex-1 min-h-[44px] min-w-[44px] rounded-sm border transition-all hover:brightness-125 touch-manipulation"
+                      aria-label={`${role} step ${step + 1} ${isActive ? `velocity ${velocity}` : 'off'}`}
+                      className="relative aspect-square flex-1 min-h-[44px] min-w-[44px] items-center justify-center rounded-sm border transition-all hover:brightness-125 touch-manipulation"
                       style={{
                         backgroundColor: isActive ? color : isBeat ? 'rgba(39,39,42,0.9)' : 'rgba(24,24,27,0.8)',
                         borderColor: isCurrent ? '#00ffc8' : isActive ? color : isBeat ? '#3f3f46' : '#27272a',
                         boxShadow: isActive
-                          ? `0 0 8px ${color}80`
+                          ? `0 0 ${4 + velocity / 127 * 8}px ${color}80`
                           : isCurrent
                             ? '0 0 8px rgba(0,255,200,0.5)'
                             : 'none',
-                        opacity: isActive ? 0.9 : 1,
+                        opacity,
                       }}
-                    />
+                    >
+                      {isAccent && (
+                        <span
+                          className="pointer-events-none absolute inset-0 flex items-center justify-center font-mono text-[9px] font-bold text-black/70"
+                        >
+                          !
+                        </span>
+                      )}
+                    </button>
                   )
                 })}
               </div>
