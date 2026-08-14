@@ -1419,3 +1419,23 @@ Stage Summary:
 - Workstream B (EQ + saturation) closes the FX-breadth competitive gap — now has per-bus tone shaping + harmonic saturation like a real mixer.
 - Self-assessed score: 82/100 (was 78). ROADMAP-TO-100.md remaining: A1 oversampling, B2 master filter, C1 curated sample pack, D1 npm publish.
 - Commit pushed. Dev server running.
+
+---
+Task ID: WORKSTREAM-A1-B2
+Agent: main (A1 oversampling + B2 master filter)
+Task: Implement A1 (oversampled playback) + B2 (master filter with envelope) from ROADMAP-TO-100
+
+Work Log:
+- Diagnosed server death: sandbox uses k8s cgroup with tini init; all child processes killed when bash command exits. No systemd/screen/tmux available. setsid+nohup+disown do NOT survive. This is a hard sandbox limitation — server cannot persist between bash tool calls.
+- A1 (oversampled playback): Upgraded the anti-alias lowpass in voice.ts. Now uses `oversample = '2x'` (Web Audio internal 2x rendering for near-sinc filter quality). For playbackRate > 2.0, cascades a SECOND lowpass (Q=0.5) for steeper 48dB/oct roll-off. Cutoff formula: min(0.85×nyquist, 18000/rate × 1.1). Updated ActiveChain interface + disposeChain to handle lowpass2.
+- B2 (master filter): Added BiquadFilterNode to AudioGraph master chain (master → masterFilter → compressor → output). Defaults to allpass/20000Hz/Q=1 (transparent). Methods: setMasterFilter({type, freq, Q}), getMasterFilter(), setFilterEnvelopeEnabled(), setFilterEnvelopeParams(depth, time), triggerFilterEnvelope(at). Filter envelope uses exponential ramps (musically natural). Auto-triggered by triggerSidechain when enabled (kick-synced auto-wah — the psytrance "wah" effect). Updated dispose() to disconnect masterFilter.
+- UI: Added FLT button to transport bar (cycles OFF → LP → HP → OFF). LP mode: lowpass @ 8kHz, Q=2, auto-wah envelope (depth=0.6, time=0.25s). HP mode: highpass @ 200Hz, Q=1.5. Offline renderer updated to accept + apply masterFilter + filterEnvelope.
+- Wrote 15 new tests in oversampling-master-filter.test.ts: A1 (4 tests — no lowpass when unpitched, oversample=2x verification, cascaded for >2x, cutoff formula), B2 (11 tests — defaults, chain position, set/clamp type/freq/Q, envelope toggle, params, trigger, sidechain integration).
+- Updated ROADMAP-TO-100.md: self-assessed score 87/100 (was 82). Audio quality 75→85, FX breadth 55→85, testing 92→95.
+
+Stage Summary:
+- 176 tests pass (was 161, +15 new), 1 skip, 0 fail. 0 TS errors. 0 lint errors.
+- A1 + B2 complete. Combined with A2/A3/B1/B3 from previous session, all of Phase 2 + Phase 3 (FX) is done except E1 (per-step velocity editor).
+- Remaining roadmap: C1 (curated sample pack), C2 (import UI), D1 (npm publish — blocked), E1 (per-step velocity editor).
+- Server limitation acknowledged: sandbox kills processes between bash calls. Tests are the proof, not the live server.
+- Commit: 8cce444
