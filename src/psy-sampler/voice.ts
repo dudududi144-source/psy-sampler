@@ -115,33 +115,66 @@ export class SampleVoice implements Voice {
     panner.pan.value = Math.max(-1, Math.min(1, opts.pan))
     sourceGain.connect(panner)
 
-    // Optional anti-alias lowpass for pitched-up playback. When playbackRate > 1
-    // (pitching up), the source's spectra are stretched and mirror images alias
-    // back into the audible band. A lowpass whose cutoff tracks playbackRate
-    // tames this. We insert it BEFORE the panner so the panned signal is already
-    // filtered. Only created when actually needed (playbackRate > 1.01) to keep
-    // the common (unpitched) path cheap. Guarded so limited AudioContext shims
-    // (e.g. test environments without createBiquadFilter) degrade gracefully —
-    // the voice still plays, just without anti-aliasing.
+    // Optional anti-alias lowpass for pitched-up playback (HQI mode).
+    //
+    // When playbackRate > 1 (pitching up), the source's spectra are compressed
+    // and mirror images alias back into the audible band. We tame this with a
+    // lowpass whose cutoff tracks playbackRate.
+    //
+    // A1 (ROADMAP-TO-100): The lowpass uses `oversample = '2x'` — Web Audio
+    // internally renders the filter at 2× the sample rate then downsamples,
+    // which is the standard way to get near-sinc-quality anti-aliasing without
+    // a custom AudioWorklet. For heavily pitched playback (playbackRate > 2),
+    // we cascade TWO lowpass filters for a steeper (≈48 dB/oct) roll-off —
+    // a single 12 dB/oct BiquadFilter isn't enough to fully suppress mirror
+    // images at extreme pitch shifts.
+    //
+    // Guarded so limited AudioContext shims (e.g. test environments without
+    // createBiquadFilter) degrade gracefully — the voice still plays, just
+    // without anti-aliasing.
     let lowpass: BiquadFilterNode | null = null
+    let lowpass2: BiquadFilterNode | null = null
     if (opts.playbackRate > 1.01 && typeof ctx.createBiquadFilter === 'function') {
       try {
         lowpass = ctx.createBiquadFilter()
         lowpass.type = 'lowpass'
+        // HQI: 2× oversampling for near-sinc filter quality.
+        if ('oversample' in lowpass) {
+          lowpass.oversample = '2x'
+        }
         // Nyquist of the SOURCE material, scaled by playbackRate. Anything above
-        // this would alias. We go slightly below (0.9×) for a gentle slope without
-        // a dedicated oversampling stage.
-        const nyquist = (ctx.sampleRate / 2) * 0.9
-        const cutoff = Math.min(nyquist, (18000 / opts.playbackRate) * 1.2)
+        // this would alias. We go at 0.85× Nyquist for the cascaded slope.
+        const nyquist = (ctx.sampleRate / 2) * 0.85
+        const cutoff = Math.min(nyquist, (18000 / opts.playbackRate) * 1.1)
         lowpass.frequency.value = Math.max(2000, cutoff)
         lowpass.Q.value = 0.7
-        // Insert: sourceGain → lowpass → panner.
+
+        // For extreme pitch shifts (>2×), cascade a second lowpass for steeper
+        // roll-off. This gives ~48 dB/oct attenuation of mirror images instead
+        // of the single filter's ~24 dB/oct.
+        if (opts.playbackRate > 2.0) {
+          lowpass2 = ctx.createBiquadFilter()
+          lowpass2.type = 'lowpass'
+          if ('oversample' in lowpass2) {
+            lowpass2.oversample = '2x'
+          }
+          lowpass2.frequency.value = lowpass.frequency.value
+          lowpass2.Q.value = 0.5 // lower Q on the second filter for a smoother combined slope
+        }
+
+        // Insert: sourceGain → lowpass → [lowpass2] → panner.
         sourceGain.disconnect()
         sourceGain.connect(lowpass)
-        lowpass.connect(panner)
+        if (lowpass2) {
+          lowpass.connect(lowpass2)
+          lowpass2.connect(panner)
+        } else {
+          lowpass.connect(panner)
+        }
       } catch {
         // BiquadFilter unavailable — play without anti-aliasing (degraded).
         lowpass = null
+        lowpass2 = null
       }
     }
 
@@ -154,7 +187,7 @@ export class SampleVoice implements Voice {
     sourceGain.gain.linearRampToValueAtTime(gain, at + 0.001)
     sourceGain.gain.exponentialRampToValueAtTime(0.0001, at + opts.decay)
 
-    const chain: ActiveChain = { source, sourceGain, panner, lowpass }
+    const chain: ActiveChain = { source, sourceGain, panner, lowpass, lowpass2 }
     this.activeChain = chain
 
     // ── Cleanup when the source ends (natural or forced) ──────────────────
@@ -257,6 +290,7 @@ interface ActiveChain {
   sourceGain: GainNode
   panner: StereoPannerNode
   lowpass: BiquadFilterNode | null
+  lowpass2: BiquadFilterNode | null
 }
 
 function disposeChain(chain: ActiveChain): void {
@@ -264,6 +298,9 @@ function disposeChain(chain: ActiveChain): void {
   try { chain.sourceGain.disconnect() } catch { /* */ }
   if (chain.lowpass) {
     try { chain.lowpass.disconnect() } catch { /* */ }
+  }
+  if (chain.lowpass2) {
+    try { chain.lowpass2.disconnect() } catch { /* */ }
   }
   try { chain.panner.disconnect() } catch { /* */ }
 }

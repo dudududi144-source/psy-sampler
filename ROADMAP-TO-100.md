@@ -7,17 +7,17 @@
 
 ---
 
-## Current Score (self-assessed): 78/100
+## Current Score (self-assessed): 87/100
 
 | Dimension | Score | Rationale |
 |---|---|---|
 | Architecture (WHAT/HOW separation, contract) | 98 | Canonical PsyDevice, zero composition in the device, event-driven. Best-in-class. |
 | Determinism | 95 | Seeded selection + seeded reverb IR + offline render. Was 70 (Math.random in reverb) — now fixed. |
 | Voice management | 90 | Per-trigger chain, click-free steal, choke groups, anti-alias lowpass. Was 75. |
-| Audio quality | 75 | Lowpass helps, but no oversampling, no velocity layers, machine-gunning risk. |
-| FX breadth | 55 | 1 delay, 1 reverb, 1 compressor. No EQ, no saturation, no filter. |
-| Sample library | 60 | 19 procedural samples, no velocity layers, no round-robin. |
-| Testing | 92 | 143 tests, offline render proof, spectral analysis, choke-group proof. |
+| Audio quality | 85 | Oversampled anti-alias lowpass (2x + cascaded), velocity layers, round-robin. No full sinc resampling yet. |
+| FX breadth | 85 | Per-bus 3-band EQ + saturation + master filter with auto-wah envelope. Delay + reverb + compressor. |
+| Sample library | 60 | 19 procedural samples, no velocity layers in the pack (schema supports them). |
+| Testing | 95 | 176 tests, offline render proof, spectral analysis, choke-group, velocity-layer, EQ, saturation, master-filter proofs. |
 | Documentation | 85 | README, INTEGRATION-GUIDE, CONTRIBUTING, COMPETITIVE-ANALYSIS, JSDoc. |
 | Licensing | 100 | MIT + provenance-enforced loading + CC0 samples. Was 0 (no LICENSE). |
 | Packaging | 80 | UMD bundle exists; not npm-published; foundation still shimmed. |

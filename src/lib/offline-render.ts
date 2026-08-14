@@ -66,6 +66,10 @@ export interface OfflineRenderOptions {
   }
   /** Per-bus saturation drive (0..10). Mirrors live mixer state. */
   busSaturation?: { drum?: number; music?: number; atmos?: number }
+  /** Master filter config (mirrors live state). Absent = bypass (allpass). */
+  masterFilter?: { type: BiquadFilterType; freq: number; Q: number }
+  /** Master filter envelope (auto-wah on kick). Absent = disabled. */
+  filterEnvelope?: { enabled: boolean; depth?: number; time?: number }
   /** Filename for the download (if triggerDownload=true). */
   filename?: string
   /** If true, auto-trigger a browser download of the WAV. Default true. */
@@ -110,6 +114,8 @@ export async function renderOffline(opts: OfflineRenderOptions): Promise<Offline
     busGains,
     busEQ,
     busSaturation,
+    masterFilter,
+    filterEnvelope,
     filename = 'psy-sampler-render.wav',
     download = true,
   } = opts
@@ -150,6 +156,15 @@ export async function renderOffline(opts: OfflineRenderOptions): Promise<Offline
     if (busSaturation.drum !== undefined) audioGraph.setBusSaturation('drum', busSaturation.drum)
     if (busSaturation.music !== undefined) audioGraph.setBusSaturation('music', busSaturation.music)
     if (busSaturation.atmos !== undefined) audioGraph.setBusSaturation('atmos', busSaturation.atmos)
+  }
+  if (masterFilter) {
+    audioGraph.setMasterFilter(masterFilter)
+  }
+  if (filterEnvelope) {
+    audioGraph.setFilterEnvelopeEnabled(filterEnvelope.enabled)
+    if (filterEnvelope.depth !== undefined && filterEnvelope.time !== undefined) {
+      audioGraph.setFilterEnvelopeParams(filterEnvelope.depth, filterEnvelope.time)
+    }
   }
   if (sidechain?.enabled) {
     audioGraph.setSidechainEnabled(true)

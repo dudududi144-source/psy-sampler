@@ -120,6 +120,7 @@ export default function Home() {
   const [exporting, setExporting] = React.useState(false)
   const [pumpEnabled, setPumpEnabled] = React.useState(false)
   const [evolveEnabled, setEvolveEnabled] = React.useState(false)
+  const [filterMode, setFilterMode] = React.useState<'off' | 'lp' | 'hp'>('off')
   const [busState, setBusState] = React.useState<Record<BusName, BusMixerState>>({
     drum: { gain: 0.9, muted: false, solo: false, eqLow: 0, eqMid: 0, eqHigh: 0, saturation: 0 },
     music: { gain: 0.85, muted: false, solo: false, eqLow: 0, eqMid: 0, eqHigh: 0, saturation: 0 },
@@ -614,6 +615,12 @@ export default function Home() {
           music: busStateRef.current.music.saturation,
           atmos: busStateRef.current.atmos.saturation,
         },
+        masterFilter: filterMode !== 'off' ? {
+          type: filterMode === 'lp' ? 'lowpass' : 'highpass',
+          freq: filterMode === 'lp' ? 8000 : 200,
+          Q: filterMode === 'lp' ? 2 : 1.5,
+        } : undefined,
+        filterEnvelope: filterMode === 'lp' ? { enabled: true, depth: 0.6, time: 0.25 } : undefined,
         filename,
         download: true,
       })
@@ -631,7 +638,7 @@ export default function Home() {
     } finally {
       setExporting(false)
     }
-  }, [bpm, swing, pattern, masterVolume])
+  }, [bpm, swing, pattern, masterVolume, filterMode])
 
   // ─── Keyboard shortcuts ───────────────────────────────────────────────────
 
@@ -812,6 +819,36 @@ export default function Home() {
               title="Auto-evolve — pattern mutates every 4 bars (deterministic)"
             >
               {evolveEnabled ? '● EVOLVE' : '○ EVOLVE'}
+            </Button>
+
+            <Button
+              onClick={() => {
+                const next = filterMode === 'off' ? 'lp' : filterMode === 'lp' ? 'hp' : 'off'
+                setFilterMode(next)
+                const graph = bundleRef.current?.audioGraph
+                if (!graph) return
+                if (next === 'off') {
+                  graph.setMasterFilter({ type: 'allpass', freq: 20000, Q: 1 })
+                  graph.setFilterEnvelopeEnabled(false)
+                } else if (next === 'lp') {
+                  graph.setMasterFilter({ type: 'lowpass', freq: 8000, Q: 2 })
+                  graph.setFilterEnvelopeEnabled(true) // auto-wah on kick
+                  graph.setFilterEnvelopeParams(0.6, 0.25)
+                } else {
+                  graph.setMasterFilter({ type: 'highpass', freq: 200, Q: 1.5 })
+                  graph.setFilterEnvelopeEnabled(false)
+                }
+              }}
+              className="h-11 gap-2 border font-mono text-xs font-bold uppercase tracking-[0.15em]"
+              style={{
+                borderColor: filterMode !== 'off' ? 'rgba(96,165,250,0.6)' : 'rgba(63,63,70,0.8)',
+                color: filterMode !== 'off' ? '#60a5fa' : '#71717a',
+                background: filterMode !== 'off' ? 'rgba(96,165,250,0.1)' : 'rgba(24,24,27,0.8)',
+                boxShadow: filterMode !== 'off' ? '0 0 16px rgba(96,165,250,0.5)' : 'none',
+              }}
+              title="Master filter — LP=lowpass+auto-wah, HP=highpass, OFF=bypass"
+            >
+              {filterMode === 'off' ? '○ FLT' : filterMode === 'lp' ? '● LP' : '● HP'}
             </Button>
           </div>
 

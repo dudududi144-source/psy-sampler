@@ -40,6 +40,8 @@ interface Bus {
 export class AudioGraph {
   readonly ctx: AudioContext
   readonly master: GainNode
+  /** Master filter (lowpass/highpass/allpass) — the psytrance filter sweep. */
+  readonly masterFilter: BiquadFilterNode
   readonly compressor: DynamicsCompressorNode
   readonly analyser: AnalyserNode | null
   readonly delay: DelayNode
@@ -52,6 +54,11 @@ export class AudioGraph {
   private sidechainDepth = 0.6 // 0=none, 1=full mute
   private sidechainAttack = 0.008 // 8ms
   private sidechainRelease = 0.15 // 150ms
+  /** Master filter envelope state (for auto-sweep on kick, like an auto-filter). */
+  private filterEnvEnabled = false
+  private filterEnvDepth = 0.7 // 0=none, 1=full sweep to 0 Hz
+  private filterEnvTime = 0.3 // recovery time in seconds
+  private filterBaseFreq = 20000 // base cutoff (effectively open)
 
   constructor(ctx: AudioContext, opts: AudioGraphOptions = {}) {
     this.ctx = ctx
@@ -72,7 +79,20 @@ export class AudioGraph {
     if (this.analyser) this.analyser.fftSize = 256
 
     const outputTarget = opts.outputNode ?? ctx.destination
-    this.master.connect(this.compressor)
+
+    // Master filter — B2 (ROADMAP-TO-100): resonant lowpass/highpass on the
+    // master chain. Defaults to 'allpass' (transparent) so it's a no-op until
+    // the user engages it. The filter sits BEFORE the compressor so sweeps
+    // affect the signal before dynamic control. This is the psytrance "filter
+    // sweep" sound — close the filter during a build, snap it open on the drop.
+    this.masterFilter = ctx.createBiquadFilter()
+    this.masterFilter.type = 'allpass' // transparent by default
+    this.masterFilter.frequency.value = 20000 // effectively open
+    this.masterFilter.Q.value = 1.0 // gentle resonance
+
+    // Master chain: master → masterFilter → compressor → [analyser] → output
+    this.master.connect(this.masterFilter)
+    this.masterFilter.connect(this.compressor)
     if (this.analyser) {
       this.compressor.connect(this.analyser)
       this.analyser.connect(outputTarget)
@@ -326,6 +346,93 @@ export class AudioGraph {
       bus.duckGain.gain.linearRampToValueAtTime(dipGain, now + this.sidechainAttack)
       bus.duckGain.gain.linearRampToValueAtTime(1.0, now + this.sidechainAttack + this.sidechainRelease)
     }
+
+    // Also trigger the master filter envelope (auto-filter pump) if enabled.
+    // This closes the filter on each kick, then opens it over filterEnvTime —
+    // the classic psytrance "wah" that syncs to the kick.
+    if (this.filterEnvEnabled) {
+      this.triggerFilterEnvelope(now)
+    }
+  }
+
+  // ─── Master filter (B2) ─────────────────────────────────────────────────────
+
+  /**
+   * Set the master filter type + base frequency + resonance.
+   *   type: 'allpass' (bypass) | 'lowpass' | 'highpass' | 'bandpass' | 'notch'
+   *   freq: cutoff frequency in Hz (20..20000)
+   *   Q: resonance (0.0001..30). Higher = more pronounced peak at the cutoff.
+   *
+   * Default is allpass/20000/Q=1 (transparent). Switch to lowpass for the
+   * classic psytrance filter close; highpass for thinning the mix.
+   */
+  setMasterFilter(opts: { type?: BiquadFilterType; freq?: number; Q?: number }): void {
+    if (opts.type !== undefined) {
+      this.masterFilter.type = opts.type
+    }
+    if (opts.freq !== undefined) {
+      this.filterBaseFreq = Math.max(20, Math.min(20000, opts.freq))
+      this.masterFilter.frequency.setTargetAtTime(this.filterBaseFreq, this.ctx.currentTime, 0.02)
+    }
+    if (opts.Q !== undefined) {
+      this.masterFilter.Q.setTargetAtTime(Math.max(0.0001, Math.min(30, opts.Q)), this.ctx.currentTime, 0.02)
+    }
+  }
+
+  /** Get the current master filter state. */
+  getMasterFilter(): { type: BiquadFilterType; freq: number; Q: number } {
+    return {
+      type: this.masterFilter.type,
+      freq: this.filterBaseFreq,
+      Q: this.masterFilter.Q.value,
+    }
+  }
+
+  /**
+   * Enable/disable the filter envelope (auto-filter pump on every kick).
+   * When enabled, each kick (via triggerSidechain) sweeps the filter down by
+   * `depth` × baseFreq, then recovers over `time` seconds. This is the
+   * psytrance "wah" effect synced to the kick.
+   */
+  setFilterEnvelopeEnabled(enabled: boolean): void {
+    this.filterEnvEnabled = enabled
+    if (!enabled) {
+      // Reset filter to base frequency.
+      this.masterFilter.frequency.setTargetAtTime(this.filterBaseFreq, this.ctx.currentTime, 0.05)
+    }
+  }
+
+  get isFilterEnvelopeEnabled(): boolean {
+    return this.filterEnvEnabled
+  }
+
+  /** Set the filter envelope depth (0=none, 1=full sweep to ~0 Hz) and recovery time. */
+  setFilterEnvelopeParams(depth: number, time: number): void {
+    this.filterEnvDepth = Math.max(0, Math.min(1, depth))
+    this.filterEnvTime = Math.max(0.02, Math.min(2.0, time))
+  }
+
+  get filterEnvelopeDepth(): number { return this.filterEnvDepth }
+  get filterEnvelopeTime(): number { return this.filterEnvTime }
+
+  /**
+   * Trigger a filter sweep: dip the cutoff by `depth` × baseFreq, then recover
+   * over `filterEnvTime` seconds. Called automatically by triggerSidechain when
+   * the envelope is enabled, or can be called manually for custom sweeps.
+   *
+   * Uses exponential ramps (musically natural for filter frequency).
+   */
+  triggerFilterEnvelope(at: number): void {
+    const now = Math.max(at, this.ctx.currentTime)
+    const dipFreq = Math.max(20, this.filterBaseFreq * (1.0 - this.filterEnvDepth))
+    try {
+      this.masterFilter.frequency.cancelScheduledValues(now)
+      this.masterFilter.frequency.setValueAtTime(this.masterFilter.frequency.value, now)
+      this.masterFilter.frequency.exponentialRampToValueAtTime(dipFreq, now + this.sidechainAttack)
+      this.masterFilter.frequency.exponentialRampToValueAtTime(Math.max(20, this.filterBaseFreq), now + this.sidechainAttack + this.filterEnvTime)
+    } catch {
+      // exponentialRampToValueAtTime throws if value is 0 or negative — guarded.
+    }
   }
 
   // ─── Internals ──────────────────────────────────────────────────────────────
@@ -367,6 +474,7 @@ export class AudioGraph {
 
   dispose(): void {
     this.master.disconnect()
+    this.masterFilter.disconnect()
     this.compressor.disconnect()
     if (this.analyser) this.analyser.disconnect()
     this.delay.disconnect()
