@@ -1544,3 +1544,23 @@ Stage Summary:
 - 242 tests pass (was 230, +12 new), 1 skip, 0 fail. 0 TS errors. 0 lint errors.
 - UX1 (drag-paint), UX2 (undo/redo), UX3 (tap tempo) all complete and browser-verified.
 - Commit: 5ca4aaa
+
+---
+Task ID: UX4-SONG-MODE
+Agent: main (UX4 song mode)
+Task: Implement UX4 — chain saved slots into A→B→A→C arrangement
+
+Work Log:
+- Created src/lib/song-persistence.ts: Song/SongSegment types, save/load/validate, resolveSong (maps segments to patterns via slots), songDurationSec. Validates: clamps slot 0-3, bars 1-64, filters invalid segments.
+- Created src/components/song-editor.tsx: SongEditor UI with add/remove/reorder segments, slot selector, bars +/-, live progress indicator (current segment highlighted + bar counter), SONG toggle button (disabled when no segments).
+- Added song mode to DemoDirector: loadSong(segments, onSegmentChange) loads arrangement + first pattern. setSongMode(enabled) toggles auto-advancement. Bar-boundary logic in tick(): when current segment's bars are done, advances to next segment and swaps pattern. When last segment ends, stops playback. Pattern immutability (loadSong clones patterns).
+- Wired into page.tsx: song state (song, songMode, songSegment, songBar), onSongChange (saves to localStorage), onToggleSongMode (resolves segments via saved slots, loads into director, starts playback). SongEditor placed below Mixer/Presets/Slots grid.
+- Wrote 20 new tests in song-mode.test.ts: persistence (6), resolveSong (3), songDurationSec (2), director (8), localStorage (1).
+- Browser-verified: "SONG · ARRANGEMENT" panel appears, SONG toggle disabled until segments added. Zero errors.
+
+Stage Summary:
+- 262 tests pass (was 242, +20 new), 1 skip, 0 fail. 0 TS errors. 0 lint errors.
+- UX4 complete. The sampler can now sketch full track arrangements (A→B→A→C).
+- Self-assessed score: 95/100 (was 94).
+- Remaining: D1 (npm publish — blocked by foundation owner).
+- Commit: 4abb9ce
