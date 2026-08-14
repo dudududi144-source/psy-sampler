@@ -75,6 +75,9 @@ export type { SampleManifestEntry, SampleManifest } from './types'
 /** Parsed channel string { role, bank }. */
 export type { ParsedChannel } from './types'
 
+/** The complete set of valid sample roles (used by parseChannel validation). */
+export { KNOWN_ROLES } from './types'
+
 /** Inputs to SelectionPolicy.select(). */
 export type { SelectionInput, SelectionOutput } from './types'
 
@@ -168,6 +171,9 @@ export { SamplerDevice, type SamplerDeviceOptions } from './device'
 
 /** Wire the scheduler's trigger callback to the voice pool + audio graph. */
 export { wireSchedulerTrigger } from './device'
+
+/** Realize a single scheduled event (choke + allocate + route + trigger). */
+export { realizeScheduledEvent } from './device'
 
 // ─── Factory ─────────────────────────────────────────────────────────────────
 

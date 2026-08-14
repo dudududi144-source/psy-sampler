@@ -42,7 +42,7 @@ import {
   type MusicalTransport,
 } from '@/psy-foundation-shim'
 import { DemoTransport } from '@/lib/demo-transport'
-import { DemoDirector, DEFAULT_PATTERN, type Pattern } from '@/lib/demo-director'
+import { DemoDirector, DEFAULT_PATTERN, ROLE_NOTES, type Pattern } from '@/lib/demo-director'
 import {
   getSlotNames,
   saveToSlot,
@@ -53,7 +53,7 @@ import {
   type PatternPreset,
 } from '@/lib/pattern-persistence'
 import { saveSessionState, loadSessionState, type SessionState } from '@/lib/session-persistence'
-import { renderAndDownloadWavLive } from '@/lib/wav-export'
+import { renderOffline } from '@/lib/offline-render'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { ErrorBoundary } from '@/components/error-boundary'
@@ -534,34 +534,78 @@ export default function Home() {
   const handleExportWav = React.useCallback(async () => {
     const ctx = ctxRef.current
     const bundle = bundleRef.current
-    if (!ctx || !bundle) return
+    const director = directorRef.current
+    if (!ctx || !bundle || !director) return
     setExporting(true)
-    // Auto-start playback if not playing, so we capture something.
-    const wasPlaying = directorRef.current?.isRunning ?? false
-    exportStartedRef.current = false
-    if (!wasPlaying) {
-      directorRef.current?.start()
-      setIsPlaying(true)
-      exportStartedRef.current = true
-    }
     try {
-      const durationSec = 8 // ~2 bars at 145 BPM
-      const filename = `psy-sampler-${Date.now()}.wav`
-      // FIX Bug 3: use renderAndDownloadWavLive (browser-portable, mimeType fallback).
-      await renderAndDownloadWavLive(ctx, bundle.audioGraph.master, durationSec, filename)
-    } catch (err) {
-      console.error('[psy-sampler] WAV export failed:', err)
-      alert(`WAV export failed: ${err instanceof Error ? err.message : String(err)}`)
-    } finally {
-      // Only stop if WE started it AND the user didn't take over during export.
-      if (exportStartedRef.current) {
-        directorRef.current?.stop()
-        setIsPlaying(false)
-        exportStartedRef.current = false
+      // Generate NoteEvents from the current pattern for `bars` bars.
+      // This mirrors what the DemoDirector would play live, but we render them
+      // OFFLINE (faster than real-time, deterministic, no MediaRecorder).
+      const bars = 4 // ~6.6s at 145 BPM — a full 4-bar loop
+      const secPerStep = 60 / bpm / 4
+      const events: import('@/psy-foundation-shim').NoteEvent[] = []
+      const swingFactor = swing / 100 // director takes 0..0.7
+      const roles = Object.keys(pattern) as SampleRole[]
+      for (let bar = 0; bar < bars; bar++) {
+        const barStart = bar * secPerStep * 16
+        for (let step = 0; step < 16; step++) {
+          const isOffbeat = step % 2 === 1
+          const swingOffset = isOffbeat ? swingFactor * secPerStep * 0.5 : 0
+          const at = barStart + step * secPerStep + swingOffset
+          for (const role of roles) {
+            if (!pattern[role]?.[step]) continue
+            events.push({
+              type: 'note',
+              note: ROLE_NOTES[role] ?? 60,
+              velocity: role === 'kick' ? 0.9 : role === 'bass' ? 0.7 : 0.6,
+              duration: secPerStep * 0.9,
+              channel: role,
+              at,
+            })
+          }
+        }
       }
+      const durationSec = bars * secPerStep * 16 + 1.0 // +1s tail for reverb/decay
+      const filename = `psy-sampler-${bpm}bpm-${bars}bar-${Date.now()}.wav`
+      // Snapshot the transport (seed for deterministic selection).
+      const transport = transportRef.current?.snapshot(ctx.currentTime)
+      if (!transport) return
+      const result = await renderOffline({
+        library: bundle.library,
+        selectionPolicy: bundle.selectionPolicy,
+        events,
+        transport,
+        durationSec,
+        sampleRate: 44100,
+        masterGain: masterVolume,
+        voiceCount: 32,
+        sidechain: {
+          enabled: bundle.audioGraph.isSidechainEnabled,
+          depth: bundle.audioGraph.sidechainDepthValue,
+        },
+        busGains: {
+          drum: busStateRef.current.drum.gain,
+          music: busStateRef.current.music.gain,
+          atmos: busStateRef.current.atmos.gain,
+        },
+        filename,
+        download: true,
+      })
+      toast({
+        title: `Rendered ${result.eventsRealized} events in ${result.renderMs.toFixed(0)}ms`,
+        description: `${bars} bars @ ${bpm} BPM · ${durationSec.toFixed(1)}s · deterministic WAV`,
+      })
+    } catch (err) {
+      console.error('[psy-sampler] Offline WAV export failed:', err)
+      toast({
+        title: 'WAV export failed',
+        description: err instanceof Error ? err.message : String(err),
+        variant: 'destructive',
+      })
+    } finally {
       setExporting(false)
     }
-  }, [])
+  }, [bpm, swing, pattern, masterVolume])
 
   // ─── Keyboard shortcuts ───────────────────────────────────────────────────
 

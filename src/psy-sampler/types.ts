@@ -25,6 +25,15 @@ export type SampleBank = string
 /** Category bucket used by the manifest. */
 export type SampleCategory = SampleRole
 
+/**
+ * The complete set of valid sample roles. Used by parseChannel() to reject
+ * unknown channels at the device boundary instead of silently treating them as
+ * 'drum' (which would route junk to the drum bus — a latent correctness bug).
+ */
+export const KNOWN_ROLES: ReadonlySet<SampleRole> = new Set<SampleRole>([
+  'kick', 'bass', 'lead', 'hat-closed', 'hat-open', 'clap', 'perc', 'texture', 'fx',
+])
+
 // ─── Provenance ──────────────────────────────────────────────────────────────
 
 /**
@@ -169,15 +178,26 @@ export interface SampleManifest {
  * The channel string is the only carrier of selection intent (GAP-S3 in audit).
  */
 export interface ParsedChannel {
-  role: SampleRole
+  /** The validated role, or null if the channel string is not a known role. */
+  role: SampleRole | null
   bank: SampleBank | null
+  /** The raw role token (for debug logging when invalid). */
+  rawRole: string
 }
 
+/**
+ * Parse a NoteEvent.channel string ("role" or "role:bank") into a structured
+ * form. Returns role=null when the role token is not a known SampleRole — the
+ * device MUST check for null and skip the event rather than routing junk to a
+ * default bus. This is a correctness guard: previously the role was blindly
+ * cast, which silently routed unknown channels to the drum bus.
+ */
 export function parseChannel(channel: string): ParsedChannel {
   const parts = channel.split(':')
-  const role = parts[0] as SampleRole
+  const rawRole = parts[0] ?? ''
+  const role = KNOWN_ROLES.has(rawRole as SampleRole) ? (rawRole as SampleRole) : null
   const bank = parts.length > 1 && parts[1] ? parts[1] : null
-  return { role, bank }
+  return { role, bank, rawRole }
 }
 
 // ─── Selection inputs ────────────────────────────────────────────────────────

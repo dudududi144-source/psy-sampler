@@ -136,7 +136,7 @@ export function DebugPanel({ stats, eventLog }: { stats: DeviceStats; eventLog: 
           ) : (
             eventLog.map((e) => {
               const role = parseChannel(e.channel).role
-              const color = ROLE_COLORS[role] ?? '#a1a1aa'
+              const color = role ? (ROLE_COLORS[role] ?? '#a1a1aa') : '#a1a1aa'
               return (
                 <div
                   key={e.id}

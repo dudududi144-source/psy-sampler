@@ -218,15 +218,36 @@ export class AudioGraph {
 
   // ─── Internals ──────────────────────────────────────────────────────────────
 
+  /**
+   * Generate the reverb impulse response DETERMINISTICALLY.
+   *
+   * CRITICAL: This MUST NOT use Math.random() — that would make every render
+   * produce a different reverb tail, destroying the project's core determinism
+   * guarantee (same seed → byte-identical audio). We use a seeded mulberry32 RNG
+   * with a FIXED seed so the IR is byte-identical across runs, contexts, and
+   * machines. This is the difference between "deterministic selection" (which
+   * we already had) and "deterministic AUDIO" (which we now actually have).
+   */
   private makeImpulse(durationSec: number, decay: number): AudioBuffer {
     const rate = this.ctx.sampleRate
     const length = Math.floor(rate * durationSec)
     const impulse = this.ctx.createBuffer(2, length, rate)
     for (let ch = 0; ch < 2; ch++) {
       const data = impulse.getChannelData(ch)
+      // Each channel uses a FIXED per-channel seed so L/R are decorrelated but
+      // still byte-identical across runs/contexts/machines. Never use Math.random
+      // here — it would destroy the project's determinism guarantee.
+      let chSeed = 0x9e3779b9 ^ (ch * 0x85ebca6b)
+      const chRng = (): number => {
+        chSeed |= 0
+        chSeed = (chSeed + 0x6d2b79f5) | 0
+        let t = Math.imul(chSeed ^ (chSeed >>> 15), 1 | chSeed)
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+      }
       for (let i = 0; i < length; i++) {
         const t = i / length
-        data[i] = (Math.random() * 2 - 1) * Math.pow(1 - t, decay)
+        data[i] = (chRng() * 2 - 1) * Math.pow(1 - t, decay)
       }
     }
     return impulse

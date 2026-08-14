@@ -24,7 +24,7 @@
 // Timing rule: AudioContext.currentTime is the ONLY clock. The 25ms timer only
 // WAKES the drain loop — it is never the musical clock.
 
-import type { SampleId, VoiceTriggerOptions, BusName } from './types'
+import type { SampleId, VoiceTriggerOptions, BusName, SampleRole } from './types'
 import { createTimerWorker } from '../lib/timer-worker'
 
 export interface ScheduledSampleEvent {
@@ -34,6 +34,8 @@ export interface ScheduledSampleEvent {
   opts: VoiceTriggerOptions
   /** Bus to route to. */
   bus: BusName
+  /** Role that produced this event (for choke-group lookup). */
+  role: SampleRole
 }
 
 export type VoiceTriggerFn = (event: ScheduledSampleEvent) => void

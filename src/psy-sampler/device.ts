@@ -30,7 +30,7 @@ import type { SelectionPolicy } from './selector'
 import type { RealizationScheduler, ScheduledSampleEvent } from './realization-scheduler'
 import type { AudioGraph } from './audio-graph'
 import type { SampleVoice } from './voice'
-import { parseChannel, roleToBus } from './types'
+import { parseChannel, roleToBus, type SampleRole } from './types'
 
 export interface SamplerDeviceOptions {
   audioContext: AudioContext
@@ -123,7 +123,16 @@ export class SamplerDevice implements PsyDevice {
 
   private handleNoteEvent(event: NoteEvent): void {
     const parsed = parseChannel(event.channel)
-    const bus = roleToBus(parsed.role)
+    // GUARD: reject unknown channels instead of blindly routing to the drum bus.
+    // This is a correctness fix — previously parseChannel did a blind `as SampleRole`
+    // cast and unknown roles silently landed on the drum bus via roleToBus's default.
+    if (parsed.role === null) {
+      this.notesSkipped += 1
+      this.lastEvent = { channel: event.channel, note: event.note, velocity: event.velocity, at: event.at, triggered: false }
+      return
+    }
+    const role = parsed.role
+    const bus = roleToBus(role)
 
     // Selection — genuinely deterministic (seeded, stateless).
     // seed comes from transport.revision (stable per transport state).
@@ -134,7 +143,7 @@ export class SamplerDevice implements PsyDevice {
       : 0
     const selection = this.opts.selectionPolicy.selectWithNote(
       {
-        role: parsed.role,
+        role,
         bank: parsed.bank,
         velocity: event.velocity,
         phraseIndex,
@@ -159,10 +168,10 @@ export class SamplerDevice implements PsyDevice {
 
     this.lastEvent = { channel: event.channel, note: event.note, velocity: event.velocity, at: event.at, sampleId: selection.sampleId, triggered: true }
 
-    const decay = this.opts.selectionPolicy.decayFor(parsed.role)
+    const decay = this.opts.selectionPolicy.decayFor(role)
 
     // Trigger sidechain ducking when a kick fires (if enabled).
-    if (parsed.role === 'kick') {
+    if (role === 'kick') {
       this.opts.audioGraph.triggerSidechain(event.at)
     }
 
@@ -174,6 +183,7 @@ export class SamplerDevice implements PsyDevice {
       sampleId: selection.sampleId,
       buffer: asset.audioBuffer,
       bus,
+      role,
       opts: {
         at: event.at,
         playbackRate: selection.playbackRate,
@@ -206,8 +216,68 @@ export class SamplerDevice implements PsyDevice {
 }
 
 /**
+ * Choke-group map. When a voice with role R fires, every currently-sounding
+ * voice whose tag (role) is in CHOKE_GROUPS[R] is choked (fast 2ms fade-out).
+ *
+ * This is the drum-sampler standard: a closed hi-hat cuts off any open hi-hat,
+ * mimicking a physical hi-hat that can't be open and closed at once. Kontakt
+ * calls these "voice groups"; Ableton Drum Rack calls them "choke"; SMPLR uses
+ * `offBy`. Without this, open + closed hats stack into a wash — a tell-tale sign
+ * of an amateur drum sampler.
+ *
+ * Keys are the TRIGGERING role; values are the roles to cut off.
+ */
+const CHOKE_GROUPS: Record<SampleRole, SampleRole[]> = {
+  kick: [],
+  bass: [],
+  lead: [],
+  // Closed hat chokes open hat — the canonical drum-sampler choke.
+  'hat-closed': ['hat-open'],
+  'hat-open': [],
+  clap: [],
+  perc: [],
+  texture: [],
+  fx: [],
+}
+
+/**
+ * Realize ONE scheduled event: apply choke groups, allocate a voice, tag it,
+ * route to bus, trigger. Stateless (other than voice-pool side effects) —
+ * shared by the live RealizationScheduler (via wireSchedulerTrigger) and the
+ * offline renderer (which calls it directly without a scheduler).
+ */
+export function realizeScheduledEvent(
+  event: ScheduledSampleEvent,
+  voicePool: VoicePool<SampleVoice>,
+  audioGraph: AudioGraph
+): void {
+  // 1. Apply choke groups: choke (fast fade) any active voice whose tag is a
+  //    choke target of the triggering role.
+  const targets = CHOKE_GROUPS[event.role]
+  if (targets && targets.length > 0) {
+    const targetSet = new Set<SampleRole>(targets)
+    for (const v of voicePool.all) {
+      if (v.active && v.tag != null && targetSet.has(v.tag as SampleRole)) {
+        v.choke(event.at)
+      }
+    }
+  }
+  // 2. Allocate a voice (round-robin; steals oldest if all active).
+  const voice = voicePool.allocate()
+  // 3. Tag it with the role so future chokes can find it.
+  voice.tag = event.role
+  // 4. Route to the correct bus (sets the NEXT trigger's output — does NOT
+  //    affect any in-flight tail on this voice).
+  const busInput = audioGraph.getBusInput(event.bus)
+  voice.connectTo(busInput)
+  // 5. Trigger.
+  voice.trigger(event.buffer, event.opts)
+}
+
+/**
  * Wire the trigger callback: when the realization scheduler fires an event,
- * allocate a voice from the pool, route it to the correct bus, and trigger it.
+ * delegate to realizeScheduledEvent (with error catching so one bad event
+ * doesn't kill the tick loop).
  */
 export function wireSchedulerTrigger(
   scheduler: RealizationScheduler,
@@ -215,9 +285,6 @@ export function wireSchedulerTrigger(
   audioGraph: AudioGraph
 ): void {
   scheduler.setTriggerFn((event: ScheduledSampleEvent) => {
-    const voice = voicePool.allocate()
-    const busInput = audioGraph.getBusInput(event.bus as ReturnType<typeof roleToBus>)
-    voice.connectTo(busInput)
-    voice.trigger(event.buffer, event.opts)
+    realizeScheduledEvent(event, voicePool, audioGraph)
   })
 }
