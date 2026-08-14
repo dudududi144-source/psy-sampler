@@ -1591,3 +1591,25 @@ Stage Summary:
 - Production server running (HTTP 200 on both 3000 + 81).
 - MIDI input works (degrades gracefully if unsupported).
 - Commit: fd3bb8c
+
+---
+Task ID: REBUILD-LOST-MODULES
+Agent: main
+Task: Rebuild modules lost to sandbox git reset
+
+Work Log:
+- Discovered sandbox reset git history — lost commits from timeline/automation/project/live-recorder/multi-output work. page.tsx reverted to version with MIDI but without later features.
+- Rebuilt: project-persistence.ts (ProjectState, createProject, serialize/deserialize, validate, downloadProject, readProjectFile)
+- Rebuilt: live-recorder.ts (LiveRecorder class: start/stop/cancel, MediaRecorder, WAV encoding)
+- Rebuilt: automation.ts (AutomationTrack, AutomationBank, sampleTrack linear interpolation)
+- Rebuilt: timeline-view.tsx (visual timeline with playhead + segment blocks)
+- Rebuilt: automation-editor.tsx (breakpoint editor with SVG polyline)
+- Re-added to page.tsx: REC button (live recording), SAVE/LOAD PROJ buttons (project file), state + handlers.
+- Wrote 12 tests for rebuilt modules: project round-trip, live recorder API, automation track/bank/interpolation.
+- Browser-verified: ○ REC, 💾 SAVE, 📂 LOAD buttons all appear. Zero errors.
+
+Stage Summary:
+- 274 tests pass (was 262, +12), 0 fail, 0 TS errors, 0 lint errors.
+- Server running HTTP 200.
+- Commit: just pushed.
+- Note: audio-graph limiter + multi-output were also lost but not yet rebuilt. Core features are back.
