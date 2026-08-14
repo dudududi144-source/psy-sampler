@@ -1467,3 +1467,34 @@ Stage Summary:
 - Self-assessed score: 90/100 (was 87).
 - Remaining roadmap: C1 (curated sample pack), C2 (import UI), D1 (npm publish — blocked by foundation owner).
 - Commit: fd0156c
+
+---
+Task ID: C2-SAMPLE-IMPORT
+Agent: main (C2 sample import UI)
+Task: Implement C2 — drag-drop WAV import with mandatory provenance assertion
+
+Work Log:
+- Added SampleLibrary.addFromBuffer(id, audioBuffer, opts) — runtime import path.
+  Computes features (peak, rms, duration), downmixes to mono, enforces provenance
+  (refuses commercialUse=false, empty license/source). Reuses add() for dedup.
+  Sets dateAcquired to today if not provided.
+- Added toMono() private method to SampleLibrary (same logic as SampleLoader).
+- Created SampleImporter component (src/components/sample-importer.tsx):
+  drag-drop zone, file browse, decodeAudioData, provenance form (role, license,
+  author, source, rootNote, commercialUse checkbox, attribution), double
+  enforcement (UI + library), toast feedback.
+- Wired into page.tsx: onImportSample handler calls library.addFromBuffer(),
+  refreshes samples list, shows toast. Added audioCtx state (was using ctxRef
+  during render — lint error fixed by using state).
+- Wrote 13 new tests in sample-import.test.ts: success path (7), provenance
+  enforcement (4), coexistence with manifest samples (2).
+- Browser-verified: manifest loads HTTP 200 (the 502 was server death, not a
+  bug). IMPORT panel appears in UI. Zero console errors.
+
+Stage Summary:
+- 205 tests pass (was 192, +13 new), 1 skip, 0 fail. 0 TS errors. 0 lint errors.
+- C2 complete. Provenance is now enforced on BOTH paths (manifest + runtime import).
+- Self-assessed score: 92/100 (was 90).
+- Remaining: C1 (curated sample pack — needs sample acquisition, not code),
+  D1 (npm publish — blocked by foundation owner).
+- Commit: 2ee0687
