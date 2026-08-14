@@ -53,6 +53,7 @@ import {
   type PatternPreset,
 } from '@/lib/pattern-persistence'
 import { saveSessionState, loadSessionState, type SessionState } from '@/lib/session-persistence'
+import { loadSong, saveSong, resolveSong, songDurationSec, type Song } from '@/lib/song-persistence'
 import { renderOffline } from '@/lib/offline-render'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
@@ -66,6 +67,7 @@ import { DebugPanel } from '@/components/debug-panel'
 import { PatternEditor } from '@/components/pattern-editor'
 import { SampleLibrary } from '@/components/sample-library'
 import { SampleImporter } from '@/components/sample-importer'
+import { SongEditor } from '@/components/song-editor'
 import { Visualizer } from '@/components/visualizer'
 import { Mixer } from '@/components/mixer'
 import { PresetsPanel, PatternSlots } from '@/components/presets-panel'
@@ -124,6 +126,11 @@ export default function Home() {
   const [pumpEnabled, setPumpEnabled] = React.useState(false)
   const [evolveEnabled, setEvolveEnabled] = React.useState(false)
   const [filterMode, setFilterMode] = React.useState<'off' | 'lp' | 'hp'>('off')
+  // ─── Song mode state (UX4) ──────────────────────────────────────────────────
+  const [song, setSong] = React.useState<Song>(loadSong())
+  const [songMode, setSongMode] = React.useState(false)
+  const [songSegment, setSongSegment] = React.useState(0)
+  const [songBar, setSongBar] = React.useState(0)
   const [busState, setBusState] = React.useState<Record<BusName, BusMixerState>>({
     drum: { gain: 0.9, muted: false, solo: false, eqLow: 0, eqMid: 0, eqHigh: 0, saturation: 0 },
     music: { gain: 0.85, muted: false, solo: false, eqLow: 0, eqMid: 0, eqHigh: 0, saturation: 0 },
@@ -476,6 +483,57 @@ export default function Home() {
   const onRedo = React.useCallback(() => {
     redo()
   }, [redo])
+
+  // ─── Song mode (UX4) ───────────────────────────────────────────────────────
+
+  const onSongChange = React.useCallback((newSong: Song) => {
+    setSong(newSong)
+    saveSong(newSong)
+  }, [])
+
+  const onToggleSongMode = React.useCallback(() => {
+    const director = directorRef.current
+    if (!director) return
+    if (!song.segments || song.segments.length === 0) return
+
+    if (songMode) {
+      // Stop song mode.
+      director.setSongMode(false)
+      setSongMode(false)
+    } else {
+      // Start song mode: resolve the song's segments into patterns from slots.
+      const slotPatterns: (Pattern | null)[] = []
+      for (let i = 0; i < 4; i++) {
+        try {
+          const slotData = loadFromSlot(i)
+          slotPatterns.push(slotData?.pattern ?? null)
+        } catch {
+          slotPatterns.push(null)
+        }
+      }
+      const resolved = resolveSong(song, slotPatterns)
+      if (resolved.length === 0) {
+        toast({ title: 'Song mode failed', description: 'No saved slots to play. Save patterns to slots first.', variant: 'destructive' })
+        return
+      }
+      director.loadSong(resolved, (index, _slot, bar) => {
+        setSongSegment(index)
+        setSongBar(bar)
+      })
+      director.setSongMode(true)
+      setSongMode(true)
+      setSongSegment(0)
+      setSongBar(0)
+      // Start playback if not already playing.
+      if (!director.isRunning) {
+        const ctx = ctxRef.current
+        if (ctx && ctx.state === 'suspended') ctx.resume().catch(() => {})
+        director.start()
+        bundleRef.current?.scheduler.start()
+        setIsPlaying(true)
+      }
+    }
+  }, [song, songMode])
 
   // ─── Sample audition ───────────────────────────────────────────────────────
 
@@ -1032,6 +1090,19 @@ export default function Home() {
               onSave={saveToSlotN}
               onLoad={loadFromSlotN}
               onClear={clearSlotN}
+            />
+          </div>
+
+          {/* ─── Song Editor ─── */}
+          <div className="mt-4">
+            <SongEditor
+              song={song}
+              slotNames={slotNames}
+              songMode={songMode}
+              currentSegment={songSegment}
+              currentBar={songBar}
+              onChange={onSongChange}
+              onToggleSongMode={onToggleSongMode}
             />
           </div>
 

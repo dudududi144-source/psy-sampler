@@ -96,6 +96,15 @@ export class DemoDirector {
   private evolveSeed = 42
   private evolveBarCounter = 0
   private readonly evolveInterval = 4 // mutate every 4 bars
+  // ─── Song mode ────────────────────────────────────────────────────────────
+  // When song mode is enabled, the director advances through a sequence of
+  // {pattern, bars} segments at bar boundaries. Each segment's pattern
+  // replaces the current pattern when the segment starts.
+  private songSegments: Array<{ pattern: Pattern; bars: number; slot: number }> = []
+  private songSegmentIndex = 0
+  private songBarCounter = 0
+  private songMode = false
+  private songSegmentChangeCb: ((index: number, slot: number, bar: number) => void) | undefined
 
   constructor(opts: DirectorOptions, onStep?: (step: number) => void) {
     this.host = opts.host
@@ -157,6 +166,66 @@ export class DemoDirector {
 
   get currentEvolveSeed(): number {
     return this.evolveSeed
+  }
+
+  // ─── Song mode (UX4) ───────────────────────────────────────────────────────
+
+  /**
+   * Load a song arrangement into the director. The director will play each
+   * segment's pattern for the specified number of bars, then advance to the
+   * next segment. When the last segment ends, song mode stops (or loops if
+   * setSongLoop(true) was called — not yet implemented, kept simple).
+   *
+   * @param segments Array of {pattern, bars, slot} — resolved by the caller
+   *   from saved slots via resolveSong().
+   * @param onSegmentChange Optional callback fired when a segment starts.
+   */
+  loadSong(
+    segments: Array<{ pattern: Pattern; bars: number; slot: number }>,
+    onSegmentChange?: (index: number, slot: number, bar: number) => void
+  ): void {
+    this.songSegments = segments.map((s) => ({ ...s, pattern: structuredClone(s.pattern) }))
+    this.songSegmentIndex = 0
+    this.songBarCounter = 0
+    this.songSegmentChangeCb = onSegmentChange
+    // Immediately load the first segment's pattern.
+    if (this.songSegments.length > 0) {
+      this.pattern = structuredClone(this.songSegments[0]!.pattern)
+    }
+  }
+
+  /** Enable/disable song mode. When enabled, segments advance at bar boundaries. */
+  setSongMode(enabled: boolean): void {
+    this.songMode = enabled
+    if (enabled) {
+      // Reset to the first segment.
+      this.songSegmentIndex = 0
+      this.songBarCounter = 0
+      if (this.songSegments.length > 0) {
+        this.pattern = structuredClone(this.songSegments[0]!.pattern)
+      }
+    }
+  }
+
+  get isSongMode(): boolean {
+    return this.songMode
+  }
+
+  get songSegmentCount(): number {
+    return this.songSegments.length
+  }
+
+  get currentSongSegment(): number {
+    return this.songSegmentIndex
+  }
+
+  get currentSongBar(): number {
+    return this.songBarCounter
+  }
+
+  /** True if the song has segments loaded. */
+  get hasSong(): boolean {
+    return this.songSegments.length > 0
   }
 
   /**
@@ -246,12 +315,42 @@ export class DemoDirector {
       this.scheduleStep(this.step, this.nextNoteTime + swingOffset)
       this.onStep?.(this.step)
       this.step = (this.step + 1) % STEPS
-      // Auto-evolve: mutate pattern every evolveInterval bars (when step wraps to 0).
-      if (this.step === 0 && this.evolveEnabled) {
-        this.evolveBarCounter += 1
-        if (this.evolveBarCounter >= this.evolveInterval) {
-          this.evolveBarCounter = 0
-          this.evolvePattern()
+      // Bar boundary (step wraps to 0).
+      if (this.step === 0) {
+        // Song mode: advance segment when current segment's bars are done.
+        if (this.songMode && this.songSegments.length > 0) {
+          this.songBarCounter += 1
+          const currentSeg = this.songSegments[this.songSegmentIndex]
+          if (currentSeg && this.songBarCounter >= currentSeg.bars) {
+            // Advance to the next segment.
+            this.songSegmentIndex += 1
+            this.songBarCounter = 0
+            if (this.songSegmentIndex >= this.songSegments.length) {
+              // Song ended — stop song mode and playback.
+              this.songMode = false
+              this.running = false
+              this.transport.stop()
+              if (this.timer) { this.timer.stop(); this.timer = null }
+              return
+            }
+            // Load the next segment's pattern.
+            const nextSeg = this.songSegments[this.songSegmentIndex]
+            if (nextSeg) {
+              this.pattern = structuredClone(nextSeg.pattern)
+              this.songSegmentChangeCb?.(this.songSegmentIndex, nextSeg.slot, 0)
+            }
+          } else {
+            // Still in the same segment — notify bar progress.
+            this.songSegmentChangeCb?.(this.songSegmentIndex, currentSeg!.slot, this.songBarCounter)
+          }
+        }
+        // Auto-evolve: mutate pattern every evolveInterval bars.
+        if (this.evolveEnabled) {
+          this.evolveBarCounter += 1
+          if (this.evolveBarCounter >= this.evolveInterval) {
+            this.evolveBarCounter = 0
+            this.evolvePattern()
+          }
         }
       }
       this.nextNoteTime += secPerStep
