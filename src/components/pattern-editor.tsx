@@ -7,13 +7,18 @@
 //   - A tiny velocity number inside accent cells (≥110)
 //   - Border glow proportional to velocity
 //
-// Click cycles: 0 (off) → 100 (default) → 127 (accent) → 0 (off).
-// This gives 3 velocity tiers without needing a separate velocity slider —
-// enough to make a groovebox feel expressive (ghost notes, accents, dynamics).
+// Interaction:
+//   - Click cycles: 0 (off) → 100 (default) → 127 (accent) → 0 (off).
+//   - Drag-paint: mousedown on a cell + drag across cells paints them with
+//     the same velocity (the velocity of the first cell). This is the standard
+//     DAW pattern-editor UX — much faster than clicking each cell individually.
+//   - Shift+drag paints at accent velocity (127).
+//   - Alt/Option+drag erases (sets to 0).
 
+import * as React from 'react'
 import type { SampleRole } from '@/psy-sampler'
 import type { Pattern } from '@/lib/demo-director'
-import { VEL_ACCENT } from '@/lib/demo-director'
+import { VEL_ACCENT, VEL_DEFAULT } from '@/lib/demo-director'
 import {
   ROLES,
   STEPS,
@@ -26,6 +31,7 @@ export function PatternEditor({
   pattern,
   currentStep,
   onToggle,
+  onPaint,
   nowPlayingRole,
   nowPlayingAt,
   onClearPattern,
@@ -33,12 +39,50 @@ export function PatternEditor({
   pattern: Pattern
   currentStep: number
   onToggle: (role: SampleRole, step: number) => void
+  /** Paint a cell to an explicit velocity (used by drag-paint). */
+  onPaint: (role: SampleRole, step: number, velocity: number) => void
   nowPlayingRole: SampleRole | null
   nowPlayingAt: number
   onClearPattern: () => void
 }) {
   const now = Date.now()
   const fresh = nowPlayingRole !== null && (now - nowPlayingAt) < NOW_PLAYING_MS
+
+  // Drag-paint state: when dragging, we paint cells with the drag velocity.
+  const dragState = React.useRef<{ role: SampleRole; velocity: number; painted: Set<string> } | null>(null)
+
+  const startDrag = React.useCallback((role: SampleRole, step: number, e: React.PointerEvent) => {
+    // Determine the paint velocity from modifier keys + current cell state.
+    const currentVel = pattern[role]?.[step] ?? 0
+    let velocity: number
+    if (e.altKey) {
+      velocity = 0 // erase
+    } else if (e.shiftKey) {
+      velocity = VEL_ACCENT // accent
+    } else if (currentVel > 0) {
+      // Paint with the existing velocity (extend the same dynamics).
+      velocity = currentVel
+    } else {
+      velocity = VEL_DEFAULT
+    }
+    dragState.current = { role, velocity, painted: new Set([`${role}:${step}`]) }
+    onPaint(role, step, velocity)
+    // Capture the pointer so we get move/up events even outside the cell.
+    ;(e.target as Element).setPointerCapture?.(e.pointerId)
+  }, [pattern, onPaint])
+
+  const continueDrag = React.useCallback((role: SampleRole, step: number) => {
+    const ds = dragState.current
+    if (!ds || ds.role !== role) return
+    const key = `${role}:${step}`
+    if (ds.painted.has(key)) return // already painted this cell in this drag
+    ds.painted.add(key)
+    onPaint(role, step, ds.velocity)
+  }, [onPaint])
+
+  const endDrag = React.useCallback(() => {
+    dragState.current = null
+  }, [])
 
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-950/80 p-4">
@@ -108,8 +152,12 @@ export function PatternEditor({
                     <button
                       key={step}
                       onClick={() => onToggle(role, step)}
+                      onPointerDown={(e) => { e.preventDefault(); startDrag(role, step, e) }}
+                      onPointerEnter={() => continueDrag(role, step)}
+                      onPointerUp={endDrag}
+                      onPointerLeave={endDrag}
                       aria-label={`${role} step ${step + 1} ${isActive ? `velocity ${velocity}` : 'off'}`}
-                      className="relative aspect-square flex-1 min-h-[44px] min-w-[44px] items-center justify-center rounded-sm border transition-all hover:brightness-125 touch-manipulation"
+                      className="relative aspect-square flex-1 min-h-[44px] min-w-[44px] items-center justify-center rounded-sm border transition-all hover:brightness-125 touch-manipulation select-none"
                       style={{
                         backgroundColor: isActive ? color : isBeat ? 'rgba(39,39,42,0.9)' : 'rgba(24,24,27,0.8)',
                         borderColor: isCurrent ? '#00ffc8' : isActive ? color : isBeat ? '#3f3f46' : '#27272a',

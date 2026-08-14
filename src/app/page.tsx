@@ -58,6 +58,7 @@ import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { useKeyboardShortcuts } from '@/lib/use-keyboard-shortcuts'
+import { useUndoRedo } from '@/lib/use-undo-redo'
 import { toast } from '@/hooks/use-toast'
 import { InitOverlay } from '@/components/init-overlay'
 import { Stat } from '@/components/stat-badge'
@@ -105,7 +106,7 @@ export default function Home() {
   const [section, setSection] = React.useState('DROP')
   const [energy, setEnergy] = React.useState(0.7)
   const [currentStep, setCurrentStep] = React.useState(0)
-  const [pattern, setPattern] = React.useState<Pattern>(structuredClone(DEFAULT_PATTERN))
+  const { state: pattern, set: setPatternWithHistory, undo, redo, canUndo, canRedo, reset: resetPatternHistory } = useUndoRedo<Pattern>(structuredClone(DEFAULT_PATTERN))
   const [samples, setSamples] = React.useState<SampleAsset[]>([])
   const [stats, setStats] = React.useState<DeviceStats | null>(null)
   const [eventLog, setEventLog] = React.useState<EventLogEntry[]>([])
@@ -204,7 +205,7 @@ export default function Home() {
         const autosave = loadAutosave()
         if (autosave) {
           initialPattern = autosave
-          setPattern(structuredClone(autosave))
+          resetPatternHistory(structuredClone(autosave))
         }
       } catch {
         // ignore — fall back to current pattern state
@@ -359,6 +360,35 @@ export default function Home() {
     directorRef.current?.setBpm(value)
   }, [])
 
+  // ─── Tap tempo (UX3) ───────────────────────────────────────────────────────
+  // Tap the T key (or tap button) repeatedly. We track the timestamps of the
+  // last few taps and compute the average interval → BPM. Requires at least 2
+  // taps. Stale taps (>2s gap) reset the buffer.
+
+  const tapTimesRef = React.useRef<number[]>([])
+  const onTapTempo = React.useCallback(() => {
+    const now = performance.now()
+    const taps = tapTimesRef.current
+    // Drop taps older than 2 seconds (user paused).
+    const cutoff = now - 2000
+    while (taps.length > 0 && taps[0]! < cutoff) taps.shift()
+    taps.push(now)
+    if (taps.length < 2) return
+    // Compute average interval over the last 4 taps.
+    const recent = taps.slice(-4)
+    const intervals: number[] = []
+    for (let i = 1; i < recent.length; i++) {
+      intervals.push(recent[i]! - recent[i - 1]!)
+    }
+    const avgMs = intervals.reduce((a, b) => a + b, 0) / intervals.length
+    if (avgMs < 100 || avgMs > 2000) return // sanity bounds (30-600 BPM)
+    const newBpm = Math.round(60000 / avgMs)
+    if (newBpm >= 40 && newBpm <= 300) {
+      setBpm(newBpm)
+      directorRef.current?.setBpm(newBpm)
+    }
+  }, [])
+
   const onSwingChange = React.useCallback((value: number) => {
     // Slider is 0..70 (%) → director takes 0..0.7.
     setSwing(value)
@@ -383,28 +413,69 @@ export default function Home() {
   const onToggleStep = React.useCallback((role: SampleRole, step: number) => {
     const director = directorRef.current
     if (!director) return
-    director.toggleStep(role, step)
-    const newPattern = structuredClone(director.getPattern())
-    setPattern(newPattern)
+    // Toggle on a FRESH clone (never mutate the state object in place — that
+    // would corrupt the undo stack, since the undo stack holds references to
+    // previous state objects).
+    const newPattern = structuredClone(pattern)
+    const row = newPattern[role]
+    if (!row) return
+    const current = row[step] ?? 0
+    if (current === 0) row[step] = 100
+    else if (current < 127) row[step] = 127
+    else row[step] = 0
+    director.setPattern(newPattern)
+    setPatternWithHistory(newPattern)
     // Autosave on every toggle (best-effort).
     try {
       autosavePattern(newPattern)
     } catch {
       // ignore — localStorage unavailable
     }
-  }, [])
+  }, [pattern, setPatternWithHistory])
+
+  /** Paint a step to an explicit velocity (used by drag-paint). */
+  const onPaintStep = React.useCallback((role: SampleRole, step: number, velocity: number) => {
+    const director = directorRef.current
+    if (!director) return
+    // Paint on a FRESH clone (same reason as onToggleStep).
+    const newPattern = structuredClone(pattern)
+    const row = newPattern[role]
+    if (!row) return
+    row[step] = Math.max(0, Math.min(127, Math.round(velocity)))
+    director.setPattern(newPattern)
+    setPatternWithHistory(newPattern)
+    // Autosave on paint (best-effort).
+    try {
+      autosavePattern(newPattern)
+    } catch {
+      // ignore — localStorage unavailable
+    }
+  }, [pattern, setPatternWithHistory])
 
   const onClearPattern = React.useCallback(() => {
     const empty = structuredClone(DEFAULT_PATTERN)
     directorRef.current?.setPattern(empty)
-    setPattern(empty)
+    setPatternWithHistory(empty)
     // Autosave the cleared pattern (best-effort).
     try {
       autosavePattern(empty)
     } catch {
       // ignore — localStorage unavailable
     }
-  }, [])
+  }, [setPatternWithHistory])
+
+  const onUndo = React.useCallback(() => {
+    undo()
+    // Sync the director with the undone pattern after the state updates.
+    setTimeout(() => {
+      // Read the latest pattern via a ref-free approach: undo() already set it.
+      // We use setTimeout(0) to let React commit, then sync the director.
+    }, 0)
+  }, [undo])
+
+  const onRedo = React.useCallback(() => {
+    redo()
+  }, [redo])
 
   // ─── Sample audition ───────────────────────────────────────────────────────
 
@@ -476,6 +547,21 @@ export default function Home() {
   const busStateRef = React.useRef(busState)
   React.useEffect(() => { busStateRef.current = busState }, [busState])
 
+  // Sync the director's pattern when undo/redo changes the pattern state.
+  // This is needed because undo/redo bypass the director (they restore a
+  // previous React state directly), so the director's internal pattern would
+  // be stale. We detect this by comparing the director's pattern to the React
+  // state and re-syncing when they differ.
+  React.useEffect(() => {
+    const director = directorRef.current
+    if (!director) return
+    const directorPattern = JSON.stringify(director.getPattern())
+    const statePattern = JSON.stringify(pattern)
+    if (directorPattern !== statePattern) {
+      director.setPattern(structuredClone(pattern))
+    }
+  }, [pattern])
+
   const onBusGain = React.useCallback((name: BusName, value: number) => {
     const graph = bundleRef.current?.audioGraph
     if (graph) {
@@ -537,7 +623,7 @@ export default function Home() {
     setBpm(preset.bpm)
     const cloned = structuredClone(preset.pattern)
     director.setPattern(cloned)
-    setPattern(structuredClone(cloned))
+    resetPatternHistory(structuredClone(cloned))
     try {
       autosavePattern(cloned)
     } catch {
@@ -567,7 +653,7 @@ export default function Home() {
       const data = loadFromSlot(slot)
       if (!data) return
       director.setPattern(data.pattern)
-      setPattern(structuredClone(data.pattern))
+      resetPatternHistory(structuredClone(data.pattern))
       // Don't override BPM — let user keep their tempo, or use saved? Use saved for fidelity.
       // Actually: keep current BPM — preset loads BPM, slots don't.
     } catch (err) {
@@ -686,6 +772,9 @@ export default function Home() {
   useKeyboardShortcuts({
     onTogglePlay: togglePlay,
     onStop: stopPlayback,
+    onUndo,
+    onRedo,
+    onTapTempo,
     enabled: initialized,
   })
 
@@ -891,6 +980,33 @@ export default function Home() {
             >
               {filterMode === 'off' ? '○ FLT' : filterMode === 'lp' ? '● LP' : '● HP'}
             </Button>
+
+            {/* Undo / Redo */}
+            <Button
+              onClick={onUndo}
+              disabled={!canUndo}
+              className="h-11 gap-2 border border-zinc-700 bg-zinc-900 font-mono text-xs font-bold uppercase tracking-[0.15em] text-zinc-300 disabled:opacity-30"
+              title="Undo (Ctrl+Z)"
+            >
+              ↶ UNDO
+            </Button>
+            <Button
+              onClick={onRedo}
+              disabled={!canRedo}
+              className="h-11 gap-2 border border-zinc-700 bg-zinc-900 font-mono text-xs font-bold uppercase tracking-[0.15em] text-zinc-300 disabled:opacity-30"
+              title="Redo (Ctrl+Shift+Z)"
+            >
+              ↷ REDO
+            </Button>
+
+            {/* Tap tempo */}
+            <Button
+              onClick={onTapTempo}
+              className="h-11 gap-2 border border-zinc-700 bg-zinc-900 font-mono text-xs font-bold uppercase tracking-[0.15em] text-amber-300 hover:bg-amber-500/10"
+              title="Tap tempo (T key) — tap repeatedly to detect BPM"
+            >
+              ⊡ TAP
+            </Button>
           </div>
 
           {/* ─── Main grid: pattern editor (left) + debug (right) ─── */}
@@ -899,6 +1015,7 @@ export default function Home() {
               pattern={pattern}
               currentStep={currentStep}
               onToggle={onToggleStep}
+              onPaint={onPaintStep}
               nowPlayingRole={nowPlaying.role}
               nowPlayingAt={nowPlaying.at}
               onClearPattern={onClearPattern}
