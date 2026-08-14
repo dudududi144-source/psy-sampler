@@ -60,6 +60,7 @@ import { Slider } from '@/components/ui/slider'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { useKeyboardShortcuts } from '@/lib/use-keyboard-shortcuts'
 import { useUndoRedo } from '@/lib/use-undo-redo'
+import { useMidiInput, roleForNote } from '@/lib/use-midi-input'
 import { toast } from '@/hooks/use-toast'
 import { InitOverlay } from '@/components/init-overlay'
 import { Stat } from '@/components/stat-badge'
@@ -836,6 +837,48 @@ export default function Home() {
     enabled: initialized,
   })
 
+  // ─── MIDI input (the #1 feature for a real production tool) ────────────────
+  // When a MIDI note is received, we publish it to the DeviceHost just like
+  // the DemoDirector does — but directly, bypassing the pattern grid. This
+  // lets a producer play the sampler live from a MIDI keyboard.
+  const midi = useMidiInput({
+    enabled: initialized,
+    onNoteOn: (note, velocity) => {
+      const host = hostRef.current
+      const ctx = ctxRef.current
+      if (!host || !ctx) return
+      const { role, pitched } = roleForNote(note)
+      const event = {
+        type: 'note' as const,
+        note: pitched ? note : 60,
+        velocity,
+        duration: 0.3,
+        channel: role,
+        at: ctx.currentTime + 0.005, // 5ms lookahead for scheduling
+      }
+      host.publish(event)
+      setNowPlaying({ role, sampleId: null, at: Date.now() })
+    },
+    onCC: (controller, value) => {
+      // Map CC 1 (mod wheel) → master filter cutoff.
+      // Map CC 7 (volume) → master gain.
+      // This is a starting point — a real product would have MIDI learn.
+      const graph = bundleRef.current?.audioGraph
+      if (!graph) return
+      if (controller === 1) {
+        // Mod wheel → filter cutoff (200Hz..20000Hz, exponential).
+        const freq = 200 * Math.pow(100, value / 127)
+        graph.setMasterFilter({ type: value > 0 ? 'lowpass' : 'allpass', freq, Q: 2 })
+        setFilterMode(value > 0 ? 'lp' : 'off')
+      } else if (controller === 7) {
+        // Volume CC → master gain (0..1.2).
+        const gain = (value / 127) * 1.2
+        graph.setMasterGain(gain)
+        setMasterVolume(gain)
+      }
+    },
+  })
+
   // ─── Cleanup ───────────────────────────────────────────────────────────────
 
   // P1: Autosave session state (BPM, swing, master, section, energy, busState).
@@ -1065,6 +1108,33 @@ export default function Home() {
             >
               ⊡ TAP
             </Button>
+
+            {/* MIDI input selector */}
+            {midi.supported ? (
+              <select
+                value={midi.selectedInputId ?? ''}
+                onChange={(e) => midi.selectInput(e.target.value || null)}
+                disabled={!midi.accessGranted}
+                className="h-11 min-w-[140px] rounded border border-zinc-700 bg-zinc-900 px-2 font-mono text-xs text-zinc-300 disabled:opacity-50"
+                title={midi.error || 'Select MIDI input device'}
+              >
+                <option value="">{midi.accessGranted ? '🔇 MIDI: none' : 'MIDI…'}</option>
+                {midi.inputs.map((input) => (
+                  <option key={input.id} value={input.id}>
+                    🎹 {input.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span className="font-mono text-[10px] text-zinc-600" title={midi.error || 'Web MIDI not supported'}>
+                no MIDI
+              </span>
+            )}
+            {midi.lastNote !== null && (
+              <span className="font-mono text-[10px] text-emerald-300" title={`Last MIDI note: ${midi.lastNote} (vel ${(midi.lastVelocity ?? 0).toFixed(2)})`}>
+                ♪{midi.lastNote}
+              </span>
+            )}
           </div>
 
           {/* ─── Main grid: pattern editor (left) + debug (right) ─── */}
