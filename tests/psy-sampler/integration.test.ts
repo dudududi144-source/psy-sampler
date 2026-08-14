@@ -70,6 +70,22 @@ class StubAudioContext {
   createConvolver() {
     return { buffer: null, connect: () => {}, disconnect: () => {} } as unknown as ConvolverNode
   }
+  createBiquadFilter() {
+    return {
+      type: 'lowpass',
+      frequency: { value: 1000, setTargetAtTime: () => {} },
+      Q: { value: 0.7, setTargetAtTime: () => {} },
+      gain: { value: 0, setTargetAtTime: () => {} },
+      connect: () => {}, disconnect: () => {},
+    } as unknown as BiquadFilterNode
+  }
+  createWaveShaper() {
+    return {
+      curve: null as Float32Array | null,
+      oversample: 'none',
+      connect: () => {}, disconnect: () => {},
+    } as unknown as WaveShaperNode
+  }
   createBuffer(channels: number, length: number, _rate: number) {
     const data = new Float32Array(length)
     return {

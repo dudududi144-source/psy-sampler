@@ -90,6 +90,11 @@ export interface SampleMetadata {
   sampleRate: number
   /** Channel count (filled at load time). */
   channels: number
+  /**
+   * Velocity layer range [min, max] in 0..1 (copied from the manifest entry).
+   * Absent = no velocity layering for this sample. See SampleManifestEntry.velocityRange.
+   */
+  velocityRange?: [number, number]
 }
 
 // ─── Features (computed at load time) ────────────────────────────────────────
@@ -158,6 +163,15 @@ export interface SampleManifestEntry {
    * - QUARANTINED: suspected license issue — loader refuses.
    */
   verification: SampleVerification
+  /**
+   * Optional velocity layer range [min, max] in 0..1. When present, the
+   * selector narrows candidates to those whose velocityRange contains the
+   * event's velocity. Samples without a velocityRange are always eligible
+   * (fallback layer). This enables multi-velocity sample sets (e.g. soft
+   * kick @ 0–0.4, hard kick @ 0.4–1.0) — eliminating machine-gunning on
+   * repeated hits at varying dynamics. Absent = no velocity layering.
+   */
+  velocityRange?: [number, number]
 }
 
 export interface SampleManifest {
@@ -222,6 +236,21 @@ export interface SelectionInput {
   phraseIndex: number
   /** Seed for deterministic RNG. Same seed + same inputs → same output. */
   seed: number
+  /**
+   * Optional deterministic hit counter for round-robin selection. The device
+   * tracks a per-role counter that increments on every note-on; this value is
+   * passed here so the selector can cycle through same-layer candidates
+   * (true round-robin, advancing per-hit instead of per-phrase).
+   *
+   * Determinism contract: the counter is event-order-dependent (not wall-clock).
+   * Two runs that receive the same NoteEvents in the same order produce the
+   * same hitIndex sequence → the same round-robin selection → byte-identical
+   * audio. This is how Kontakt/SMPLR round-robin works, and it's the standard
+   * way to eliminate machine-gunning without breaking reproducibility.
+   *
+   * Absent = no round-robin (falls back to phrase-locked variant rotation).
+   */
+  hitIndex?: number
 }
 
 /** Output of SelectionPolicy.select(). */

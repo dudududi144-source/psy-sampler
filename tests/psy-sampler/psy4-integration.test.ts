@@ -35,6 +35,8 @@ class StubCtx {
   createAnalyser() { return { fftSize: 0, connect: () => {}, disconnect: () => {}, getByteFrequencyData: () => {} } as unknown as AnalyserNode }
   createDelay() { return { delayTime: { value: 0, setTargetAtTime: () => {} }, connect: () => {}, disconnect: () => {} } as unknown as DelayNode }
   createConvolver() { return { buffer: null, connect: () => {}, disconnect: () => {} } as unknown as ConvolverNode }
+  createBiquadFilter() { return { type: 'lowpass', frequency: { value: 1000, setTargetAtTime: () => {} }, Q: { value: 0.7, setTargetAtTime: () => {} }, gain: { value: 0, setTargetAtTime: () => {} }, connect: () => {}, disconnect: () => {} } as unknown as BiquadFilterNode }
+  createWaveShaper() { return { curve: null as Float32Array | null, oversample: 'none', connect: () => {}, disconnect: () => {} } as unknown as WaveShaperNode }
   createBuffer(ch: number, len: number) { return { numberOfChannels: ch, length: len, duration: len / 44100, sampleRate: 44100, getChannelData: () => new Float32Array(len) } as unknown as AudioBuffer }
 }
 

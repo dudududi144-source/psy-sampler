@@ -319,9 +319,16 @@ function makeStubContext(): AudioContext {
       type: 'lowpass',
       frequency: { value: 1000 },
       Q: { value: 0.7 },
+      gain: { value: 0, setTargetAtTime: () => {} },
       connect: () => {},
       disconnect: () => {},
     }) as unknown as BiquadFilterNode,
+    createWaveShaper: () => ({
+      curve: null as Float32Array | null,
+      oversample: 'none',
+      connect: () => {},
+      disconnect: () => {},
+    }) as unknown as WaveShaperNode,
     createDelay: (_max: number) => ({
       delayTime: { value: 0.3, setTargetAtTime: () => {} },
       connect: () => {},

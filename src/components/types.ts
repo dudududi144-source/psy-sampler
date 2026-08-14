@@ -56,6 +56,12 @@ export interface BusMixerState {
   gain: number
   muted: boolean
   solo: boolean
+  /** 3-band EQ gains in dB (-24..+24). 0 = flat. */
+  eqLow: number
+  eqMid: number
+  eqHigh: number
+  /** Saturation drive (0..10). 0 = bypass. */
+  saturation: number
 }
 
 // ─── Constants ───────────────────────────────────────────────────────────────

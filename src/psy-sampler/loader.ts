@@ -62,6 +62,8 @@ export class SampleLoader {
         duration: features.duration,
         sampleRate: features.sampleRate,
         channels: features.channels,
+        // Velocity layer range (optional — enables multi-velocity sample sets).
+        velocityRange: entry.velocityRange,
       },
       audioBuffer,
       monoData,

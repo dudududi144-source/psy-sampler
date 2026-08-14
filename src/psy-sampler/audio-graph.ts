@@ -19,12 +19,22 @@ export interface AudioGraphOptions {
 
 interface Bus {
   input: GainNode
-  /** Duck gain node — inserted between input and master. Sidechain dips this. */
+  /** 3-band EQ: lowShelf → peaking → highShelf. Inserted after input, before saturation. */
+  eqLow: BiquadFilterNode
+  eqMid: BiquadFilterNode
+  eqHigh: BiquadFilterNode
+  /** Saturation (waveshaper). Inserted after EQ, before duckGain. Drive 0 = linear bypass. */
+  saturation: WaveShaperNode
+  /** Post-saturation gain compensation (saturation reduces peak level). */
+  saturationGain: GainNode
+  /** Duck gain node — inserted between saturation and master. Sidechain dips this. */
   duckGain: GainNode
   delaySend: GainNode
   reverbSend: GainNode
   userGain: number
   muted: boolean
+  /** Current saturation drive (0 = bypass). Stored for getBusSaturation. */
+  saturationDrive: number
 }
 
 export class AudioGraph {
@@ -90,7 +100,10 @@ export class AudioGraph {
     this.reverb.connect(this.reverbReturn)
     this.reverbReturn.connect(this.master)
 
-    // Buses — each has input → duckGain → master + sends.
+    // Buses — each has:
+    //   input → eqLow → eqMid → eqHigh → saturation → saturationGain → duckGain → master + sends
+    // EQ shapes tone; saturation adds harmonics; duckGain applies sidechain dip.
+    // Sends tap after duckGain so ducked signal doesn't send.
     const busConfig: Array<{ name: BusName; gain: number; delay: number; reverb: number }> = [
       { name: 'drum', gain: 0.9, delay: 0.05, reverb: 0.1 },
       { name: 'music', gain: 0.85, delay: 0.2, reverb: 0.25 },
@@ -99,20 +112,52 @@ export class AudioGraph {
     for (const cfg of busConfig) {
       const input = ctx.createGain()
       input.gain.value = cfg.gain
+
+      // 3-band EQ — flat by default (0 dB gain).
+      const eqLow = ctx.createBiquadFilter()
+      eqLow.type = 'lowshelf'
+      eqLow.frequency.value = 200 // below 200Hz = low band
+      eqLow.gain.value = 0
+      const eqMid = ctx.createBiquadFilter()
+      eqMid.type = 'peaking'
+      eqMid.frequency.value = 1000 // center of mid band
+      eqMid.Q.value = 0.8 // gentle, wide bell
+      eqMid.gain.value = 0
+      const eqHigh = ctx.createBiquadFilter()
+      eqHigh.type = 'highshelf'
+      eqHigh.frequency.value = 4000 // above 4kHz = high band
+      eqHigh.gain.value = 0
+
+      // Saturation — soft-clip waveshaper. Linear curve (bypass) by default.
+      const saturation = ctx.createWaveShaper()
+      saturation.curve = makeSaturationCurve(0) // 0 drive = linear bypass
+      saturation.oversample = '2x' // reduces aliasing from the waveshaper
+      const saturationGain = ctx.createGain()
+      saturationGain.gain.value = 1.0 // no makeup gain by default
+
       const duckGain = ctx.createGain()
       duckGain.gain.value = 1.0 // no ducking by default
       const ds = ctx.createGain()
       ds.gain.value = cfg.delay * delaySendAmt * 4
       const rs = ctx.createGain()
       rs.gain.value = cfg.reverb * reverbSendAmt * 4
-      // Routing: input → duckGain → master + sends (sends tap after duck so ducked signal doesn't send)
-      input.connect(duckGain)
+
+      // Routing: input → eqLow → eqMid → eqHigh → saturation → saturationGain → duckGain → master + sends
+      input.connect(eqLow)
+      eqLow.connect(eqMid)
+      eqMid.connect(eqHigh)
+      eqHigh.connect(saturation)
+      saturation.connect(saturationGain)
+      saturationGain.connect(duckGain)
       duckGain.connect(this.master)
       duckGain.connect(ds)
       ds.connect(this.delay)
       duckGain.connect(rs)
       rs.connect(this.reverb)
-      this.buses.set(cfg.name, { input, duckGain, delaySend: ds, reverbSend: rs, userGain: cfg.gain, muted: false })
+      this.buses.set(cfg.name, {
+        input, eqLow, eqMid, eqHigh, saturation, saturationGain, duckGain,
+        delaySend: ds, reverbSend: rs, userGain: cfg.gain, muted: false, saturationDrive: 0,
+      })
     }
   }
 
@@ -165,6 +210,73 @@ export class AudioGraph {
     const safeBpm = Math.max(1, Math.min(400, bpm))
     const dottedEighth = (60 / safeBpm) * 0.75
     this.delay.delayTime.setTargetAtTime(dottedEighth, this.ctx.currentTime, 0.01)
+  }
+
+  // ─── Per-bus 3-band EQ ──────────────────────────────────────────────────────
+
+  /**
+   * Set the 3-band EQ for a bus. Gains are in dB (-24..+24). 0 = flat.
+   *   low:  lowshelf at 200Hz (sub + low fundamentals)
+   *   mid:  peaking at 1kHz, Q=0.8 (body / presence)
+   *   high: highshelf at 4kHz (air / bite)
+   * Uses setTargetAtTime for click-free parameter changes.
+   */
+  setBusEQ(name: BusName, eq: { low?: number; mid?: number; high?: number }): void {
+    const bus = this.buses.get(name)
+    if (!bus) return
+    const now = this.ctx.currentTime
+    if (eq.low !== undefined) {
+      bus.eqLow.gain.setTargetAtTime(Math.max(-24, Math.min(24, eq.low)), now, 0.02)
+    }
+    if (eq.mid !== undefined) {
+      bus.eqMid.gain.setTargetAtTime(Math.max(-24, Math.min(24, eq.mid)), now, 0.02)
+    }
+    if (eq.high !== undefined) {
+      bus.eqHigh.gain.setTargetAtTime(Math.max(-24, Math.min(24, eq.high)), now, 0.02)
+    }
+  }
+
+  /** Get the current EQ gains (dB) for a bus. */
+  getBusEQ(name: BusName): { low: number; mid: number; high: number } {
+    const bus = this.buses.get(name)
+    if (!bus) return { low: 0, mid: 0, high: 0 }
+    return {
+      low: bus.eqLow.gain.value,
+      mid: bus.eqMid.gain.value,
+      high: bus.eqHigh.gain.value,
+    }
+  }
+
+  // ─── Per-bus saturation ─────────────────────────────────────────────────────
+
+  /**
+   * Set saturation drive for a bus. 0 = bypass (linear). 1-10 = soft-clip
+   * intensity. At drive=0 the waveshaper curve is linear (no processing cost
+   * beyond the curve lookup). Higher drive adds odd harmonics — the classic
+   * "warmth" or "bite" of analog gear / tape saturation.
+   *
+   * Makeup gain is auto-applied: saturation reduces peak level, so we boost
+   * the post-saturation gain to compensate (keeps perceived loudness stable).
+   *
+   * Determinism note: the curve is generated from a pure math function (tanh),
+   * not Math.random — saturation is byte-identical across runs.
+   */
+  setBusSaturation(name: BusName, drive: number): void {
+    const bus = this.buses.get(name)
+    if (!bus) return
+    const safeDrive = Math.max(0, Math.min(10, drive))
+    bus.saturationDrive = safeDrive
+    bus.saturation.curve = makeSaturationCurve(safeDrive)
+    // Makeup gain: at drive D, peak output ≈ 1/tanh(D) for loud signals.
+    // We apply a gentle compensation that ramps from 1.0 (drive=0) to ~1.3 (drive=5).
+    const makeup = safeDrive <= 0.01 ? 1.0 : 1.0 + Math.min(0.3, safeDrive * 0.06)
+    bus.saturationGain.gain.setTargetAtTime(makeup, this.ctx.currentTime, 0.02)
+  }
+
+  /** Get the current saturation drive (0 = bypass). */
+  getBusSaturation(name: BusName): number {
+    const bus = this.buses.get(name)
+    return bus ? bus.saturationDrive : 0
   }
 
   // ─── Sidechain ducking ─────────────────────────────────────────────────────
@@ -264,10 +376,46 @@ export class AudioGraph {
     this.reverbReturn.disconnect()
     for (const bus of this.buses.values()) {
       bus.input.disconnect()
+      bus.eqLow.disconnect()
+      bus.eqMid.disconnect()
+      bus.eqHigh.disconnect()
+      bus.saturation.disconnect()
+      bus.saturationGain.disconnect()
       bus.duckGain.disconnect()
       bus.delaySend.disconnect()
       bus.reverbSend.disconnect()
     }
     this.buses.clear()
   }
+}
+
+/**
+ * Generate a waveshaper curve for soft-clip saturation.
+ *
+ * drive = 0 → linear (identity, bypass — output[x] = x).
+ * drive > 0 → tanh(x * drive) / tanh(drive), normalized so the curve maps
+ *   [-1, 1] → [-1, 1]. This adds odd harmonics (warmth/bite) without hard
+ *   clipping, mimicking analog tape / tube saturation.
+ *
+ * The curve is a Float32Array of 2049 samples (standard waveshaper resolution).
+ * Web Audio indexes it by input sample value × 1024 + 1024.
+ *
+ * DETERMINISM: pure math (tanh), no Math.random — byte-identical across runs.
+ */
+function makeSaturationCurve(drive: number): Float32Array<ArrayBuffer> {
+  const n = 2049
+  const curve = new Float32Array(n)
+  if (drive <= 0.01) {
+    // Linear bypass — output = input (identity).
+    for (let i = 0; i < n; i++) {
+      curve[i] = (i / (n - 1)) * 2 - 1
+    }
+    return curve
+  }
+  const tanhDrive = Math.tanh(drive)
+  for (let i = 0; i < n; i++) {
+    const x = (i / (n - 1)) * 2 - 1 // [-1, 1]
+    curve[i] = Math.tanh(x * drive) / tanhDrive
+  }
+  return curve
 }

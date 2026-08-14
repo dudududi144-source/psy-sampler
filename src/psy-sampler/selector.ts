@@ -85,19 +85,44 @@ export class SelectionPolicy {
    * Select a sample + playback parameters for the given input.
    * Returns null if no sample is available for the role (graceful — caller skips).
    *
-   * Determinism: same (seed, role, bank, velocity, phraseIndex) + same library
-   * → identical output, always. No mutable state. No Math.random().
+   * Determinism: same (seed, role, bank, velocity, phraseIndex, hitIndex) + same
+   * library → identical output, always. No mutable state. No Math.random().
+   *
+   * Velocity layers: if any candidate for this role has a velocityRange, the
+   * selector narrows to those whose range contains the event velocity. Samples
+   * without a velocityRange are always eligible (fallback layer). This enables
+   * multi-velocity sample sets without machine-gunning.
+   *
+   * Round-robin: if hitIndex is provided AND multiple candidates remain after
+   * velocity-layer filtering, the selector cycles through them by hitIndex
+   * (true per-hit round-robin, advancing every note-on). If hitIndex is absent,
+   * falls back to phrase-locked variant rotation (changes every phrase).
    */
   select(input: SelectionInput): SelectionOutput | null {
     // 1. Find candidate sampleIds for this role (+ optional bank filter).
-    const candidates = this.findCandidates(input.role, input.bank)
+    const allCandidates = this.findCandidates(input.role, input.bank)
+    if (allCandidates.length === 0) return null
+
+    // 2. Velocity-layer filtering: if ANY candidate has a velocityRange, narrow
+    //    to those whose range contains the event velocity. If none match, fall
+    //    back to candidates WITHOUT a velocityRange (the default layer).
+    const candidates = this.filterByVelocity(allCandidates, input.velocity)
     if (candidates.length === 0) return null
 
-    // 2. Derive variant index purely from (seed, role, phraseIndex). O(1).
-    const variant = this.deriveVariant(input.seed, input.role, input.phraseIndex)
-
-    // 3. Pick the sampleId at the variant index (wrap if fewer samples than variants).
-    const sampleId = candidates[variant % candidates.length] as SampleId
+    // 3. Pick the variant index.
+    //    - If hitIndex is provided → round-robin: candidates[hitIndex % len].
+    //      This advances per-hit, eliminating machine-gunning on repeated notes.
+    //    - Else → phrase-locked variant: deriveVariant(seed, role, phraseIndex).
+    //      This changes every phrase, providing musical variation.
+    let variant: number
+    let sampleId: SampleId
+    if (input.hitIndex !== undefined && candidates.length > 1) {
+      variant = input.hitIndex % candidates.length
+      sampleId = candidates[variant]!
+    } else {
+      variant = this.deriveVariant(input.seed, input.role, input.phraseIndex)
+      sampleId = candidates[variant % candidates.length]!
+    }
 
     // 4. Derive pitch/gain/pan variance from the variant (deterministic).
     const rule = this.varianceRules[input.role] ?? DEFAULT_VARIANCE_RULES[input.role]
@@ -205,6 +230,31 @@ export class SelectionPolicy {
       if (filtered.length > 0) candidates = filtered
     }
     return candidates
+  }
+
+  /**
+   * Narrow candidates by velocity layer. If ANY candidate has a velocityRange,
+   * keep only those whose [min, max] contains `velocity`. If none match the
+   * velocity, fall back to candidates WITHOUT a velocityRange (default layer).
+   * If NO candidate has a velocityRange, return all (no layering configured).
+   */
+  private filterByVelocity(candidates: SampleId[], velocity: number): SampleId[] {
+    const withRange: SampleId[] = []
+    const withoutRange: SampleId[] = []
+    for (const id of candidates) {
+      const asset = this.library.get(id)
+      if (!asset) continue
+      const vr = asset.metadata.velocityRange
+      if (vr) {
+        const [min, max] = vr
+        if (velocity >= min && velocity <= max) withRange.push(id)
+      } else {
+        withoutRange.push(id)
+      }
+    }
+    // Prefer velocity-matched layers. Fall back to unlayered samples if no match.
+    if (withRange.length > 0) return withRange
+    return withoutRange
   }
 
   /** Hash (seed, role, phraseIndex) into a single 32-bit integer. O(1). */

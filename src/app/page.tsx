@@ -121,9 +121,9 @@ export default function Home() {
   const [pumpEnabled, setPumpEnabled] = React.useState(false)
   const [evolveEnabled, setEvolveEnabled] = React.useState(false)
   const [busState, setBusState] = React.useState<Record<BusName, BusMixerState>>({
-    drum: { gain: 0.9, muted: false, solo: false },
-    music: { gain: 0.85, muted: false, solo: false },
-    atmos: { gain: 0.7, muted: false, solo: false },
+    drum: { gain: 0.9, muted: false, solo: false, eqLow: 0, eqMid: 0, eqHigh: 0, saturation: 0 },
+    music: { gain: 0.85, muted: false, solo: false, eqLow: 0, eqMid: 0, eqHigh: 0, saturation: 0 },
+    atmos: { gain: 0.7, muted: false, solo: false, eqLow: 0, eqMid: 0, eqHigh: 0, saturation: 0 },
   })
 
   const ctxRef = React.useRef<AudioContext | null>(null)
@@ -446,6 +446,22 @@ export default function Home() {
     setBusState((prev) => ({ ...prev, [name]: { ...prev[name], gain: value } }))
   }, [])
 
+  const onBusEQ = React.useCallback((name: BusName, band: 'low' | 'mid' | 'high', value: number) => {
+    const graph = bundleRef.current?.audioGraph
+    if (graph) {
+      graph.setBusEQ(name, { [band]: value })
+    }
+    setBusState((prev) => ({ ...prev, [name]: { ...prev[name], [`eq${band.charAt(0).toUpperCase() + band.slice(1)}`]: value } }))
+  }, [])
+
+  const onBusSaturation = React.useCallback((name: BusName, value: number) => {
+    const graph = bundleRef.current?.audioGraph
+    if (graph) {
+      graph.setBusSaturation(name, value)
+    }
+    setBusState((prev) => ({ ...prev, [name]: { ...prev[name], saturation: value } }))
+  }, [])
+
   const onBusMute = React.useCallback((name: BusName) => {
     const newMuted = !busStateRef.current[name].muted
     const graph = bundleRef.current?.audioGraph
@@ -587,6 +603,16 @@ export default function Home() {
           drum: busStateRef.current.drum.gain,
           music: busStateRef.current.music.gain,
           atmos: busStateRef.current.atmos.gain,
+        },
+        busEQ: {
+          drum: { low: busStateRef.current.drum.eqLow, mid: busStateRef.current.drum.eqMid, high: busStateRef.current.drum.eqHigh },
+          music: { low: busStateRef.current.music.eqLow, mid: busStateRef.current.music.eqMid, high: busStateRef.current.music.eqHigh },
+          atmos: { low: busStateRef.current.atmos.eqLow, mid: busStateRef.current.atmos.eqMid, high: busStateRef.current.atmos.eqHigh },
+        },
+        busSaturation: {
+          drum: busStateRef.current.drum.saturation,
+          music: busStateRef.current.music.saturation,
+          atmos: busStateRef.current.atmos.saturation,
         },
         filename,
         download: true,
@@ -804,7 +830,7 @@ export default function Home() {
 
           {/* ─── Mixer + Presets + Slots ─── */}
           <div className="mt-4 grid gap-4 lg:grid-cols-3">
-            <Mixer busState={busState} onGain={onBusGain} onMute={onBusMute} onSolo={onBusSolo} />
+            <Mixer busState={busState} onGain={onBusGain} onEQ={onBusEQ} onSaturation={onBusSaturation} onMute={onBusMute} onSolo={onBusSolo} />
             <PresetsPanel onLoad={loadPreset} />
             <PatternSlots
               slotNames={slotNames}

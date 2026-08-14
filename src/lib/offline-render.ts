@@ -58,6 +58,14 @@ export interface OfflineRenderOptions {
   sidechain?: { enabled: boolean; depth?: number }
   /** Bus gains 0..1.5 per bus (mirrors live mixer state). */
   busGains?: { drum?: number; music?: number; atmos?: number }
+  /** Per-bus 3-band EQ in dB (-24..+24). Mirrors live mixer state. */
+  busEQ?: {
+    drum?: { low?: number; mid?: number; high?: number }
+    music?: { low?: number; mid?: number; high?: number }
+    atmos?: { low?: number; mid?: number; high?: number }
+  }
+  /** Per-bus saturation drive (0..10). Mirrors live mixer state. */
+  busSaturation?: { drum?: number; music?: number; atmos?: number }
   /** Filename for the download (if triggerDownload=true). */
   filename?: string
   /** If true, auto-trigger a browser download of the WAV. Default true. */
@@ -100,6 +108,8 @@ export async function renderOffline(opts: OfflineRenderOptions): Promise<Offline
     voiceCount = 32,
     sidechain,
     busGains,
+    busEQ,
+    busSaturation,
     filename = 'psy-sampler-render.wav',
     download = true,
   } = opts
@@ -131,6 +141,16 @@ export async function renderOffline(opts: OfflineRenderOptions): Promise<Offline
     if (busGains.music !== undefined) audioGraph.setBusGain('music', busGains.music)
     if (busGains.atmos !== undefined) audioGraph.setBusGain('atmos', busGains.atmos)
   }
+  if (busEQ) {
+    if (busEQ.drum) audioGraph.setBusEQ('drum', busEQ.drum)
+    if (busEQ.music) audioGraph.setBusEQ('music', busEQ.music)
+    if (busEQ.atmos) audioGraph.setBusEQ('atmos', busEQ.atmos)
+  }
+  if (busSaturation) {
+    if (busSaturation.drum !== undefined) audioGraph.setBusSaturation('drum', busSaturation.drum)
+    if (busSaturation.music !== undefined) audioGraph.setBusSaturation('music', busSaturation.music)
+    if (busSaturation.atmos !== undefined) audioGraph.setBusSaturation('atmos', busSaturation.atmos)
+  }
   if (sidechain?.enabled) {
     audioGraph.setSidechainEnabled(true)
     if (sidechain.depth !== undefined) audioGraph.setSidechainDepth(sidechain.depth)
@@ -150,12 +170,18 @@ export async function renderOffline(opts: OfflineRenderOptions): Promise<Offline
   // We trigger them all synchronously at construction time; each voice.trigger()
   // schedules its start/stop on the offline timeline via AudioParam ramps, and
   // startRendering() advances the clock to produce the correct output.
+  //
+  // A per-role hit counter mirrors the live device's hitCounters so the offline
+  // render produces the SAME round-robin selection sequence as live playback
+  // (same events in same order → same hitIndex → same sampleId → byte-identical
+  // audio). This is the end-to-end determinism proof.
   const sorted = [...events].sort((a, b) => a.at - b.at)
   let realized = 0
   let skipped = 0
   const seed = transport.revision ?? 0
   const barsPerPhrase = 8
   const phraseIndex = Math.floor(Math.max(0, transport.bar) / barsPerPhrase)
+  const hitCounters = new Map<SampleRole, number>()
 
   for (const event of sorted) {
     if (event.type !== 'note') continue
@@ -165,8 +191,9 @@ export async function renderOffline(opts: OfflineRenderOptions): Promise<Offline
       continue
     }
     const role: SampleRole = parsed.role
+    const hitIndex = hitCounters.get(role) ?? 0
     const selection = selectionPolicy.selectWithNote(
-      { role, bank: parsed.bank, velocity: event.velocity, phraseIndex, seed },
+      { role, bank: parsed.bank, velocity: event.velocity, phraseIndex, seed, hitIndex },
       event.note
     )
     if (selection === null) {
@@ -178,6 +205,7 @@ export async function renderOffline(opts: OfflineRenderOptions): Promise<Offline
       skipped += 1
       continue
     }
+    hitCounters.set(role, hitIndex + 1)
     const bus = roleToBus(role)
     const decay = selectionPolicy.decayFor(role)
     if (role === 'kick' && sidechain?.enabled) {

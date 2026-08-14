@@ -55,6 +55,16 @@ export class SamplerDevice implements PsyDevice {
   private readonly opts: SamplerDeviceOptions
   /** Bars per phrase — used to derive phraseIndex from transport.bar. */
   private readonly barsPerPhrase = 8
+  /**
+   * Per-role hit counter for deterministic round-robin selection. Increments on
+   * every note-on (after velocity-layer filtering succeeds). The counter is
+   * EVENT-ORDER-DEPENDENT (not wall-clock): two runs receiving the same
+   * NoteEvents in the same order produce the same hitIndex sequence → the same
+   * round-robin sample selection → byte-identical audio. This is how Kontakt
+   * and SMPLR round-robin works, and it eliminates machine-gunning without
+   * breaking the determinism contract.
+   */
+  private readonly hitCounters = new Map<SampleRole, number>()
   /** Counters for observability. */
   eventsReceived = 0
   notesTriggered = 0
@@ -137,10 +147,12 @@ export class SamplerDevice implements PsyDevice {
     // Selection — genuinely deterministic (seeded, stateless).
     // seed comes from transport.revision (stable per transport state).
     // phraseIndex is derived statelessly from transport.bar (read-only).
+    // hitIndex is the per-role note-on counter (deterministic round-robin).
     const seed = this.transport?.revision ?? 0
     const phraseIndex = this.transport
       ? Math.floor(Math.max(0, this.transport.bar) / this.barsPerPhrase)
       : 0
+    const hitIndex = this.hitCounters.get(role) ?? 0
     const selection = this.opts.selectionPolicy.selectWithNote(
       {
         role,
@@ -148,6 +160,7 @@ export class SamplerDevice implements PsyDevice {
         velocity: event.velocity,
         phraseIndex,
         seed,
+        hitIndex,
       },
       event.note
     )
@@ -194,6 +207,9 @@ export class SamplerDevice implements PsyDevice {
     }
     this.opts.scheduler.schedule(scheduledEvent)
     this.notesTriggered += 1
+    // Advance the per-role hit counter for deterministic round-robin.
+    // Only incremented on a successful trigger (skips don't consume an RR slot).
+    this.hitCounters.set(role, hitIndex + 1)
   }
 
   // ─── public accessors (for UI / tests) ─────────────────────────────────────
