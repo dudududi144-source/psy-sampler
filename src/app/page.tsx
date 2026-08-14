@@ -54,6 +54,8 @@ import {
 } from '@/lib/pattern-persistence'
 import { saveSessionState, loadSessionState, type SessionState } from '@/lib/session-persistence'
 import { loadSong, saveSong, resolveSong, songDurationSec, type Song } from '@/lib/song-persistence'
+import { createProject, downloadProject, readProjectFile, type ProjectState } from '@/lib/project-persistence'
+import { LiveRecorder } from '@/lib/live-recorder'
 import { renderOffline } from '@/lib/offline-render'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
@@ -124,6 +126,11 @@ export default function Home() {
     at: 0,
   })
   const [exporting, setExporting] = React.useState(false)
+  const [recording, setRecording] = React.useState(false)
+  const [recElapsed, setRecElapsed] = React.useState(0)
+  const recorderRef = React.useRef<LiveRecorder | null>(null)
+  const recTimerRef = React.useRef<ReturnType<typeof setInterval> | null>(null)
+  const projectFileInputRef = React.useRef<HTMLInputElement>(null)
   const [pumpEnabled, setPumpEnabled] = React.useState(false)
   const [evolveEnabled, setEvolveEnabled] = React.useState(false)
   const [filterMode, setFilterMode] = React.useState<'off' | 'lp' | 'hp'>('off')
@@ -731,6 +738,83 @@ export default function Home() {
 
   // ─── WAV export (FIX Bug 7: don't kill user-started playback) ──────────────
 
+  // ─── Live recording (capture live performance to WAV) ──────────────────────
+  const toggleRecord = React.useCallback(async () => {
+    const ctx = ctxRef.current
+    const bundle = bundleRef.current
+    if (!ctx || !bundle) return
+    if (recording) {
+      const recorder = recorderRef.current
+      if (recorder) {
+        try {
+          const filename = `psy-sampler-live-${new Date().toISOString().replace(/[:.]/g, '-')}`
+          await recorder.stop(filename)
+          toast({ title: 'Recording saved', description: `${filename}.wav` })
+        } catch (err) {
+          toast({ title: 'Recording failed', description: err instanceof Error ? err.message : String(err), variant: 'destructive' })
+        }
+      }
+      if (recTimerRef.current) { clearInterval(recTimerRef.current); recTimerRef.current = null }
+      setRecording(false)
+      setRecElapsed(0)
+    } else {
+      try {
+        const recorder = new LiveRecorder({ ctx, sourceNode: bundle.audioGraph.master })
+        recorder.start()
+        recorderRef.current = recorder
+        setRecording(true)
+        setRecElapsed(0)
+        recTimerRef.current = setInterval(() => { setRecElapsed(recorder.elapsedMs) }, 100)
+        toast({ title: 'Recording started', description: 'Capturing live audio — stop to save' })
+      } catch (err) {
+        toast({ title: 'Recording failed', description: err instanceof Error ? err.message : String(err), variant: 'destructive' })
+      }
+    }
+  }, [recording])
+
+  // ─── Project save/load ─────────────────────────────────────────────────────
+  const onSaveProject = React.useCallback(() => {
+    const project = createProject(`psy-sampler-${new Date().toISOString().slice(0, 10)}`, {
+      bpm, swing, masterVolume, section, energy, pattern, busState,
+      filterMode, pumpEnabled, evolveEnabled, song,
+    })
+    downloadProject(project)
+    toast({ title: 'Project saved', description: `${project.name}.psy.json` })
+  }, [bpm, swing, masterVolume, section, energy, pattern, busState, filterMode, pumpEnabled, evolveEnabled, song])
+
+  const onLoadProject = React.useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    e.target.value = ''
+    try {
+      const project = await readProjectFile(file)
+      if (!project) { toast({ title: 'Load failed', description: 'Invalid project file', variant: 'destructive' }); return }
+      setBpm(project.bpm); directorRef.current?.setBpm(project.bpm)
+      setSwing(project.swing); directorRef.current?.setSwing(project.swing / 100)
+      setMasterVolume(project.masterVolume); bundleRef.current?.audioGraph.setMasterGain(project.masterVolume)
+      setSection(project.section); setEnergy(project.energy)
+      resetPatternHistory(structuredClone(project.pattern))
+      directorRef.current?.setPattern(structuredClone(project.pattern))
+      setBusState(project.busState)
+      const graph = bundleRef.current?.audioGraph
+      if (graph) {
+        for (const busName of ['drum', 'music', 'atmos'] as const) {
+          const bs = project.busState[busName]
+          graph.setBusGain(busName, bs.gain); graph.setBusMuted(busName, bs.muted)
+          graph.setBusEQ(busName, { low: bs.eqLow, mid: bs.eqMid, high: bs.eqHigh })
+          graph.setBusSaturation(busName, bs.saturation)
+        }
+      }
+      setFilterMode(project.filterMode)
+      setPumpEnabled(project.pumpEnabled); graph?.setSidechainEnabled(project.pumpEnabled)
+      setEvolveEnabled(project.evolveEnabled); directorRef.current?.setEvolveEnabled(project.evolveEnabled)
+      setSong(project.song); saveSong(project.song)
+      toast({ title: `Loaded: ${project.name}`, description: `${project.bpm} BPM` })
+    } catch (err) {
+      toast({ title: 'Load failed', description: err instanceof Error ? err.message : String(err), variant: 'destructive' })
+    }
+  }, [resetPatternHistory])
+
 
   const handleExportWav = React.useCallback(async () => {
     const ctx = ctxRef.current
@@ -1014,6 +1098,38 @@ export default function Home() {
             >
               {exporting ? '● EXPORTING…' : '⬇ EXPORT WAV'}
             </Button>
+
+            {/* Live recording */}
+            <Button
+              onClick={toggleRecord}
+              className="h-11 gap-2 border font-mono text-xs font-bold uppercase tracking-[0.15em]"
+              style={{
+                borderColor: recording ? 'rgba(239,68,68,0.8)' : 'rgba(63,63,70,0.8)',
+                color: recording ? '#ef4444' : '#71717a',
+                background: recording ? 'rgba(239,68,68,0.15)' : 'rgba(24,24,27,0.8)',
+                boxShadow: recording ? '0 0 16px rgba(239,68,68,0.6)' : 'none',
+              }}
+              title="Record live audio — captures whatever you play"
+            >
+              {recording ? `● REC ${(recElapsed / 1000).toFixed(1)}s` : '○ REC'}
+            </Button>
+
+            {/* Project save/load */}
+            <Button
+              onClick={onSaveProject}
+              className="h-11 gap-2 border border-emerald-500/40 bg-emerald-500/10 font-mono text-xs font-bold uppercase tracking-[0.15em] text-emerald-300 hover:bg-emerald-500/20"
+              title="Save project (.psy.json)"
+            >
+              💾 SAVE
+            </Button>
+            <Button
+              onClick={() => projectFileInputRef.current?.click()}
+              className="h-11 gap-2 border border-cyan-500/40 bg-cyan-500/10 font-mono text-xs font-bold uppercase tracking-[0.15em] text-cyan-300 hover:bg-cyan-500/20"
+              title="Load project (.psy.json)"
+            >
+              📂 LOAD
+            </Button>
+            <input ref={projectFileInputRef} type="file" accept=".json,.psy.json,application/json" onChange={onLoadProject} className="hidden" />
 
             {/* PUMP (sidechain) toggle + EVOLVE toggle */}
             <Button
