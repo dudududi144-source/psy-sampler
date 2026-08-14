@@ -64,6 +64,7 @@ import { Stat } from '@/components/stat-badge'
 import { DebugPanel } from '@/components/debug-panel'
 import { PatternEditor } from '@/components/pattern-editor'
 import { SampleLibrary } from '@/components/sample-library'
+import { SampleImporter } from '@/components/sample-importer'
 import { Visualizer } from '@/components/visualizer'
 import { Mixer } from '@/components/mixer'
 import { PresetsPanel, PatternSlots } from '@/components/presets-panel'
@@ -109,6 +110,7 @@ export default function Home() {
   const [stats, setStats] = React.useState<DeviceStats | null>(null)
   const [eventLog, setEventLog] = React.useState<EventLogEntry[]>([])
   const [analyser, setAnalyser] = React.useState<AnalyserNode | null>(null)
+  const [audioCtx, setAudioCtx] = React.useState<AudioContext | null>(null)
   const [deviceCount, setDeviceCount] = React.useState(0)
   const [loadResult, setLoadResult] = React.useState<{ loaded: number; skipped: number; total: number } | null>(null)
   const [slotNames, setSlotNames] = React.useState<string[]>(['', '', '', ''])
@@ -165,6 +167,7 @@ export default function Home() {
       ctx = new Ctx()
       await ctx.resume()
       ctxRef.current = ctx
+      setAudioCtx(ctx)
 
       // Channel + Host
       const channel = new InMemoryChannel('psy-sampler-debug')
@@ -304,6 +307,7 @@ export default function Home() {
       if (host) host.dispose()
       if (ctx) await ctx.close().catch(() => {})
       ctxRef.current = null
+      setAudioCtx(null)
       bundleRef.current = null
       hostRef.current = null
       if (statsIntervalRef.current) {
@@ -429,6 +433,41 @@ export default function Home() {
       try { gain?.disconnect() } catch { /* */ }
       try { source?.disconnect() } catch { /* */ }
       console.warn('[psy-sampler] Audition failed:', err)
+    }
+  }, [])
+
+  // ─── Sample import (C2) ────────────────────────────────────────────────────
+
+  const onImportSample = React.useCallback((asset: SampleAsset) => {
+    const bundle = bundleRef.current
+    if (!bundle) return
+    // addFromBuffer enforces provenance — refuses if commercialUse=false or
+    // license/source are empty. Double enforcement: UI already checks, but
+    // the library is the final authority (defense in depth).
+    const added = bundle.library.addFromBuffer(
+      asset.metadata.id,
+      asset.audioBuffer,
+      {
+        category: asset.metadata.category,
+        subcategory: asset.metadata.subcategory,
+        provenance: asset.metadata.provenance,
+        rootNote: asset.metadata.character.rootNote,
+        velocityRange: asset.metadata.velocityRange,
+      }
+    )
+    if (added) {
+      // Refresh the samples list so the imported sample appears in the UI.
+      setSamples(bundle.library.list())
+      toast({
+        title: `Imported: ${asset.metadata.id}`,
+        description: `${asset.metadata.category} · ${asset.metadata.provenance.license} · ${asset.audioBuffer.duration.toFixed(2)}s`,
+      })
+    } else {
+      toast({
+        title: 'Import refused',
+        description: 'Provenance validation failed (missing license or non-commercial)',
+        variant: 'destructive',
+      })
     }
   }, [])
 
@@ -879,14 +918,20 @@ export default function Home() {
             />
           </div>
 
-          {/* ─── Library + Visualizer ─── */}
+          {/* ─── Library + Importer + Visualizer ─── */}
           <div className="mt-4 grid gap-4 lg:grid-cols-2">
-            <SampleLibrary
-              samples={samples}
-              onAudition={auditionSample}
-              nowPlayingSampleId={nowPlaying.sampleId}
-              nowPlayingAt={nowPlaying.at}
-            />
+            <div className="space-y-4">
+              <SampleLibrary
+                samples={samples}
+                onAudition={auditionSample}
+                nowPlayingSampleId={nowPlaying.sampleId}
+                nowPlayingAt={nowPlaying.at}
+              />
+              <SampleImporter
+                audioContext={audioCtx}
+                onImport={onImportSample}
+              />
+            </div>
             <Visualizer analyser={analyser} isPlaying={isPlaying} />
           </div>
 

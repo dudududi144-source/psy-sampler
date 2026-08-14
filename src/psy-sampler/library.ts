@@ -96,6 +96,100 @@ export class SampleLibrary {
     this.subcategories.get(cat)!.add(asset.metadata.subcategory)
   }
 
+  /**
+   * C2 (ROADMAP-TO-100): Import a user-supplied AudioBuffer into the library
+   * at runtime. This is the runtime equivalent of the loader path — the user
+   * drags a WAV into the UI, we decode it, compute features, and the user MUST
+   * assert provenance (license + commercial-use flag) before it enters the
+   * audio graph. This enforces the same provenance policy as the manifest path:
+   * no sample without explicit license metadata ever reaches the audio output.
+   *
+   * @param id Unique sample id (caller-chosen, e.g. "user-import-1").
+   * @param audioBuffer Decoded AudioBuffer (from decodeAudioData).
+   * @param opts Role, subcategory, provenance fields, rootNote, velocityRange.
+   * @returns true if added, false if provenance validation failed.
+   */
+  addFromBuffer(
+    id: SampleId,
+    audioBuffer: AudioBuffer,
+    opts: {
+      category: SampleCategory
+      subcategory: SampleBank
+      provenance: {
+        source: string
+        author: string
+        license: string
+        licenseUrl: string | null
+        commercialUse: boolean
+        attribution: string | null
+        usageRestrictions: string
+        /** ISO date the sample was acquired. Defaults to today. */
+        dateAcquired?: string
+      }
+      rootNote?: number
+      velocityRange?: [number, number]
+    }
+  ): boolean {
+    // Enforce provenance — refuse samples without explicit license metadata.
+    // This is the SAME policy as the manifest loader: no unprovenanced sample
+    // ever enters the audio graph, regardless of how it arrived.
+    if (!opts.provenance.commercialUse) {
+      console.warn(`[psy-sampler] Import refused: "${id}" marked non-commercial.`)
+      return false
+    }
+    if (!opts.provenance.license || !opts.provenance.source) {
+      console.warn(`[psy-sampler] Import refused: "${id}" missing license/source.`)
+      return false
+    }
+
+    // Compute features (same logic as SampleLoader.extractFeatures).
+    const monoData = this.toMono(audioBuffer)
+    let peak = 0
+    let sumSq = 0
+    for (let i = 0; i < monoData.length; i++) {
+      const s = Math.abs(monoData[i])
+      if (s > peak) peak = s
+      sumSq += monoData[i] * monoData[i]
+    }
+    const rms = monoData.length > 0 ? Math.sqrt(sumSq / monoData.length) : 0
+
+    const asset: SampleAsset = {
+      metadata: {
+        id,
+        file: `import:${id}`, // marker — not a URL, this sample came from a buffer
+        category: opts.category,
+        subcategory: opts.subcategory,
+        provenance: {
+          ...opts.provenance,
+          dateAcquired: opts.provenance.dateAcquired ?? new Date().toISOString().slice(0, 10),
+        },
+        character: {
+          character: ['user-import'],
+          genreFit: [],
+          bpmRange: [60, 200],
+          rootNote: opts.rootNote ?? 60,
+        },
+        duration: audioBuffer.duration,
+        sampleRate: audioBuffer.sampleRate,
+        channels: audioBuffer.numberOfChannels,
+        velocityRange: opts.velocityRange,
+      },
+      audioBuffer,
+      monoData,
+      features: {
+        peak,
+        rms,
+        duration: audioBuffer.duration,
+        sampleRate: audioBuffer.sampleRate,
+        channels: audioBuffer.numberOfChannels,
+      },
+    }
+
+    // Reuse add() — it handles dedup + indexing.
+    this.add(asset, {} as SampleManifestEntry)
+    return true
+  }
+
   get(id: SampleId): SampleAsset | undefined {
     return this.samples.get(id)
   }
@@ -130,5 +224,25 @@ export class SampleLibrary {
   /** True if at least one sample is loaded. */
   get ready(): boolean {
     return this.samples.size > 0
+  }
+
+  /**
+   * Downmix stereo → mono. Mono passes through (copied so caller can transfer
+   * ownership without affecting the AudioBuffer). Same logic as SampleLoader.
+   */
+  private toMono(buffer: AudioBuffer): Float32Array {
+    const ch = buffer.numberOfChannels
+    const len = buffer.length
+    if (ch === 1) {
+      return buffer.getChannelData(0).slice()
+    }
+    const mono = new Float32Array(len)
+    for (let c = 0; c < ch; c++) {
+      const data = buffer.getChannelData(c)
+      for (let i = 0; i < len; i++) {
+        mono[i] += data[i] / ch
+      }
+    }
+    return mono
   }
 }

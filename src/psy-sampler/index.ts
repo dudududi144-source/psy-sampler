@@ -130,7 +130,7 @@ export { SampleLoader } from './loader'
 
 // ─── Library ─────────────────────────────────────────────────────────────────
 
-/** In-memory sample store with parallel loading. */
+/** In-memory sample store with parallel loading + runtime import. */
 export { SampleLibrary, type LibraryQuery, type LibraryLoadResult } from './library'
 
 // ─── Voice ───────────────────────────────────────────────────────────────────
