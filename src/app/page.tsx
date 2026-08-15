@@ -1148,11 +1148,34 @@ export default function Home() {
 
   // ─── Cleanup ───────────────────────────────────────────────────────────────
 
-  // P1: Autosave session state (BPM, swing, master, section, energy, busState).
+  // P1: Autosave FULL session state (transport + mixer + filter + toggles + probabilities).
   React.useEffect(() => {
-    const state: SessionState = { bpm, swing, masterVolume, section, energy, busState }
+    const state: SessionState = {
+      bpm, swing, masterVolume, section, energy, busState,
+      filterMode, pumpEnabled, evolveEnabled, stepCount, probabilities,
+    }
     saveSessionState(state)
-  }, [bpm, swing, masterVolume, section, energy, busState])
+  }, [bpm, swing, masterVolume, section, energy, busState, filterMode, pumpEnabled, evolveEnabled, stepCount, probabilities])
+
+  // Load saved session state on mount (before audio init).
+  React.useEffect(() => {
+    const saved = loadSessionState()
+    if (saved) {
+      queueMicrotask(() => {
+        setBpm(saved.bpm)
+        setSwing(saved.swing)
+        setMasterVolume(saved.masterVolume)
+        setSection(saved.section)
+        setEnergy(saved.energy)
+        setBusState(saved.busState as typeof busState)
+        setFilterMode(saved.filterMode)
+        setPumpEnabled(saved.pumpEnabled)
+        setEvolveEnabled(saved.evolveEnabled)
+        setStepCount(saved.stepCount)
+        setProbabilities(saved.probabilities)
+      })
+    }
+  }, [])
 
   React.useEffect(() => {
     return () => {
