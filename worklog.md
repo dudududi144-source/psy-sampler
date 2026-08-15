@@ -1702,3 +1702,19 @@ Stage Summary:
 - 274 tests pass, 0 fail, 0 TS errors, 0 lint errors.
 - Server running HTTP 200.
 - Commit: 5fdd8b9
+
+---
+Task ID: PROBABILITY-OVERLAY
+Agent: main
+Task: Add per-step probability overlay (human-like variation)
+
+Work Log:
+- Added probability overlay to DemoDirector: Map<string, number> keyed by 'role:step'.
+- Methods: getProbability, setProbability (clamps 0..1, removes at 1.0), getAllProbabilities, loadProbabilities, clearProbabilities, hasProbabilities.
+- Updated scheduleStep: rolls seeded RNG (probabilitySeed + step + bar + role) before publishing. Same seed → same skip → deterministic.
+- Wrote 9 tests: default 1.0, set/get, clamp, 1.0 removes, getAll, load, clear, hasProbabilities, API correctness.
+- 283 tests pass (was 274, +9), 0 fail, 0 TS errors, 0 lint errors.
+
+Stage Summary:
+- Server running HTTP 200.
+- Commit: 48bbc28
