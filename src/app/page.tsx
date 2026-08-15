@@ -56,6 +56,7 @@ import { saveSessionState, loadSessionState, type SessionState } from '@/lib/ses
 import { loadSong, saveSong, resolveSong, songDurationSec, type Song } from '@/lib/song-persistence'
 import { createProject, downloadProject, readProjectFile, type ProjectState } from '@/lib/project-persistence'
 import { LiveRecorder } from '@/lib/live-recorder'
+import { AutomationBank, type AutomationTarget } from '@/lib/automation'
 import { renderOffline } from '@/lib/offline-render'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
@@ -63,6 +64,8 @@ import { ErrorBoundary } from '@/components/error-boundary'
 import { useKeyboardShortcuts } from '@/lib/use-keyboard-shortcuts'
 import { useUndoRedo } from '@/lib/use-undo-redo'
 import { useMidiInput, roleForNote } from '@/lib/use-midi-input'
+import { TimelineView } from '@/components/timeline-view'
+import { AutomationEditor } from '@/components/automation-editor'
 import { toast } from '@/hooks/use-toast'
 import { InitOverlay } from '@/components/init-overlay'
 import { Stat } from '@/components/stat-badge'
@@ -139,6 +142,11 @@ export default function Home() {
   const [songMode, setSongMode] = React.useState(false)
   const [songSegment, setSongSegment] = React.useState(0)
   const [songBar, setSongBar] = React.useState(0)
+  // ─── Automation state ──────────────────────────────────────────────────────
+  const [automationBank] = React.useState(() => new AutomationBank())
+  const automationBankRef = React.useRef(automationBank)
+  const [automationEnabled, setAutomationEnabled] = React.useState(false)
+  const [automationDirty, setAutomationDirty] = React.useState(0)
   const [busState, setBusState] = React.useState<Record<BusName, BusMixerState>>({
     drum: { gain: 0.9, muted: false, solo: false, eqLow: 0, eqMid: 0, eqHigh: 0, saturation: 0 },
     music: { gain: 0.85, muted: false, solo: false, eqLow: 0, eqMid: 0, eqHigh: 0, saturation: 0 },
@@ -542,6 +550,45 @@ export default function Home() {
       }
     }
   }, [song, songMode])
+
+  // ─── Automation ─────────────────────────────────────────────────────────────
+
+  const onToggleAutomation = React.useCallback(() => {
+    const director = directorRef.current
+    if (!director) return
+    const next = !automationEnabled
+    setAutomationEnabled(next)
+    director.loadAutomation(automationBankRef.current, (values: Record<string, number>) => {
+      const graph = bundleRef.current?.audioGraph
+      if (!graph) return
+      for (const [target, value] of Object.entries(values) as [string, number][]) {
+        switch (target as AutomationTarget) {
+          case 'masterFilter.freq': graph.setMasterFilter({ freq: value }); break
+          case 'masterFilter.Q': graph.setMasterFilter({ Q: value }); break
+          case 'master.gain': graph.setMasterGain(value); break
+          case 'bus.drum.gain': graph.setBusGain('drum', value); break
+          case 'bus.music.gain': graph.setBusGain('music', value); break
+          case 'bus.atmos.gain': graph.setBusGain('atmos', value); break
+          case 'bus.drum.saturation': graph.setBusSaturation('drum', value); break
+          case 'bus.music.saturation': graph.setBusSaturation('music', value); break
+          case 'bus.atmos.saturation': graph.setBusSaturation('atmos', value); break
+        }
+      }
+    })
+    director.setAutomationEnabled(next)
+  }, [automationEnabled])
+
+  const onAddAutomationPoint = React.useCallback((target: AutomationTarget, time: number, value: number) => {
+    automationBankRef.current.addPoint(target, time, value)
+    setAutomationDirty((d) => d + 1)
+  }, [])
+
+  const onClearAutomationTrack = React.useCallback((target: AutomationTarget) => {
+    const bank = automationBankRef.current
+    const track = bank.get(target)
+    for (const p of track.points) bank.removePoint(target, p.time)
+    setAutomationDirty((d) => d + 1)
+  }, [])
 
   // ─── Sample audition ───────────────────────────────────────────────────────
 
@@ -1279,8 +1326,15 @@ export default function Home() {
             />
           </div>
 
-          {/* ─── Song Editor ─── */}
-          <div className="mt-4">
+          {/* ─── Timeline + Song Editor + Automation ─── */}
+          <div className="mt-4 space-y-4">
+            <TimelineView
+              song={song}
+              songMode={songMode}
+              currentSegment={songSegment}
+              currentBar={songBar}
+              bpm={bpm}
+            />
             <SongEditor
               song={song}
               slotNames={slotNames}
@@ -1289,6 +1343,14 @@ export default function Home() {
               currentBar={songBar}
               onChange={onSongChange}
               onToggleSongMode={onToggleSongMode}
+            />
+            <AutomationEditor
+              bank={automationBank}
+              dirty={automationDirty}
+              enabled={automationEnabled}
+              onToggle={onToggleAutomation}
+              onAddPoint={onAddAutomationPoint}
+              onClearTrack={onClearAutomationTrack}
             />
           </div>
 

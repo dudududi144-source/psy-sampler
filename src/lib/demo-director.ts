@@ -105,6 +105,11 @@ export class DemoDirector {
   private songBarCounter = 0
   private songMode = false
   private songSegmentChangeCb: ((index: number, slot: number, bar: number) => void) | undefined
+  // ─── Automation ───────────────────────────────────────────────────────────
+  private automationBank: import('./automation').AutomationBank | null = null
+  private automationEnabled = false
+  private automationStartTime = 0
+  private automationCb: ((values: Record<string, number>) => void) | undefined
 
   constructor(opts: DirectorOptions, onStep?: (step: number) => void) {
     this.host = opts.host
@@ -226,6 +231,22 @@ export class DemoDirector {
   /** True if the song has segments loaded. */
   get hasSong(): boolean {
     return this.songSegments.length > 0
+  }
+
+  // ─── Automation ─────────────────────────────────────────────────────────────
+
+  loadAutomation(bank: import('./automation').AutomationBank, onSample: (values: Record<string, number>) => void): void {
+    this.automationBank = bank
+    this.automationCb = onSample
+  }
+
+  setAutomationEnabled(enabled: boolean): void {
+    this.automationEnabled = enabled
+    if (enabled) this.automationStartTime = this.ctx.currentTime
+  }
+
+  get isAutomationEnabled(): boolean {
+    return this.automationEnabled
   }
 
   /**
@@ -354,6 +375,14 @@ export class DemoDirector {
         }
       }
       this.nextNoteTime += secPerStep
+    }
+    // Sample automation if enabled — fire callback with {target: value} map.
+    if (this.automationEnabled && this.automationBank && this.automationCb) {
+      const elapsed = this.ctx.currentTime - this.automationStartTime
+      const values = this.automationBank.sampleAll(elapsed)
+      if (Object.keys(values).length > 0) {
+        this.automationCb(values)
+      }
     }
     // Push transport snapshot periodically (every tick).
     this.host.pushTransport(this.transport.snapshot(this.ctx.currentTime), performance.now())

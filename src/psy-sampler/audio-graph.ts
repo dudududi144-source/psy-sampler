@@ -19,22 +19,19 @@ export interface AudioGraphOptions {
 
 interface Bus {
   input: GainNode
-  /** 3-band EQ: lowShelf → peaking → highShelf. Inserted after input, before saturation. */
   eqLow: BiquadFilterNode
   eqMid: BiquadFilterNode
   eqHigh: BiquadFilterNode
-  /** Saturation (waveshaper). Inserted after EQ, before duckGain. Drive 0 = linear bypass. */
   saturation: WaveShaperNode
-  /** Post-saturation gain compensation (saturation reduces peak level). */
   saturationGain: GainNode
-  /** Duck gain node — inserted between saturation and master. Sidechain dips this. */
   duckGain: GainNode
   delaySend: GainNode
   reverbSend: GainNode
   userGain: number
   muted: boolean
-  /** Current saturation drive (0 = bypass). Stored for getBusSaturation. */
   saturationDrive: number
+  /** Post-fader direct output tap (multi-output). Null until enableBusOutput(). */
+  directOutput: MediaStreamAudioDestinationNode | null
 }
 
 export class AudioGraph {
@@ -42,7 +39,10 @@ export class AudioGraph {
   readonly master: GainNode
   /** Master filter (lowpass/highpass/allpass) — the psytrance filter sweep. */
   readonly masterFilter: BiquadFilterNode
+  /** Master compressor (glue compression on the mix bus). */
   readonly compressor: DynamicsCompressorNode
+  /** Brickwall limiter — prevents clipping at the final output. */
+  readonly limiter: DynamicsCompressorNode
   readonly analyser: AnalyserNode | null
   readonly delay: DelayNode
   readonly delayFeedback: GainNode
@@ -75,6 +75,18 @@ export class AudioGraph {
     this.compressor.ratio.value = 6
     this.compressor.attack.value = 0.003
     this.compressor.release.value = 0.2
+
+    // Brickwall limiter — prevents clipping at the final output stage.
+    // High ratio (20:1) + low threshold (-1dB) + fast attack (0.5ms) = catches
+    // peaks that would otherwise distort. Professional mixes always have a
+    // limiter on the master bus.
+    this.limiter = ctx.createDynamicsCompressor()
+    this.limiter.threshold.value = -1
+    this.limiter.knee.value = 0
+    this.limiter.ratio.value = 20
+    this.limiter.attack.value = 0.0005
+    this.limiter.release.value = 0.05
+
     this.analyser = opts.enableAnalyser !== false ? ctx.createAnalyser() : null
     if (this.analyser) this.analyser.fftSize = 256
 
@@ -90,14 +102,15 @@ export class AudioGraph {
     this.masterFilter.frequency.value = 20000 // effectively open
     this.masterFilter.Q.value = 1.0 // gentle resonance
 
-    // Master chain: master → masterFilter → compressor → [analyser] → output
+    // Master chain: master → masterFilter → compressor → limiter → [analyser] → output
     this.master.connect(this.masterFilter)
     this.masterFilter.connect(this.compressor)
+    this.compressor.connect(this.limiter)
     if (this.analyser) {
-      this.compressor.connect(this.analyser)
+      this.limiter.connect(this.analyser)
       this.analyser.connect(outputTarget)
     } else {
-      this.compressor.connect(outputTarget)
+      this.limiter.connect(outputTarget)
     }
 
     // Delay.
@@ -177,6 +190,7 @@ export class AudioGraph {
       this.buses.set(cfg.name, {
         input, eqLow, eqMid, eqHigh, saturation, saturationGain, duckGain,
         delaySend: ds, reverbSend: rs, userGain: cfg.gain, muted: false, saturationDrive: 0,
+        directOutput: null,
       })
     }
   }
@@ -185,6 +199,44 @@ export class AudioGraph {
     const bus = this.buses.get(name)
     if (!bus) throw new Error(`Unknown bus: ${name}`)
     return bus.input
+  }
+
+  // ─── Multi-output (route each bus to a separate stream) ──────────────────────
+
+  /**
+   * Enable a post-fader direct output tap for a bus. Returns a MediaStream
+   * that can be recorded separately or routed to an external DAW. The tap is
+   * AFTER gain + EQ + saturation but BEFORE duckGain + master FX.
+   */
+  enableBusOutput(name: BusName): MediaStream | null {
+    const bus = this.buses.get(name)
+    if (!bus) return null
+    if (bus.directOutput) return null
+    const dest = this.ctx.createMediaStreamDestination()
+    bus.saturationGain.connect(dest)
+    bus.directOutput = dest
+    return dest.stream
+  }
+
+  /** Disable a bus direct output tap. */
+  disableBusOutput(name: BusName): void {
+    const bus = this.buses.get(name)
+    if (!bus || !bus.directOutput) return
+    try { bus.saturationGain.disconnect(bus.directOutput) } catch { /* */ }
+    bus.directOutput = null
+  }
+
+  /** Get the MediaStream for a bus output (null if not enabled). */
+  getBusOutputStream(name: BusName): MediaStream | null {
+    const bus = this.buses.get(name)
+    if (!bus || !bus.directOutput) return null
+    return bus.directOutput.stream
+  }
+
+  /** True if a bus has a direct output enabled. */
+  hasBusOutput(name: BusName): boolean {
+    const bus = this.buses.get(name)
+    return !!bus?.directOutput
   }
 
   setMasterGain(value: number): void {
@@ -476,6 +528,7 @@ export class AudioGraph {
     this.master.disconnect()
     this.masterFilter.disconnect()
     this.compressor.disconnect()
+    this.limiter.disconnect()
     if (this.analyser) this.analyser.disconnect()
     this.delay.disconnect()
     this.delayFeedback.disconnect()
@@ -492,6 +545,7 @@ export class AudioGraph {
       bus.duckGain.disconnect()
       bus.delaySend.disconnect()
       bus.reverbSend.disconnect()
+      if (bus.directOutput) bus.directOutput.disconnect()
     }
     this.buses.clear()
   }
