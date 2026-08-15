@@ -47,7 +47,14 @@ const HORIZON_SEC = 0.1
 export class RealizationScheduler {
   private readonly ctx: AudioContext
   private triggerFn: VoiceTriggerFn
+  /**
+   * Queue with head pointer. Instead of shift() (O(n) — moves all elements),
+   * we advance headIndex and periodically compact. This makes dequeue O(1)
+   * amortized. At 145 BPM with 9 roles, ~144 events are queued per tick —
+   * shift() on each costs 144×n comparisons; headIndex costs 0.
+   */
   private queue: ScheduledSampleEvent[] = []
+  private headIndex = 0
   private timer: { stop: () => void } | null = null
   private running = false
   private lastTickWarned = Number.NEGATIVE_INFINITY
@@ -76,13 +83,15 @@ export class RealizationScheduler {
     }
     // Drop all pending events.
     this.queue = []
+    this.headIndex = 0
   }
 
   /** Queue an event for future firing. Sorted insert by .at. */
   schedule(event: ScheduledSampleEvent): void {
-    // Binary insert to keep queue sorted by .at.
+    // Binary insert to keep queue sorted by .at. Operates on the active
+    // portion of the array (headIndex..end).
     const arr = this.queue
-    let lo = 0
+    let lo = this.headIndex
     let hi = arr.length
     while (lo < hi) {
       const mid = (lo + hi) >>> 1
@@ -92,9 +101,9 @@ export class RealizationScheduler {
     arr.splice(lo, 0, event)
   }
 
-  /** Number of events currently queued. */
+  /** Number of events currently queued (active portion). */
   get pendingCount(): number {
-    return this.queue.length
+    return this.queue.length - this.headIndex
   }
 
   get isRunning(): boolean {
@@ -107,9 +116,11 @@ export class RealizationScheduler {
     if (!this.running) return
     const now = this.ctx.currentTime
     const horizon = now + HORIZON_SEC
-    // Drain all events due within the horizon.
-    while (this.queue.length > 0 && this.queue[0]!.at <= horizon) {
-      const event = this.queue.shift()!
+    // Drain all events due within the horizon. Use headIndex instead of
+    // shift() — O(1) dequeue instead of O(n).
+    while (this.headIndex < this.queue.length && this.queue[this.headIndex]!.at <= horizon) {
+      const event = this.queue[this.headIndex]!
+      this.headIndex++
       // If the event is late (> 50ms past its scheduled time), play it NOW
       // instead of dropping it. Dropping causes unexpected silence (gaps in
       // the groove); playing late causes tiny timing jitter but keeps the
@@ -132,6 +143,13 @@ export class RealizationScheduler {
       } catch (err) {
         console.error('[psy-sampler] triggerFn error for event:', err)
       }
+    }
+    // Compact: if headIndex has advanced past 64 entries, slice off the
+    // consumed prefix. This prevents unbounded array growth. 64 is chosen
+    // so we compact roughly every 2-3 ticks (each tick drains ~50 events).
+    if (this.headIndex > 64) {
+      this.queue = this.queue.slice(this.headIndex)
+      this.headIndex = 0
     }
   }
 }
