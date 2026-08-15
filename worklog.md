@@ -1949,3 +1949,17 @@ Work Log:
 Stage Summary:
 - Server running HTTP 200.
 - Commit: 817e726
+
+---
+Task ID: RANDOMIZE-SHORTCUT
+Agent: main
+Task: Add X key for randomize + help overlay update
+
+Work Log:
+- Added X keyboard shortcut for randomize pattern. Now 15 shortcuts total.
+- Updated help-overlay with the new shortcut.
+- 283 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+
+Stage Summary:
+- Server running HTTP 200.
+- Commit: 0ee563e
