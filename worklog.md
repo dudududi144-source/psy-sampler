@@ -1886,3 +1886,17 @@ Work Log:
 Stage Summary:
 - Server running HTTP 200.
 - Commit: 51286d6
+
+---
+Task ID: README-REWRITE
+Agent: main
+Task: Rewrite README to reflect all 31 features + 14 shortcuts
+
+Work Log:
+- README was from MVP stage (164 lines, 0 feature mentions). Rewrote completely.
+- New README documents: all 31 features organized by category, 14 keyboard shortcuts table, architecture, determinism contract, testing summary, sample library, license.
+- 283 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+
+Stage Summary:
+- Server running HTTP 200.
+- Commit: 5c270bd
