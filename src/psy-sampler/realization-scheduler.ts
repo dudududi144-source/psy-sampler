@@ -18,7 +18,8 @@
 //   - Horizon: 100ms lookahead (audioCtx.currentTime + 0.1).
 //   - Queue: sorted array of scheduled events by .at ascending.
 //   - tick(): drains all events with .at <= currentTime + horizon.
-//   - Stale events (.at < currentTime - 50ms) are dropped (not fired late).
+//   - Stale events (.at < currentTime - 50ms) are played immediately (not dropped).
+//     Dropping causes silence gaps; playing late causes tiny jitter. Standard DAW approach.
 //   - triggerFn errors are caught (event is logged but not re-thrown).
 //
 // Timing rule: AudioContext.currentTime is the ONLY clock. The 25ms timer only
@@ -109,15 +110,21 @@ export class RealizationScheduler {
     // Drain all events due within the horizon.
     while (this.queue.length > 0 && this.queue[0]!.at <= horizon) {
       const event = this.queue.shift()!
+      // If the event is late (> 50ms past its scheduled time), play it NOW
+      // instead of dropping it. Dropping causes unexpected silence (gaps in
+      // the groove); playing late causes tiny timing jitter but keeps the
+      // audio continuous. This is the standard DAW approach — never drop,
+      // just catch up.
       if (event.at < now - 0.05) {
-        // Stale event (> 50ms late) — drop, log once per second.
         if (now - this.lastTickWarned > 1.0) {
           console.warn(
-            `[psy-sampler] Dropping stale event (late by ${((now - event.at) * 1000).toFixed(1)}ms)`
+            `[psy-sampler] Event late by ${((now - event.at) * 1000).toFixed(1)}ms — playing immediately (jitter, not drop)`
           )
           this.lastTickWarned = now
         }
-        continue
+        // Clamp the event time to NOW so the voice triggers immediately.
+        event.at = now
+        event.opts.at = now
       }
       // FIX: catch triggerFn errors so one bad event doesn't kill the tick loop.
       try {
