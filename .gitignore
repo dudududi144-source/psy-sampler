@@ -64,3 +64,4 @@ server.log
 # PSY Sampler — db
 /db/.zscripts/
 /examples/
+mobile-check.png
