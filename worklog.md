@@ -1820,3 +1820,19 @@ Work Log:
 Stage Summary:
 - Server running HTTP 200.
 - Commit: 64671ef
+
+---
+Task ID: FULL-SESSION-PERSISTENCE
+Agent: main
+Task: Full session persistence — restores everything on reload
+
+Work Log:
+- Extended SessionState with: filterMode, pumpEnabled, evolveEnabled, stepCount, probabilities, full busState (EQ + saturation).
+- loadSessionState() merges with defaults (backward compatible with older saved states).
+- Added load-on-mount effect in page.tsx: restores all saved state before audio init.
+- Autosave effect now saves ALL state.
+- 283 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+
+Stage Summary:
+- Server running HTTP 200.
+- Commit: 5fc9e58
