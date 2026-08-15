@@ -1804,3 +1804,19 @@ Stage Summary:
 - 283 tests pass, 0 fail, 0 TS errors, 0 lint errors.
 - Server running HTTP 200.
 - Commit: b615edc
+
+---
+Task ID: VOICE-POOL-OPTIMIZATION
+Agent: main
+Task: O(1) voice allocation via free-list (was O(n))
+
+Work Log:
+- VoicePool.allocate() was O(n) — scanned all voices to find inactive. At 145 BPM with 9 roles × 16 steps = 144 allocations/tick, each scanning 32 voices = 4608 comparisons/tick.
+- Added freeSet: Set<number> of inactive voice indices. allocate() pops from set (O(1)). release(voice) adds back (O(1)). activeCount maintained incrementally.
+- ~32× faster voice allocation.
+- Updated test to use allocate() instead of manual v.active = true.
+- 283 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+
+Stage Summary:
+- Server running HTTP 200.
+- Commit: 64671ef
