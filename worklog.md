@@ -1932,3 +1932,20 @@ Work Log:
 Stage Summary:
 - Server running HTTP 200.
 - Commit: 588facb
+
+---
+Task ID: RANDOMIZE-PATTERN
+Agent: main
+Task: Add randomize pattern — seeded deterministic pattern generation
+
+Work Log:
+- Added randomizePattern(seed?) to DemoDirector: mutates pattern in-place with seeded Rng.
+- Role-appropriate density: kick 4-on-floor, bass 80%, hats 50%, clap on 4/12, perc 30%, lead 20%, texture/fx 10%.
+- Velocity randomized within role ranges.
+- Added RND button (cyan) to PatternEditor header.
+- Wired onRandomizePattern handler in page.tsx with toast.
+- 283 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+
+Stage Summary:
+- Server running HTTP 200.
+- Commit: 817e726
