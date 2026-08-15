@@ -1613,3 +1613,25 @@ Stage Summary:
 - Server running HTTP 200.
 - Commit: just pushed.
 - Note: audio-graph limiter + multi-output were also lost but not yet rebuilt. Core features are back.
+
+---
+Task ID: REBUILD-FROM-GIT
+Agent: main
+Task: Rebuild limiter + multi-output + automation wiring from git history
+
+Work Log:
+- Compared git history (fd3bb8c = last good commit) vs current files.
+- Found: audio-graph lost limiter + multi-output; demo-director lost automation; page.tsx lost automation wiring.
+- Rebuilt brickwall limiter in audio-graph: threshold=-1dB, ratio=20:1, attack=0.5ms. Master chain: master → masterFilter → compressor → limiter → output.
+- Rebuilt multi-output: enableBusOutput/disableBusOutput/getBusOutputStream/hasBusOutput. Bus.directOutput field.
+- Rebuilt automation in DemoDirector: loadAutomation(bank, onSample), setAutomationEnabled, tick() samples bank + fires callback.
+- Wired automation in page.tsx: onToggleAutomation applies values to AudioGraph (masterFilter, master gain, bus gains/saturations). onAddAutomationPoint + onClearAutomationTrack for editor.
+- Added TimelineView + AutomationEditor to layout.
+- Fixed type error: Object.entries cast to [string, number][].
+- Browser-verified: ○ REC, 💾 SAVE, TIMELINE, AUTOMATION, ○ AUTO all appear. Zero errors.
+
+Stage Summary:
+- 274 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+- Server running HTTP 200.
+- Commit: 0167802
+- All features from before the reset are now restored.
