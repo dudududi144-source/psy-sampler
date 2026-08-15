@@ -1836,3 +1836,20 @@ Work Log:
 Stage Summary:
 - Server running HTTP 200.
 - Commit: 5fc9e58
+
+---
+Task ID: MOBILE-LAYOUT-ROWS
+Agent: main
+Task: Split transport bar into 3 logical rows for mobile
+
+Work Log:
+- Split transport bar from one flex-wrap into 3 rows with border-t separation.
+- Row 1: Playback + Export + Record + Project I/O.
+- Row 2: FX + Toggles + Undo/Redo + Tap + MIDI.
+- Row 3: Sliders (BPM, Swing, Master, Section, Energy).
+- Mobile-verified: 245 elements render at 375×812. Zero errors.
+
+Stage Summary:
+- 283 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+- Server running HTTP 200.
+- Commit: 4845021
