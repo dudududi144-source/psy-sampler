@@ -1718,3 +1718,23 @@ Work Log:
 Stage Summary:
 - Server running HTTP 200.
 - Commit: 48bbc28
+
+---
+Task ID: PROBABILITY-UI
+Agent: main
+Task: Add probability editor UI — toggle between velocity/probability modes
+
+Work Log:
+- Added editMode state to PatternEditor: 'velocity' | 'probability'.
+- Added ○ PROB / ● PROB toggle button in header (cyan when active).
+- In probability mode: clicking cycles 100→75→50→25→100%, opacity scales with probability, cell shows percentage.
+- In velocity mode: cells with non-default probability show subtle cyan dot.
+- aria-label includes probability.
+- Drag-paint disabled in probability mode.
+- Wired page.tsx: probabilities state + onSetProbability handler.
+- Browser-verified: PROB toggle works, click sets prob 75%, aria-label correct. Zero errors.
+
+Stage Summary:
+- 283 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+- Server running HTTP 200.
+- Commit: 96ee087
