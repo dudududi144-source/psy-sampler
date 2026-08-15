@@ -58,6 +58,7 @@ import { createProject, downloadProject, readProjectFile, type ProjectState } fr
 import { LiveRecorder } from '@/lib/live-recorder'
 import { AutomationBank, type AutomationTarget } from '@/lib/automation'
 import { renderOffline } from '@/lib/offline-render'
+import { exportStems } from '@/lib/stem-export'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { ErrorBoundary } from '@/components/error-boundary'
@@ -921,6 +922,82 @@ export default function Home() {
   }, [resetPatternHistory])
 
 
+  // ─── Stem export (each bus as separate WAV) ─────────────────────────────────
+  const [stemExporting, setStemExporting] = React.useState(false)
+
+  const handleExportStems = React.useCallback(async () => {
+    const ctx = ctxRef.current
+    const bundle = bundleRef.current
+    const director = directorRef.current
+    if (!ctx || !bundle || !director) return
+    setStemExporting(true)
+    try {
+      const bars = 4
+      const secPerStep = 60 / bpm / 4
+      const events: import('@/psy-foundation-shim').NoteEvent[] = []
+      const roles = Object.keys(pattern) as SampleRole[]
+      for (let bar = 0; bar < bars; bar++) {
+        const barStart = bar * secPerStep * 16
+        for (let step = 0; step < stepCount; step++) {
+          const at = barStart + step * secPerStep
+          for (const role of roles) {
+            const vel = pattern[role]?.[step] ?? 0
+            if (vel <= 0) continue
+            events.push({
+              type: 'note',
+              note: ROLE_NOTES[role] ?? 60,
+              velocity: vel / 127,
+              duration: secPerStep * 0.9,
+              channel: role,
+              at,
+            })
+          }
+        }
+      }
+      const durationSec = bars * secPerStep * stepCount + 1.0
+      const transport = transportRef.current?.snapshot(ctx.currentTime)
+      if (!transport) return
+      const result = await exportStems({
+        library: bundle.library,
+        selectionPolicy: bundle.selectionPolicy,
+        events,
+        transport,
+        durationSec,
+        sampleRate: 44100,
+        masterGain: masterVolume,
+        voiceCount: 32,
+        sidechain: {
+          enabled: bundle.audioGraph.isSidechainEnabled,
+          depth: bundle.audioGraph.sidechainDepthValue,
+        },
+        busEQ: {
+          drum: { low: busState.drum.eqLow, mid: busState.drum.eqMid, high: busState.drum.eqHigh },
+          music: { low: busState.music.eqLow, mid: busState.music.eqMid, high: busState.music.eqHigh },
+          atmos: { low: busState.atmos.eqLow, mid: busState.atmos.eqMid, high: busState.atmos.eqHigh },
+        },
+        busSaturation: {
+          drum: busState.drum.saturation,
+          music: busState.music.saturation,
+          atmos: busState.atmos.saturation,
+        },
+        baseFilename: `psy-sampler-stems-${bpm}bpm-${Date.now()}`,
+      })
+      toast({
+        title: `Exported ${result.stems.length} stems in ${result.totalMs.toFixed(0)}ms`,
+        description: result.stems.map((s) => `${s.bus} (${s.renderMs.toFixed(0)}ms)`).join(' · '),
+      })
+    } catch (err) {
+      console.error('[psy-sampler] Stem export failed:', err)
+      toast({
+        title: 'Stem export failed',
+        description: err instanceof Error ? err.message : String(err),
+        variant: 'destructive',
+      })
+    } finally {
+      setStemExporting(false)
+    }
+  }, [bpm, pattern, stepCount, masterVolume, busState])
+
   const handleExportWav = React.useCallback(async () => {
     const ctx = ctxRef.current
     const bundle = bundleRef.current
@@ -1216,6 +1293,17 @@ export default function Home() {
               style={{ boxShadow: exporting ? '0 0 16px rgba(185,103,255,0.6)' : '0 0 8px rgba(185,103,255,0.2)' }}
             >
               {exporting ? '● EXPORTING…' : '⬇ EXPORT WAV'}
+            </Button>
+
+            {/* Stem export — each bus as separate WAV */}
+            <Button
+              onClick={handleExportStems}
+              disabled={stemExporting}
+              className="h-11 gap-2 border border-amber-400/50 bg-zinc-900 font-mono text-xs font-bold uppercase tracking-[0.15em] text-amber-300 hover:bg-amber-500/10 disabled:opacity-50"
+              style={{ boxShadow: stemExporting ? '0 0 16px rgba(251,191,36,0.6)' : 'none' }}
+              title="Export stems — drum/music/atmos as separate WAVs"
+            >
+              {stemExporting ? '● STEMS…' : '⬇ STEMS'}
             </Button>
 
             {/* Live recording */}
