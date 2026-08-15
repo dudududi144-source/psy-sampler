@@ -99,6 +99,14 @@ export class DemoDirector {
   private evolveSeed = 42
   private evolveBarCounter = 0
   private readonly evolveInterval = 4 // mutate every 4 bars
+  // ─── Per-step probability overlay ──────────────────────────────────────────
+  // A separate map from "role:step" → probability (0..1). When a step fires,
+  // the director rolls a random number; if it's > probability, the step is
+  // skipped (silently). This creates human-like variation without changing the
+  // pattern. Default probability = 1.0 (always play). Set to 0.5 = 50% chance.
+  // Uses a SEEDED RNG so it's deterministic (same seed → same skips).
+  private probabilities = new Map<string, number>()
+  private probabilitySeed = 42
   // ─── Song mode ────────────────────────────────────────────────────────────
   // When song mode is enabled, the director advances through a sequence of
   // {pattern, bars} segments at bar boundaries. Each segment's pattern
@@ -150,6 +158,56 @@ export class DemoDirector {
     }
     // Reset step counter to avoid out-of-bounds.
     this.step = 0
+  }
+
+  // ─── Per-step probability ──────────────────────────────────────────────────
+
+  /** Get the probability for a role:step (0..1). Default 1.0 (always play). */
+  getProbability(role: SampleRole, step: number): number {
+    return this.probabilities.get(`${role}:${step}`) ?? 1.0
+  }
+
+  /** Set the probability for a role:step (0..1). 1.0 = always, 0.5 = 50%. */
+  setProbability(role: SampleRole, step: number, prob: number): void {
+    const clamped = Math.max(0, Math.min(1, prob))
+    if (clamped >= 0.999) {
+      // 100% = remove from map (default behavior).
+      this.probabilities.delete(`${role}:${step}`)
+    } else {
+      this.probabilities.set(`${role}:${step}`, clamped)
+    }
+  }
+
+  /** Get all non-default probabilities as {role: {step: prob}}. */
+  getAllProbabilities(): Record<string, Record<number, number>> {
+    const result: Record<string, Record<number, number>> = {}
+    for (const [key, prob] of this.probabilities) {
+      const [role, stepStr] = key.split(':')
+      if (!role || !stepStr) continue
+      const step = parseInt(stepStr, 10)
+      if (!result[role]) result[role] = {}
+      result[role][step] = prob
+    }
+    return result
+  }
+
+  /** Load probabilities from a saved map. */
+  loadProbabilities(probs: Record<string, Record<number, number>>): void {
+    this.probabilities.clear()
+    for (const [role, stepMap] of Object.entries(probs)) {
+      for (const [stepStr, prob] of Object.entries(stepMap)) {
+        this.probabilities.set(`${role}:${stepStr}`, prob)
+      }
+    }
+  }
+
+  /** Clear all probabilities (back to 100% for everything). */
+  clearProbabilities(): void {
+    this.probabilities.clear()
+  }
+
+  get hasProbabilities(): boolean {
+    return this.probabilities.size > 0
   }
 
   start(): void {
@@ -427,6 +485,17 @@ export class DemoDirector {
       if (!row) continue
       const velocity = row[step] ?? 0
       if (velocity <= 0) continue // 0 = off (no note)
+      // Per-step probability: roll a seeded RNG. If the roll > probability,
+      // skip this note (silently). This creates human-like variation.
+      const prob = this.getProbability(role, step)
+      if (prob < 0.999) {
+        // Seeded RNG: combines probabilitySeed + role + step + bar for determinism.
+        // Same seed + same bar + same step → same roll → same skip decision.
+        const bar = Math.floor(this.step / STEPS) // approximate bar for seeding
+        const seed = (this.probabilitySeed * 1000 + step * 37 + bar * 13 + role.charCodeAt(0)) >>> 0
+        const rng = new Rng(seed)
+        if (rng.next() > prob) continue // skip this note
+      }
       const note = ROLE_NOTES[role] ?? 60
       const event: NoteEvent = {
         type: 'note',
