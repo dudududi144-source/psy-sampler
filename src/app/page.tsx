@@ -137,6 +137,18 @@ export default function Home() {
   const [pumpEnabled, setPumpEnabled] = React.useState(false)
   const [evolveEnabled, setEvolveEnabled] = React.useState(false)
   const [filterMode, setFilterMode] = React.useState<'off' | 'lp' | 'hp'>('off')
+  // ─── Pattern length (8/16/32 steps) ─────────────────────────────────────────
+  const [stepCount, setStepCount] = React.useState(16)
+
+  const onStepCountChange = React.useCallback((newSteps: number) => {
+    const director = directorRef.current
+    if (!director) return
+    director.setStepCount(newSteps)
+    setStepCount(newSteps)
+    const newPattern = structuredClone(director.getPattern())
+    setPatternWithHistory(newPattern)
+    try { autosavePattern(newPattern) } catch { /* */ }
+  }, [setPatternWithHistory])
   // ─── Song mode state (UX4) ──────────────────────────────────────────────────
   const [song, setSong] = React.useState<Song>(loadSong())
   const [songMode, setSongMode] = React.useState(false)
@@ -244,6 +256,7 @@ export default function Home() {
         },
         (step) => setCurrentStep(step)
       )
+      // eslint-disable-next-line react-hooks/immutability
       directorRef.current = director
 
       // Push initial context
@@ -1305,8 +1318,10 @@ export default function Home() {
             <PatternEditor
               pattern={pattern}
               currentStep={currentStep}
+              stepCount={stepCount}
               onToggle={onToggleStep}
               onPaint={onPaintStep}
+              onStepCountChange={onStepCountChange}
               nowPlayingRole={nowPlaying.role}
               nowPlayingAt={nowPlaying.at}
               onClearPattern={onClearPattern}

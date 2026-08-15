@@ -67,6 +67,7 @@ export interface BusMixerState {
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 export const ROLES: SampleRole[] = ['kick', 'bass', 'lead', 'hat-closed', 'hat-open', 'clap', 'perc', 'texture', 'fx']
+/** Default pattern length. The director can change this (8/16/32). */
 export const STEPS = 16
 export const ROLE_COLORS: Record<SampleRole, string> = {
   kick: '#00ffc8',

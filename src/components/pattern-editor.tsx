@@ -21,7 +21,6 @@ import type { Pattern } from '@/lib/demo-director'
 import { VEL_ACCENT, VEL_DEFAULT } from '@/lib/demo-director'
 import {
   ROLES,
-  STEPS,
   ROLE_COLORS,
   ROLE_LABEL,
   NOW_PLAYING_MS,
@@ -30,17 +29,22 @@ import {
 export function PatternEditor({
   pattern,
   currentStep,
+  stepCount,
   onToggle,
   onPaint,
+  onStepCountChange,
   nowPlayingRole,
   nowPlayingAt,
   onClearPattern,
 }: {
   pattern: Pattern
   currentStep: number
+  stepCount: number
   onToggle: (role: SampleRole, step: number) => void
   /** Paint a cell to an explicit velocity (used by drag-paint). */
   onPaint: (role: SampleRole, step: number, velocity: number) => void
+  /** Change pattern length (8/16/32). */
+  onStepCountChange?: (steps: number) => void
   nowPlayingRole: SampleRole | null
   nowPlayingAt: number
   onClearPattern: () => void
@@ -88,7 +92,7 @@ export function PatternEditor({
     <div className="rounded-lg border border-zinc-800 bg-zinc-950/80 p-4">
       <div className="mb-3 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <h2 className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-fuchsia-300">PATTERN · 16 steps</h2>
+          <h2 className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-fuchsia-300">PATTERN · {stepCount} steps</h2>
           <button
             type="button"
             onClick={onClearPattern}
@@ -97,13 +101,33 @@ export function PatternEditor({
           >
             CLR
           </button>
+          {/* Pattern length selector */}
+          <div className="flex gap-0.5">
+            {([8, 16, 32] as const).map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => onStepCountChange?.(n)}
+                disabled={stepCount === n}
+                className="touch-manipulation min-h-[28px] rounded border px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider transition-all disabled:opacity-100"
+                style={{
+                  borderColor: stepCount === n ? '#f472b6' : '#3f3f46',
+                  color: stepCount === n ? '#f472b6' : '#71717a',
+                  backgroundColor: stepCount === n ? 'rgba(244,114,182,0.1)' : 'transparent',
+                }}
+                title={`Set pattern length to ${n} steps`}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
         </div>
         <span className="font-mono text-[10px] text-zinc-500">click: off → vel → accent → off</span>
       </div>
 
       {/* Step indicator */}
       <div className="mb-2 flex gap-1 pl-12">
-        {Array.from({ length: STEPS }).map((_, i) => (
+        {Array.from({ length: stepCount }).map((_, i) => (
           <div
             key={i}
             className="flex-1 text-center font-mono text-[10px] tabular-nums"

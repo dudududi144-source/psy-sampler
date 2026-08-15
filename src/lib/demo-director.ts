@@ -33,9 +33,12 @@ export interface DirectorOptions {
   audioContext: AudioContext
   initialPattern?: Pattern
   initialContext?: MusicalContext
+  /** Pattern length in steps (8, 16, or 32). Default 16. */
+  steps?: number
 }
 
-const STEPS = 16
+const DEFAULT_STEPS = 16
+let STEPS = DEFAULT_STEPS
 
 // Velocity constants (MIDI standard 0..127).
 const VEL_OFF = 0
@@ -115,9 +118,38 @@ export class DemoDirector {
     this.host = opts.host
     this.transport = opts.transport
     this.ctx = opts.audioContext
+    STEPS = opts.steps ?? DEFAULT_STEPS
     this.pattern = opts.initialPattern ?? structuredClone(DEFAULT_PATTERN)
     this.context = opts.initialContext ?? { ...DEFAULT_CONTEXT }
     this.onStep = onStep
+  }
+
+  /** Current pattern length (8, 16, or 32). */
+  get stepCount(): number { return STEPS }
+
+  /**
+   * Change the pattern length. Resizes all role rows — truncating or padding
+   * with zeros. The step counter wraps to the new length.
+   */
+  setStepCount(newSteps: number): void {
+    if (newSteps !== 8 && newSteps !== 16 && newSteps !== 32) return
+    if (newSteps === STEPS) return
+    const oldSteps = STEPS
+    STEPS = newSteps
+    // Resize each role row.
+    for (const role of Object.keys(this.pattern) as SampleRole[]) {
+      const row = this.pattern[role]
+      if (!row) continue
+      if (newSteps > oldSteps) {
+        // Pad with zeros.
+        this.pattern[role] = [...row, ...new Array(newSteps - oldSteps).fill(0)]
+      } else {
+        // Truncate.
+        this.pattern[role] = row.slice(0, newSteps)
+      }
+    }
+    // Reset step counter to avoid out-of-bounds.
+    this.step = 0
   }
 
   start(): void {
