@@ -1145,6 +1145,7 @@ export default function Home() {
     },
     onToggleRecord: toggleRecord,
     onSetStepCount: (n) => onStepCountChange(n),
+    onRandomize: onRandomizePattern,
     enabled: initialized,
   })
 

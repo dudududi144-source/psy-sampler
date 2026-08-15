@@ -22,6 +22,7 @@ const SHORTCUTS = [
   { key: 'E', desc: 'Toggle auto-evolve' },
   { key: 'R', desc: 'Toggle live recording' },
   { key: '1/2/3', desc: 'Set pattern length (8/16/32 steps)' },
+  { key: 'X', desc: 'Randomize pattern (seeded — deterministic)' },
 ]
 
 const FEATURES = [
