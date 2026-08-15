@@ -1789,3 +1789,18 @@ Stage Summary:
 - 283 tests pass, 0 fail, 0 TS errors, 0 lint errors.
 - Server running HTTP 200.
 - Commit: just pushed.
+
+---
+Task ID: STEM-EXPORT
+Agent: main
+Task: Add stem export — each bus as separate WAV (stem mastering)
+
+Work Log:
+- Created stem-export.ts: exportStems() renders 3 times (once per bus) with other buses muted. Downloads 3 WAVs.
+- Wired into page.tsx: handleExportStems handler, ⬇ STEMS button (amber), toast with per-bus timing.
+- Browser-verified: ⬇ STEMS button appears. Zero errors.
+
+Stage Summary:
+- 283 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+- Server running HTTP 200.
+- Commit: b615edc
