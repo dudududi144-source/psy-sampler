@@ -1773,3 +1773,19 @@ Stage Summary:
 - 283 tests pass, 0 fail, 0 TS errors, 0 lint errors.
 - Server running HTTP 200.
 - Commit: c383904
+
+---
+Task ID: HELP-OVERLAY
+Agent: main
+Task: Add help overlay — keyboard shortcuts + feature guide
+
+Work Log:
+- Created HelpOverlay component with 4 sections: Keyboard Shortcuts, Transport Buttons, Pattern Editor, Other Panels.
+- Added ? button in header + Shift+/ shortcut.
+- Updated use-keyboard-shortcuts with onToggleHelp callback.
+- Browser-verified: ? button opens overlay, all sections visible. Zero errors.
+
+Stage Summary:
+- 283 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+- Server running HTTP 200.
+- Commit: just pushed.
