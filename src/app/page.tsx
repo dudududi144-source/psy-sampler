@@ -1251,8 +1251,10 @@ export default function Home() {
           {/* Help overlay */}
           <HelpOverlay open={helpOpen} onClose={() => setHelpOpen(false)} />
 
-          {/* ─── Transport bar ─── */}
-          <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-950/80 p-3">
+          {/* ─── Transport bar (3 rows: playback / FX / sliders) ─── */}
+          <div className="mb-4 space-y-2 rounded-lg border border-zinc-800 bg-zinc-950/80 p-3">
+            {/* Row 1: Playback + Export + Record + Project */}
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <Button
               onClick={togglePlay}
               className="h-11 gap-2 border font-mono text-xs font-bold uppercase tracking-[0.15em]"
@@ -1266,6 +1268,9 @@ export default function Home() {
               {isPlaying ? '■ STOP' : '▶ PLAY'}
             </Button>
 
+            {/* Row 3: Sliders (BPM + Swing + Master + Section + Energy) */}
+            </div>
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 border-t border-zinc-800/50 pt-2">
             {/* BPM slider */}
             <div className="flex items-center gap-2">
               <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">BPM</span>
@@ -1361,6 +1366,9 @@ export default function Home() {
             </Button>
             <input ref={projectFileInputRef} type="file" accept=".json,.psy.json,application/json" onChange={onLoadProject} className="hidden" />
 
+            {/* Row 2: FX + Toggles + Undo/Redo + Tap + MIDI */}
+            </div>
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 border-t border-zinc-800/50 pt-2">
             {/* PUMP (sidechain) toggle + EVOLVE toggle */}
             <Button
               onClick={() => {
@@ -1481,6 +1489,7 @@ export default function Home() {
                 ♪{midi.lastNote}
               </span>
             )}
+            </div>{/* end Row 2 */}
           </div>
 
           {/* ─── Main grid: pattern editor (left) + debug (right) ─── */}
