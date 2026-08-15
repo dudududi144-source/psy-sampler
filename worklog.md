@@ -1756,3 +1756,20 @@ Stage Summary:
 - 283 tests pass, 0 fail, 0 TS errors, 0 lint errors.
 - Server running HTTP 200.
 - Commit: e9cb55d
+
+---
+Task ID: VISUALIZER-UPGRADE
+Agent: main
+Task: Upgrade visualizer — 3 display modes (bars/wave/both)
+
+Work Log:
+- Rewrote visualizer.tsx with 3 modes: BARS (frequency bars), WAVE (oscilloscope), BOTH (bars + waveform overlay).
+- Added mode toggle buttons (amber = active).
+- Waveform: cyan line with shadowBlur glow + center line.
+- Height increased to 160px.
+- Browser-verified: BARS/WAVE/BOTH buttons appear, switching works. Zero errors.
+
+Stage Summary:
+- 283 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+- Server running HTTP 200.
+- Commit: c383904
