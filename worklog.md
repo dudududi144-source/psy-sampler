@@ -1900,3 +1900,18 @@ Work Log:
 Stage Summary:
 - Server running HTTP 200.
 - Commit: 5c270bd
+
+---
+Task ID: SAMPLE-REMOVAL
+Agent: main
+Task: Add sample removal — delete samples from library at runtime
+
+Work Log:
+- Added remove(id) to SampleLibrary: cleans up byCategory + subcategories indexes.
+- Updated SampleLibrary component: onRemove prop, ✕ button per row (separate from audition).
+- Wired page.tsx: onRemoveSample handler with toast.
+- 283 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+
+Stage Summary:
+- Server running HTTP 200.
+- Commit: b0010c3
