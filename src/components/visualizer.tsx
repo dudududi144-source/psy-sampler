@@ -18,6 +18,9 @@ export function Visualizer({ analyser, isPlaying }: { analyser: AnalyserNode | n
   const rafRef = React.useRef<number>(0)
   const containerRef = React.useRef<HTMLDivElement>(null)
   const [mode, setMode] = React.useState<VizMode>('bars')
+  // Peak/RMS meter state — updated every frame.
+  const [peakDb, setPeakDb] = React.useState(-60)
+  const [rmsDb, setRmsDb] = React.useState(-60)
 
   React.useEffect(() => {
     if (!analyser || !canvasRef.current) return
@@ -52,6 +55,25 @@ export function Visualizer({ analyser, isPlaying }: { analyser: AnalyserNode | n
       if (mode === 'wave' || mode === 'both') {
         analyser.getByteTimeDomainData(timeData)
       }
+
+      // Compute peak + RMS from time-domain data for the meter.
+      // Always fetch time data for the meter (even in bars-only mode).
+      if (mode === 'bars') {
+        analyser.getByteTimeDomainData(timeData)
+      }
+      let peak = 0
+      let sumSq = 0
+      for (let i = 0; i < timeData.length; i++) {
+        const v = Math.abs((timeData[i]! - 128) / 128)
+        if (v > peak) peak = v
+        sumSq += v * v
+      }
+      const rms = Math.sqrt(sumSq / timeData.length)
+      // Convert to dB (0..1 → -∞..0 dB). Clamp at -60.
+      const pDb = peak > 0.001 ? Math.max(-60, 20 * Math.log10(peak)) : -60
+      const rDb = rms > 0.001 ? Math.max(-60, 20 * Math.log10(rms)) : -60
+      setPeakDb(pDb)
+      setRmsDb(rDb)
 
       const rect = canvas.getBoundingClientRect()
       const w = rect.width
@@ -148,6 +170,35 @@ export function Visualizer({ analyser, isPlaying }: { analyser: AnalyserNode | n
         </div>
       </div>
       <canvas ref={canvasRef} className="w-full" style={{ height: 160 }} />
+      {/* Peak/RMS meter */}
+      <div className="mt-2 flex items-center gap-2">
+        <span className="font-mono text-[9px] uppercase tracking-wider text-zinc-500">PK</span>
+        <div className="relative h-3 flex-1 overflow-hidden rounded-sm border border-zinc-800 bg-zinc-900">
+          <div
+            className="absolute left-0 top-0 h-full transition-all"
+            style={{
+              width: `${Math.max(0, (peakDb + 60) / 60) * 100}%`,
+              backgroundColor: peakDb > -1 ? '#ef4444' : peakDb > -6 ? '#fbbf24' : '#22d3ee',
+            }}
+          />
+        </div>
+        <span className="w-12 text-right font-mono text-[10px] tabular-nums text-zinc-400">
+          {peakDb > -59 ? `${peakDb.toFixed(1)}dB` : '—'}
+        </span>
+        <span className="font-mono text-[9px] uppercase tracking-wider text-zinc-500">RMS</span>
+        <div className="relative h-3 flex-1 overflow-hidden rounded-sm border border-zinc-800 bg-zinc-900">
+          <div
+            className="absolute left-0 top-0 h-full transition-all"
+            style={{
+              width: `${Math.max(0, (rmsDb + 60) / 60) * 100}%`,
+              backgroundColor: '#a78bfa',
+            }}
+          />
+        </div>
+        <span className="w-12 text-right font-mono text-[10px] tabular-nums text-zinc-400">
+          {rmsDb > -59 ? `${rmsDb.toFixed(1)}dB` : '—'}
+        </span>
+      </div>
     </div>
   )
 }
