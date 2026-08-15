@@ -714,7 +714,16 @@ export default function Home() {
     }
   }, [])
 
-  // ─── Mixer controls (FIX Bug 14: side effects OUT of state updater) ────────
+  /** Remove a sample from the library (user-initiated delete). */
+  const onRemoveSample = React.useCallback((sampleId: string) => {
+    const bundle = bundleRef.current
+    if (!bundle) return
+    const removed = bundle.library.remove(sampleId)
+    if (removed) {
+      setSamples(bundle.library.list())
+      toast({ title: `Removed ${sampleId}`, description: 'Sample deleted from library' })
+    }
+  }, [])
 
   const busStateRef = React.useRef(busState)
   React.useEffect(() => { busStateRef.current = busState }, [busState])
@@ -1582,6 +1591,7 @@ export default function Home() {
               <SampleLibrary
                 samples={samples}
                 onAudition={auditionSample}
+                onRemove={onRemoveSample}
                 nowPlayingSampleId={nowPlaying.sampleId}
                 nowPlayingAt={nowPlaying.at}
               />

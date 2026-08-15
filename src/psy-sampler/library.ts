@@ -194,6 +194,37 @@ export class SampleLibrary {
     return this.samples.get(id)
   }
 
+  /**
+   * Remove a sample from the library by ID. Cleans up the byCategory +
+   * subcategories indexes. Returns true if removed, false if not found.
+   * Used by the UI to let users delete imported samples they no longer want.
+   */
+  remove(id: SampleId): boolean {
+    const asset = this.samples.get(id)
+    if (!asset) return false
+    const cat = asset.metadata.category
+    // Remove from byCategory index.
+    const arr = this.byCategory.get(cat)
+    if (arr) {
+      const idx = arr.indexOf(id)
+      if (idx >= 0) arr.splice(idx, 1)
+      if (arr.length === 0) this.byCategory.delete(cat)
+    }
+    // Remove from subcategories index (rebuild if needed).
+    const subcatSet = this.subcategories.get(cat)
+    if (subcatSet) {
+      // Check if any other sample in this category has the same subcategory.
+      const stillExists = Array.from(this.samples.values()).some(
+        (s) => s.metadata.category === cat && s.metadata.subcategory === asset.metadata.subcategory && s.metadata.id !== id
+      )
+      if (!stillExists) subcatSet.delete(asset.metadata.subcategory)
+      if (subcatSet.size === 0) this.subcategories.delete(cat)
+    }
+    // Remove from the main map.
+    this.samples.delete(id)
+    return true
+  }
+
   /** List sampleIds matching the query, in manifest order. Returns a copy. */
   query(q: LibraryQuery): SampleId[] {
     if (q.category) {

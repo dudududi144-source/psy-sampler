@@ -62,11 +62,13 @@ export function WaveformThumbnail({ data, color, width = 48, height = 18 }: { da
 export function SampleLibrary({
   samples,
   onAudition,
+  onRemove,
   nowPlayingSampleId,
   nowPlayingAt,
 }: {
   samples: SampleAsset[]
   onAudition: (asset: SampleAsset) => void
+  onRemove?: (sampleId: string) => void
   nowPlayingSampleId: string | null
   nowPlayingAt: number
 }) {
@@ -90,9 +92,8 @@ export function SampleLibrary({
             const color = ROLE_COLORS[cat] ?? '#71717a'
             const isPlaying = fresh && nowPlayingSampleId === s.metadata.id
             return (
-              <button
+              <div
                 key={s.metadata.id}
-                onClick={() => onAudition(s)}
                 className="flex min-h-[44px] w-full touch-manipulation items-center gap-2 rounded border bg-zinc-900/40 px-2 py-1 text-left transition-all hover:bg-zinc-800/60"
                 style={{
                   borderColor: isPlaying ? color : '#27272a',
@@ -100,28 +101,42 @@ export function SampleLibrary({
                   backgroundColor: isPlaying ? `${color}10` : undefined,
                 }}
               >
-                <span
-                  className="w-10 shrink-0 font-mono text-[11px] font-bold uppercase"
-                  style={{ color, textShadow: isPlaying ? `0 0 6px ${color}80` : 'none' }}
+                <button
+                  onClick={() => onAudition(s)}
+                  className="flex flex-1 items-center gap-2 text-left"
                 >
-                  {s.metadata.category}
-                </span>
-                <WaveformThumbnail data={s.monoData} color={isPlaying ? '#ffffff' : color} width={48} height={18} />
-                <span className="flex-1 truncate font-mono text-[10px] text-zinc-300">{s.metadata.id}</span>
-                <span className="font-mono text-[11px] tabular-nums text-zinc-500">
-                  {s.features.duration.toFixed(2)}s
-                </span>
-                {s.metadata.provenance.commercialUse ? (
-                  <Badge className="border border-emerald-400/30 bg-emerald-500/10 px-1 py-0 font-mono text-[10px] uppercase text-emerald-300">
-                    COMMERCIAL
-                  </Badge>
-                ) : (
-                  <Badge className="border border-amber-400/30 bg-amber-500/10 px-1 py-0 font-mono text-[10px] uppercase text-amber-300">
-                    NON-COMM
-                  </Badge>
+                  <span
+                    className="w-10 shrink-0 font-mono text-[11px] font-bold uppercase"
+                    style={{ color, textShadow: isPlaying ? `0 0 6px ${color}80` : 'none' }}
+                  >
+                    {s.metadata.category}
+                  </span>
+                  <WaveformThumbnail data={s.monoData} color={isPlaying ? '#ffffff' : color} width={48} height={18} />
+                  <span className="flex-1 truncate font-mono text-[10px] text-zinc-300">{s.metadata.id}</span>
+                  <span className="font-mono text-[11px] tabular-nums text-zinc-500">
+                    {s.features.duration.toFixed(2)}s
+                  </span>
+                  {s.metadata.provenance.commercialUse ? (
+                    <Badge className="border border-emerald-400/30 bg-emerald-500/10 px-1 py-0 font-mono text-[10px] uppercase text-emerald-300">
+                      COMMERCIAL
+                    </Badge>
+                  ) : (
+                    <Badge className="border border-amber-400/30 bg-amber-500/10 px-1 py-0 font-mono text-[10px] uppercase text-amber-300">
+                      NON-COMM
+                    </Badge>
+                  )}
+                  <span className="font-mono text-[11px] text-zinc-600">▶</span>
+                </button>
+                {onRemove && (
+                  <button
+                    onClick={() => onRemove(s.metadata.id)}
+                    className="shrink-0 touch-manipulation rounded border border-red-500/30 px-1.5 py-0.5 font-mono text-[10px] text-red-400 hover:bg-red-500/10"
+                    title={`Remove ${s.metadata.id}`}
+                  >
+                    ✕
+                  </button>
                 )}
-                <span className="font-mono text-[11px] text-zinc-600">▶</span>
-              </button>
+              </div>
             )
           })
         )}
