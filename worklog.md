@@ -1993,3 +1993,18 @@ Stage Summary:
 - 301 tests pass, 0 fail, 0 TS errors, 0 lint errors.
 - Server running HTTP 200.
 - Commit: bd432a8
+
+---
+Task ID: PEAK-METER + ROADMAP-UPDATE
+Agent: main
+Task: Add peak/RMS meter + update ROADMAP-TO-100
+
+Work Log:
+- Updated ROADMAP-TO-100: score 88/100, all 33 features listed, 12 points remain (all external).
+- Added peak/RMS dB meter to visualizer: peak (cyan→amber→red at clipping) + RMS (violet). Numeric readout in dB.
+- Peak turns red at > -1dB (clipping warning). Brickwall limiter catches peaks; meter shows when it's working.
+- 301 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+
+Stage Summary:
+- Server running HTTP 200.
+- Commit: 15b029f
