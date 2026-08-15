@@ -49,7 +49,10 @@ describe('VoicePool<TestVoice>', () => {
   })
 
   it('steals oldest when all active', () => {
-    for (const v of pool.all) v.active = true
+    // Allocate all voices (uses the free-list).
+    for (let i = 0; i < 8; i++) {
+      pool.allocate().active = true
+    }
     expect(pool.activeCount).toBe(8)
     const stolen = pool.allocate()
     expect(stolen.panicCalls).toBe(1)

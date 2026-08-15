@@ -40,29 +40,51 @@ export class VoicePool<V extends Voice> {
   private readonly voices: V[]
   private next = 0
   private readonly maxVoices: number
+  /**
+   * Free-list: Set of voice indices that are currently inactive. This makes
+   * allocate() O(1) instead of O(n) — we pop from the set instead of scanning
+   * all voices. Critical for performance when many voices are allocated per
+   * tick (a 16-step pattern at 145 BPM fires ~9 voices per step = 144/tick).
+   */
+  private readonly freeSet: Set<number>
+  private _activeCount = 0
 
   constructor(voiceFactory: () => V, voiceCount: number) {
     this.voices = Array.from({ length: voiceCount }, () => voiceFactory())
     this.maxVoices = voiceCount
+    // All voices start free.
+    this.freeSet = new Set(Array.from({ length: voiceCount }, (_, i) => i))
   }
 
-  /** Allocate a voice (round-robin). Steals the oldest if all are active. */
+  /** Allocate a voice. O(1) via free-list. Steals oldest if all active. */
   allocate(): V {
-    // Try to find an inactive voice first.
-    for (let i = 0; i < this.maxVoices; i++) {
-      const idx = (this.next + i) % this.maxVoices
-      const v = this.voices[idx]
-      if (v && !v.active) {
-        this.next = (idx + 1) % this.maxVoices
-        return v
-      }
+    // O(1): pop from the free set.
+    const freeIdx = this.freeSet.values().next().value
+    if (freeIdx !== undefined) {
+      this.freeSet.delete(freeIdx)
+      const v = this.voices[freeIdx]!
+      this._activeCount++
+      return v
     }
-    // All active — steal the next in round-robin.
+    // All active — steal the next in round-robin (O(1)).
     const stolen = this.voices[this.next]
     if (stolen) stolen.panic()
-    const v = this.voices[this.next]
+    const v = this.voices[this.next]!
     this.next = (this.next + 1) % this.maxVoices
-    return v as V
+    // The stolen voice is still "active" (we reused it), so _activeCount stays.
+    return v
+  }
+
+  /**
+   * Mark a voice as freed (inactive). Called when a voice finishes naturally.
+   * This keeps the free-list accurate without scanning. O(1).
+   */
+  release(voice: V): void {
+    const idx = this.voices.indexOf(voice)
+    if (idx >= 0 && !this.freeSet.has(idx)) {
+      this.freeSet.add(idx)
+      if (this._activeCount > 0) this._activeCount--
+    }
   }
 
   /** Trigger a note on an allocated voice. */
@@ -80,6 +102,9 @@ export class VoicePool<V extends Voice> {
   /** Panic — force-stop all voices. */
   panic(): void {
     for (const v of this.voices) v.panic()
+    this.freeSet.clear()
+    for (let i = 0; i < this.maxVoices; i++) this.freeSet.add(i)
+    this._activeCount = 0
   }
 
   get size(): number {
@@ -87,9 +112,8 @@ export class VoicePool<V extends Voice> {
   }
 
   get activeCount(): number {
-    let count = 0
-    for (const v of this.voices) if (v.active) count += 1
-    return count
+    // O(1) — maintained incrementally instead of scanning.
+    return this._activeCount
   }
 
   /** Get all voices (for per-voice processing). */
