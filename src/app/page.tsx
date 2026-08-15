@@ -66,6 +66,7 @@ import { useUndoRedo } from '@/lib/use-undo-redo'
 import { useMidiInput, roleForNote } from '@/lib/use-midi-input'
 import { TimelineView } from '@/components/timeline-view'
 import { AutomationEditor } from '@/components/automation-editor'
+import { HelpOverlay } from '@/components/help-overlay'
 import { toast } from '@/hooks/use-toast'
 import { InitOverlay } from '@/components/init-overlay'
 import { Stat } from '@/components/stat-badge'
@@ -139,6 +140,8 @@ export default function Home() {
   const [filterMode, setFilterMode] = React.useState<'off' | 'lp' | 'hp'>('off')
   // ─── Pattern length (8/16/32 steps) ─────────────────────────────────────────
   const [stepCount, setStepCount] = React.useState(16)
+  // ─── Help overlay ───────────────────────────────────────────────────────────
+  const [helpOpen, setHelpOpen] = React.useState(false)
   // ─── Per-step probabilities ─────────────────────────────────────────────────
   const [probabilities, setProbabilities] = React.useState<Record<string, Record<number, number>>>({})
 
@@ -1020,6 +1023,7 @@ export default function Home() {
     onUndo,
     onRedo,
     onTapTempo,
+    onToggleHelp: () => setHelpOpen((o) => !o),
     enabled: initialized,
   })
 
@@ -1116,15 +1120,25 @@ export default function Home() {
         <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 py-6">
           {/* ─── Header ─── */}
           <header className="mb-6 flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <h1 className="font-mono text-2xl font-bold tracking-[0.15em]">
-                <span className="bg-gradient-to-r from-emerald-300 via-fuchsia-400 to-violet-400 bg-clip-text text-transparent">
-                  PSY SAMPLER
-                </span>
-              </h1>
-              <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-zinc-500">
-                debug-first · realization device
-              </p>
+            <div className="flex items-center gap-3">
+              <div>
+                <h1 className="font-mono text-2xl font-bold tracking-[0.15em]">
+                  <span className="bg-gradient-to-r from-emerald-300 via-fuchsia-400 to-violet-400 bg-clip-text text-transparent">
+                    PSY SAMPLER
+                  </span>
+                </h1>
+                <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-zinc-500">
+                  debug-first · realization device
+                </p>
+              </div>
+              {/* Help button */}
+              <button
+                onClick={() => setHelpOpen(true)}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-600 bg-zinc-900 font-mono text-sm font-bold text-zinc-300 transition-all hover:border-emerald-400 hover:text-emerald-300"
+                title="Help & shortcuts (?)"
+              >
+                ?
+              </button>
             </div>
             <div className="flex flex-wrap gap-2">
               <Stat label="DEVICES" value={deviceCount} color="emerald" />
@@ -1133,6 +1147,9 @@ export default function Home() {
               <Stat label="VOICES" value={stats ? `${stats.activeVoices}/32` : '0/32'} color="amber" />
             </div>
           </header>
+
+          {/* Help overlay */}
+          <HelpOverlay open={helpOpen} onClose={() => setHelpOpen(false)} />
 
           {/* ─── Transport bar ─── */}
           <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-950/80 p-3">

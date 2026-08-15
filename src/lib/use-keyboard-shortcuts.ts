@@ -17,11 +17,12 @@ export interface KeyboardShortcutsOptions {
   onUndo?: () => void
   onRedo?: () => void
   onTapTempo?: () => void
+  onToggleHelp?: () => void
   enabled?: boolean
 }
 
 export function useKeyboardShortcuts(opts: KeyboardShortcutsOptions): void {
-  const { onTogglePlay, onStop, onUndo, onRedo, onTapTempo, enabled = true } = opts
+  const { onTogglePlay, onStop, onUndo, onRedo, onTapTempo, onToggleHelp, enabled = true } = opts
 
   React.useEffect(() => {
     if (!enabled) return
@@ -72,10 +73,17 @@ export function useKeyboardShortcuts(opts: KeyboardShortcutsOptions): void {
             onTapTempo()
           }
           break
+        case 'Slash':
+          // Shift+/ = ? → toggle help overlay
+          if (e.shiftKey && onToggleHelp) {
+            e.preventDefault()
+            onToggleHelp()
+          }
+          break
       }
     }
 
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [onTogglePlay, onStop, onUndo, onRedo, onTapTempo, enabled])
+  }, [onTogglePlay, onStop, onUndo, onRedo, onTapTempo, onToggleHelp, enabled])
 }
