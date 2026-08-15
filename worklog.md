@@ -1853,3 +1853,18 @@ Stage Summary:
 - 283 tests pass, 0 fail, 0 TS errors, 0 lint errors.
 - Server running HTTP 200.
 - Commit: 4845021
+
+---
+Task ID: KEYBOARD-SHORTCUTS-EXPANSION
+Agent: main
+Task: Add 8 new keyboard shortcuts (M/S/C/F/P/E/R + 1/2/3)
+
+Work Log:
+- Added 8 new shortcuts to use-keyboard-shortcuts: M (mute), S (solo), C (clear), F (filter cycle), P (pump), E (evolve), R (record), 1/2/3 (step count).
+- Wired all to existing handlers in page.tsx.
+- Updated help-overlay with all new shortcuts.
+- 283 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+
+Stage Summary:
+- Server running HTTP 200.
+- Commit: 8ff8816
