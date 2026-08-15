@@ -139,6 +139,8 @@ export default function Home() {
   const [filterMode, setFilterMode] = React.useState<'off' | 'lp' | 'hp'>('off')
   // ─── Pattern length (8/16/32 steps) ─────────────────────────────────────────
   const [stepCount, setStepCount] = React.useState(16)
+  // ─── Per-step probabilities ─────────────────────────────────────────────────
+  const [probabilities, setProbabilities] = React.useState<Record<string, Record<number, number>>>({})
 
   const onStepCountChange = React.useCallback((newSteps: number) => {
     const director = directorRef.current
@@ -149,6 +151,13 @@ export default function Home() {
     setPatternWithHistory(newPattern)
     try { autosavePattern(newPattern) } catch { /* */ }
   }, [setPatternWithHistory])
+
+  const onSetProbability = React.useCallback((role: SampleRole, step: number, prob: number) => {
+    const director = directorRef.current
+    if (!director) return
+    director.setProbability(role, step, prob)
+    setProbabilities(director.getAllProbabilities())
+  }, [])
   // ─── Song mode state (UX4) ──────────────────────────────────────────────────
   const [song, setSong] = React.useState<Song>(loadSong())
   const [songMode, setSongMode] = React.useState(false)
@@ -1319,9 +1328,11 @@ export default function Home() {
               pattern={pattern}
               currentStep={currentStep}
               stepCount={stepCount}
+              probabilities={probabilities}
               onToggle={onToggleStep}
               onPaint={onPaintStep}
               onStepCountChange={onStepCountChange}
+              onSetProbability={onSetProbability}
               nowPlayingRole={nowPlaying.role}
               nowPlayingAt={nowPlaying.at}
               onClearPattern={onClearPattern}

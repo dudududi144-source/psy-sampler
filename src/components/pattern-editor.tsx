@@ -30,9 +30,11 @@ export function PatternEditor({
   pattern,
   currentStep,
   stepCount,
+  probabilities,
   onToggle,
   onPaint,
   onStepCountChange,
+  onSetProbability,
   nowPlayingRole,
   nowPlayingAt,
   onClearPattern,
@@ -40,17 +42,44 @@ export function PatternEditor({
   pattern: Pattern
   currentStep: number
   stepCount: number
+  /** Per-step probabilities: {role: {step: 0..1}}. Missing = 1.0 (always). */
+  probabilities: Record<string, Record<number, number>>
   onToggle: (role: SampleRole, step: number) => void
   /** Paint a cell to an explicit velocity (used by drag-paint). */
   onPaint: (role: SampleRole, step: number, velocity: number) => void
   /** Change pattern length (8/16/32). */
   onStepCountChange?: (steps: number) => void
+  /** Set probability for a step (0..1). Called when in probability mode. */
+  onSetProbability?: (role: SampleRole, step: number, prob: number) => void
   nowPlayingRole: SampleRole | null
   nowPlayingAt: number
   onClearPattern: () => void
 }) {
   const now = Date.now()
   const fresh = nowPlayingRole !== null && (now - nowPlayingAt) < NOW_PLAYING_MS
+
+  // Edit mode: 'velocity' (default) or 'probability'. In probability mode,
+  // clicking a cell cycles its probability: 100% → 75% → 50% → 25% → 100%.
+  const [editMode, setEditMode] = React.useState<'velocity' | 'probability'>('velocity')
+
+  const getProb = (role: SampleRole, step: number): number => {
+    return probabilities[role]?.[step] ?? 1.0
+  }
+
+  const handleCellClick = React.useCallback((role: SampleRole, step: number) => {
+    if (editMode === 'probability' && onSetProbability) {
+      // Cycle: 100% → 75% → 50% → 25% → 100%
+      const current = probabilities[role]?.[step] ?? 1.0
+      let next: number
+      if (current >= 0.999) next = 0.75
+      else if (current > 0.74) next = 0.5
+      else if (current > 0.49) next = 0.25
+      else next = 1.0
+      onSetProbability(role, step, next)
+    } else {
+      onToggle(role, step)
+    }
+  }, [editMode, probabilities, onSetProbability, onToggle])
 
   // Drag-paint state: when dragging, we paint cells with the drag velocity.
   const dragState = React.useRef<{ role: SampleRole; velocity: number; painted: Set<string> } | null>(null)
@@ -122,7 +151,25 @@ export function PatternEditor({
             ))}
           </div>
         </div>
-        <span className="font-mono text-[10px] text-zinc-500">click: off → vel → accent → off</span>
+        <div className="flex items-center gap-2">
+          {/* Edit mode toggle */}
+          <button
+            type="button"
+            onClick={() => setEditMode(editMode === 'velocity' ? 'probability' : 'velocity')}
+            className="touch-manipulation min-h-[28px] rounded border px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider transition-all"
+            style={{
+              borderColor: editMode === 'probability' ? '#22d3ee' : '#3f3f46',
+              color: editMode === 'probability' ? '#22d3ee' : '#71717a',
+              backgroundColor: editMode === 'probability' ? 'rgba(34,211,238,0.1)' : 'transparent',
+            }}
+            title="Toggle edit mode: velocity vs probability"
+          >
+            {editMode === 'probability' ? '● PROB' : '○ PROB'}
+          </button>
+          <span className="font-mono text-[10px] text-zinc-500">
+            {editMode === 'probability' ? 'click: 100→75→50→25→100%' : 'click: off → vel → accent → off'}
+          </span>
+        </div>
       </div>
 
       {/* Step indicator */}
@@ -170,20 +217,27 @@ export function PatternEditor({
                   const isCurrent = step === currentStep
                   const isBeat = step % 4 === 0
                   const isAccent = velocity >= VEL_ACCENT
+                  const prob = getProb(role, step)
+                  const hasProb = prob < 0.999
                   // Opacity scales with velocity: 0=0%, 100=79%, 127=100%.
-                  const opacity = isActive ? 0.35 + (velocity / 127) * 0.65 : 1
+                  // In probability mode, opacity scales with probability instead.
+                  const opacity = editMode === 'probability'
+                    ? (isActive ? 0.35 + prob * 0.65 : 0.3 + prob * 0.2)
+                    : (isActive ? 0.35 + (velocity / 127) * 0.65 : 1)
                   return (
                     <button
                       key={step}
-                      onClick={() => onToggle(role, step)}
-                      onPointerDown={(e) => { e.preventDefault(); startDrag(role, step, e) }}
-                      onPointerEnter={() => continueDrag(role, step)}
-                      onPointerUp={endDrag}
-                      onPointerLeave={endDrag}
-                      aria-label={`${role} step ${step + 1} ${isActive ? `velocity ${velocity}` : 'off'}`}
+                      onClick={() => handleCellClick(role, step)}
+                      onPointerDown={editMode === 'velocity' ? (e) => { e.preventDefault(); startDrag(role, step, e) } : undefined}
+                      onPointerEnter={editMode === 'velocity' ? () => continueDrag(role, step) : undefined}
+                      onPointerUp={editMode === 'velocity' ? endDrag : undefined}
+                      onPointerLeave={editMode === 'velocity' ? endDrag : undefined}
+                      aria-label={`${role} step ${step + 1} ${isActive ? `velocity ${velocity}` : 'off'}${hasProb ? ` prob ${Math.round(prob * 100)}%` : ''}`}
                       className="relative aspect-square flex-1 min-h-[44px] min-w-[44px] items-center justify-center rounded-sm border transition-all hover:brightness-125 touch-manipulation select-none"
                       style={{
-                        backgroundColor: isActive ? color : isBeat ? 'rgba(39,39,42,0.9)' : 'rgba(24,24,27,0.8)',
+                        backgroundColor: editMode === 'probability'
+                          ? (isActive ? color : isBeat ? 'rgba(39,39,42,0.9)' : 'rgba(24,24,27,0.8)')
+                          : (isActive ? color : isBeat ? 'rgba(39,39,42,0.9)' : 'rgba(24,24,27,0.8)'),
                         borderColor: isCurrent ? '#00ffc8' : isActive ? color : isBeat ? '#3f3f46' : '#27272a',
                         boxShadow: isActive
                           ? `0 0 ${4 + velocity / 127 * 8}px ${color}80`
@@ -193,12 +247,24 @@ export function PatternEditor({
                         opacity,
                       }}
                     >
-                      {isAccent && (
-                        <span
-                          className="pointer-events-none absolute inset-0 flex items-center justify-center font-mono text-[9px] font-bold text-black/70"
-                        >
+                      {/* Accent marker (velocity mode) */}
+                      {isAccent && editMode === 'velocity' && (
+                        <span className="pointer-events-none absolute inset-0 flex items-center justify-center font-mono text-[9px] font-bold text-black/70">
                           !
                         </span>
+                      )}
+                      {/* Probability percentage (probability mode) */}
+                      {hasProb && editMode === 'probability' && (
+                        <span className="pointer-events-none absolute inset-0 flex items-center justify-center font-mono text-[9px] font-bold text-white">
+                          {Math.round(prob * 100)}
+                        </span>
+                      )}
+                      {/* Probability indicator dot (velocity mode, subtle) */}
+                      {hasProb && editMode === 'velocity' && (
+                        <span
+                          className="pointer-events-none absolute bottom-0.5 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full"
+                          style={{ backgroundColor: '#22d3ee', opacity: 0.8 }}
+                        />
                       )}
                     </button>
                   )
