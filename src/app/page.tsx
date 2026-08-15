@@ -1101,6 +1101,30 @@ export default function Home() {
     onRedo,
     onTapTempo,
     onToggleHelp: () => setHelpOpen((o) => !o),
+    onToggleMute: () => onBusMute('drum'),
+    onToggleSolo: () => onBusSolo('drum'),
+    onClearPattern,
+    onCycleFilter: () => {
+      const next = filterMode === 'off' ? 'lp' : filterMode === 'lp' ? 'hp' : 'off'
+      setFilterMode(next)
+      const graph = bundleRef.current?.audioGraph
+      if (!graph) return
+      if (next === 'off') { graph.setMasterFilter({ type: 'allpass', freq: 20000, Q: 1 }); graph.setFilterEnvelopeEnabled(false) }
+      else if (next === 'lp') { graph.setMasterFilter({ type: 'lowpass', freq: 8000, Q: 2 }); graph.setFilterEnvelopeEnabled(true); graph.setFilterEnvelopeParams(0.6, 0.25) }
+      else { graph.setMasterFilter({ type: 'highpass', freq: 200, Q: 1.5 }); graph.setFilterEnvelopeEnabled(false) }
+    },
+    onTogglePump: () => {
+      const newState = !pumpEnabled
+      setPumpEnabled(newState)
+      bundleRef.current?.audioGraph.setSidechainEnabled(newState)
+    },
+    onToggleEvolve: () => {
+      const newState = !evolveEnabled
+      setEvolveEnabled(newState)
+      directorRef.current?.setEvolveEnabled(newState)
+    },
+    onToggleRecord: toggleRecord,
+    onSetStepCount: (n) => onStepCountChange(n),
     enabled: initialized,
   })
 

@@ -14,6 +14,14 @@ const SHORTCUTS = [
   { key: 'Ctrl+Z', desc: 'Undo' },
   { key: 'Ctrl+Shift+Z', desc: 'Redo (or Ctrl+Y)' },
   { key: '?', desc: 'Toggle this help overlay' },
+  { key: 'M', desc: 'Mute drum bus (toggle)' },
+  { key: 'S', desc: 'Solo drum bus (toggle)' },
+  { key: 'C', desc: 'Clear pattern (all steps off)' },
+  { key: 'F', desc: 'Cycle master filter (off→lp→hp)' },
+  { key: 'P', desc: 'Toggle sidechain pump' },
+  { key: 'E', desc: 'Toggle auto-evolve' },
+  { key: 'R', desc: 'Toggle live recording' },
+  { key: '1/2/3', desc: 'Set pattern length (8/16/32 steps)' },
 ]
 
 const FEATURES = [
