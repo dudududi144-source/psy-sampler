@@ -1963,3 +1963,17 @@ Work Log:
 Stage Summary:
 - Server running HTTP 200.
 - Commit: 0ee563e
+
+---
+Task ID: NEW-FEATURES-TESTS
+Agent: main
+Task: 18 new tests for randomize, pattern length, sample removal, session persistence
+
+Work Log:
+- Wrote 18 tests: randomize (7), pattern length (6), sample removal (3), session persistence (2).
+- Fixed bug: director constructor now creates empty pattern of correct length when steps !== 16.
+- 301 tests pass (was 283, +18), 0 fail, 0 TS errors, 0 lint errors.
+
+Stage Summary:
+- Server running HTTP 200.
+- Commit: 677437c
