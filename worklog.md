@@ -1868,3 +1868,21 @@ Work Log:
 Stage Summary:
 - Server running HTTP 200.
 - Commit: 8ff8816
+
+---
+Task ID: STALE-EVENT-FIX-REAPPLIED
+Agent: main
+Task: Re-apply stale event fix (lost in git reset) + verify all features
+
+Work Log:
+- Re-applied stale event fix: events >50ms late are now played immediately (jitter) instead of dropped (silence). This was lost in a previous git reset.
+- Verified all previously-lost features are present:
+  * Limiter: 15 references in audio-graph.ts ✓
+  * Multi-output: 13 references ✓
+  * Automation in director: 2 methods ✓
+  * Stale event fix: 1 reference ✓
+- 283 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+
+Stage Summary:
+- Server running HTTP 200.
+- Commit: 51286d6
