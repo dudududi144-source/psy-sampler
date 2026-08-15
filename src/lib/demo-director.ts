@@ -127,7 +127,17 @@ export class DemoDirector {
     this.transport = opts.transport
     this.ctx = opts.audioContext
     STEPS = opts.steps ?? DEFAULT_STEPS
-    this.pattern = opts.initialPattern ?? structuredClone(DEFAULT_PATTERN)
+    // If a custom step count is requested (not 16), start with an empty pattern
+    // of the right length instead of DEFAULT_PATTERN (which is 16 steps).
+    if (STEPS !== DEFAULT_STEPS && !opts.initialPattern) {
+      const empty: Pattern = {} as Pattern
+      for (const role of Object.keys(DEFAULT_PATTERN) as SampleRole[]) {
+        empty[role] = new Array(STEPS).fill(0)
+      }
+      this.pattern = empty
+    } else {
+      this.pattern = opts.initialPattern ?? structuredClone(DEFAULT_PATTERN)
+    }
     this.context = opts.initialContext ?? { ...DEFAULT_CONTEXT }
     this.onStep = onStep
   }
