@@ -210,6 +210,53 @@ export class DemoDirector {
     return this.probabilities.size > 0
   }
 
+  /**
+   * Randomize the pattern using a seeded RNG. Deterministic — same seed →
+   * same pattern. Each role gets a different density:
+   *   - kick: 4-on-floor (steps 0,4,8,12) always
+   *   - bass: offbeats with 80% chance
+   *   - hats: 50% chance per step
+   *   - clap: steps 4,12 always
+   *   - perc: 30% chance per step
+   *   - lead: 20% chance per step
+   *   - texture/fx: 10% chance per step
+   *
+   * Velocity is randomized within role-appropriate ranges.
+   *
+   * @param seed Random seed (default: random). Same seed → same pattern.
+   */
+  randomizePattern(seed?: number): void {
+    const s = seed ?? Math.floor(Math.random() * 1000000)
+    const rng = new Rng(s >>> 0)
+    const roles = Object.keys(this.pattern) as SampleRole[]
+    for (const role of roles) {
+      const row = this.pattern[role]
+      if (!row) continue
+      for (let i = 0; i < row.length; i++) {
+        if (role === 'kick') {
+          // 4-on-floor: steps 0,4,8,12 always on.
+          row[i] = (i % 4 === 0) ? rng.int(90, 110) : (rng.next() < 0.1 ? rng.int(60, 80) : 0)
+        } else if (role === 'bass') {
+          row[i] = (i % 2 === 0) ? (rng.next() < 0.8 ? rng.int(80, 100) : 0) : (rng.next() < 0.3 ? rng.int(70, 90) : 0)
+        } else if (role === 'hat-closed') {
+          row[i] = rng.next() < 0.5 ? rng.int(60, 80) : 0
+        } else if (role === 'hat-open') {
+          row[i] = (i === 4 || i === 12) ? (rng.next() < 0.7 ? rng.int(70, 90) : 0) : 0
+        } else if (role === 'clap') {
+          row[i] = (i === 4 || i === 12) ? rng.int(90, 110) : 0
+        } else if (role === 'perc') {
+          row[i] = rng.next() < 0.3 ? rng.int(60, 80) : 0
+        } else if (role === 'lead') {
+          row[i] = rng.next() < 0.2 ? rng.int(70, 100) : 0
+        } else if (role === 'texture') {
+          row[i] = rng.next() < 0.1 ? rng.int(50, 70) : 0
+        } else if (role === 'fx') {
+          row[i] = rng.next() < 0.1 ? rng.int(60, 80) : 0
+        }
+      }
+    }
+  }
+
   start(): void {
     if (this.running) return
     this.running = true

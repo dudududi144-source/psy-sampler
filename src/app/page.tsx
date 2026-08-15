@@ -546,6 +546,17 @@ export default function Home() {
     }
   }, [setPatternWithHistory])
 
+  /** Randomize the pattern (seeded — deterministic). */
+  const onRandomizePattern = React.useCallback(() => {
+    const director = directorRef.current
+    if (!director) return
+    director.randomizePattern()
+    const result = structuredClone(director.getPattern())
+    setPatternWithHistory(result)
+    try { autosavePattern(result) } catch { /* */ }
+    toast({ title: 'Pattern randomized', description: 'Seeded RNG — same seed → same pattern' })
+  }, [setPatternWithHistory])
+
   const onUndo = React.useCallback(() => {
     undo()
     // Sync the director with the undone pattern after the state updates.
@@ -1538,6 +1549,7 @@ export default function Home() {
               onSetProbability={onSetProbability}
               onCopyRole={onCopyRole}
               onPasteRole={onPasteRole}
+              onRandomize={onRandomizePattern}
               nowPlayingRole={nowPlaying.role}
               nowPlayingAt={nowPlaying.at}
               onClearPattern={onClearPattern}

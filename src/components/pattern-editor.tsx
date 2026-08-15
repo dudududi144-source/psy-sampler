@@ -37,6 +37,7 @@ export function PatternEditor({
   onSetProbability,
   onCopyRole,
   onPasteRole,
+  onRandomize,
   nowPlayingRole,
   nowPlayingAt,
   onClearPattern,
@@ -57,6 +58,8 @@ export function PatternEditor({
   onCopyRole?: (role: SampleRole) => void
   /** Paste the clipboard into a role. Returns true if paste succeeded. */
   onPasteRole?: (role: SampleRole) => boolean
+  /** Randomize the pattern (seeded). */
+  onRandomize?: () => void
   nowPlayingRole: SampleRole | null
   nowPlayingAt: number
   onClearPattern: () => void
@@ -138,6 +141,16 @@ export function PatternEditor({
           >
             CLR
           </button>
+          {onRandomize && (
+            <button
+              type="button"
+              onClick={onRandomize}
+              title="Randomize pattern (seeded — deterministic)"
+              className="touch-manipulation min-h-[28px] rounded border border-cyan-400/40 bg-cyan-500/10 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-cyan-300 transition-all hover:bg-cyan-500/20"
+            >
+              RND
+            </button>
+          )}
           {/* Pattern length selector */}
           <div className="flex gap-0.5">
             {([8, 16, 32] as const).map((n) => (
