@@ -1738,3 +1738,21 @@ Stage Summary:
 - 283 tests pass, 0 fail, 0 TS errors, 0 lint errors.
 - Server running HTTP 200.
 - Commit: 96ee087
+
+---
+Task ID: COPY-PASTE-ROLES
+Agent: main
+Task: Add copy/paste between roles — duplicate patterns across instruments
+
+Work Log:
+- Added clipboard state to PatternEditor: {row, fromRole}.
+- Added ⧉ copy + ⤓ paste buttons next to each role label.
+- Paste disabled when clipboard empty. Green ● on the copied role.
+- Wired page.tsx: clipboardRef (persists across renders), onCopyRole + onPasteRole handlers with toast.
+- onPasteRole pads/truncates to target row length.
+- Browser-verified: copy kick → 'Copied kick' toast. Paste → 'Pasted' toast. Zero errors.
+
+Stage Summary:
+- 283 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+- Server running HTTP 200.
+- Commit: e9cb55d
