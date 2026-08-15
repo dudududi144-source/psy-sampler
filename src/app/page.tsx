@@ -158,6 +158,39 @@ export default function Home() {
     director.setProbability(role, step, prob)
     setProbabilities(director.getAllProbabilities())
   }, [])
+
+  // ─── Copy/paste between roles ───────────────────────────────────────────────
+  const clipboardRef = React.useRef<{ row: number[]; fromRole: SampleRole } | null>(null)
+
+  const onCopyRole = React.useCallback((role: SampleRole) => {
+    const director = directorRef.current
+    if (!director) return
+    const row = director.getPattern()[role]
+    if (row) {
+      clipboardRef.current = { row: [...row], fromRole: role }
+      toast({ title: `Copied ${role}`, description: `${row.length} steps` })
+    }
+  }, [])
+
+  const onPasteRole = React.useCallback((role: SampleRole): boolean => {
+    const director = directorRef.current
+    if (!director || !clipboardRef.current) return false
+    const { row } = clipboardRef.current
+    // Paste into the target role, adjusting length if needed.
+    const targetRow = director.getPattern()[role]
+    if (!targetRow) return false
+    const newPattern = structuredClone(pattern)
+    // Copy values, padding/truncating to match the target row length.
+    const targetLen = targetRow.length
+    for (let i = 0; i < targetLen; i++) {
+      newPattern[role]![i] = row[i] ?? 0
+    }
+    director.setPattern(newPattern)
+    setPatternWithHistory(newPattern)
+    try { autosavePattern(newPattern) } catch { /* */ }
+    toast({ title: `Pasted to ${role}`, description: `From ${clipboardRef.current.fromRole}` })
+    return true
+  }, [pattern, setPatternWithHistory])
   // ─── Song mode state (UX4) ──────────────────────────────────────────────────
   const [song, setSong] = React.useState<Song>(loadSong())
   const [songMode, setSongMode] = React.useState(false)
@@ -1333,6 +1366,8 @@ export default function Home() {
               onPaint={onPaintStep}
               onStepCountChange={onStepCountChange}
               onSetProbability={onSetProbability}
+              onCopyRole={onCopyRole}
+              onPasteRole={onPasteRole}
               nowPlayingRole={nowPlaying.role}
               nowPlayingAt={nowPlaying.at}
               onClearPattern={onClearPattern}

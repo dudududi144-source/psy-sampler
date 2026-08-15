@@ -35,6 +35,8 @@ export function PatternEditor({
   onPaint,
   onStepCountChange,
   onSetProbability,
+  onCopyRole,
+  onPasteRole,
   nowPlayingRole,
   nowPlayingAt,
   onClearPattern,
@@ -51,6 +53,10 @@ export function PatternEditor({
   onStepCountChange?: (steps: number) => void
   /** Set probability for a step (0..1). Called when in probability mode. */
   onSetProbability?: (role: SampleRole, step: number, prob: number) => void
+  /** Copy a role's pattern to the clipboard. */
+  onCopyRole?: (role: SampleRole) => void
+  /** Paste the clipboard into a role. Returns true if paste succeeded. */
+  onPasteRole?: (role: SampleRole) => boolean
   nowPlayingRole: SampleRole | null
   nowPlayingAt: number
   onClearPattern: () => void
@@ -61,6 +67,8 @@ export function PatternEditor({
   // Edit mode: 'velocity' (default) or 'probability'. In probability mode,
   // clicking a cell cycles its probability: 100% → 75% → 50% → 25% → 100%.
   const [editMode, setEditMode] = React.useState<'velocity' | 'probability'>('velocity')
+  // Clipboard for copy/paste between roles. Stores the copied row + which role it came from.
+  const [clipboard, setClipboard] = React.useState<{ row: number[]; fromRole: SampleRole } | null>(null)
 
   const getProb = (role: SampleRole, step: number): number => {
     return probabilities[role]?.[step] ?? 1.0
@@ -203,13 +211,50 @@ export function PatternEditor({
               }}
             >
               <div
-                className="w-11 font-mono text-[11px] font-bold uppercase tracking-wider"
+                className="flex w-11 flex-col items-center gap-0.5"
                 style={{
                   color,
                   textShadow: isNowPlaying ? `0 0 8px ${color}80` : 'none',
                 }}
               >
-                {ROLE_LABEL[role]}
+                <span className="font-mono text-[11px] font-bold uppercase tracking-wider">
+                  {ROLE_LABEL[role]}
+                </span>
+                {/* Copy / Paste buttons */}
+                <div className="flex gap-0.5">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      const row = pattern[role]
+                      if (row) {
+                        setClipboard({ row: [...row], fromRole: role })
+                        onCopyRole?.(role)
+                      }
+                    }}
+                    className="touch-manipulation rounded border border-zinc-700 px-1 font-mono text-[8px] text-zinc-400 hover:bg-zinc-800"
+                    title={`Copy ${role} pattern`}
+                  >
+                    ⧉
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      if (clipboard) {
+                        onPasteRole?.(role)
+                      }
+                    }}
+                    disabled={!clipboard}
+                    className="touch-manipulation rounded border border-zinc-700 px-1 font-mono text-[8px] text-zinc-400 hover:bg-zinc-800 disabled:opacity-30"
+                    title={clipboard ? `Paste from ${clipboard.fromRole}` : 'Nothing copied yet'}
+                  >
+                    ⤓
+                  </button>
+                </div>
+                {clipboard && clipboard.fromRole === role && (
+                  <span className="font-mono text-[7px] text-emerald-400">●</span>
+                )}
               </div>
               <div className="flex flex-1 gap-1">
                 {pattern[role]?.map((velocity, step) => {
