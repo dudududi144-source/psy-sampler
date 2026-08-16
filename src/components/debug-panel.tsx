@@ -41,6 +41,14 @@ export function DebugPanel({ stats, eventLog }: { stats: DeviceStats; eventLog: 
         <Stat label="PENDING" value={stats.pendingEvents} color="violet" />
       </div>
 
+      {/* Performance stats */}
+      <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-4">
+        <Stat label="N/SEC" value={stats.notesPerSec.toFixed(1)} color="cyan" />
+        <Stat label="PEAK" value={stats.peakVoices} color={stats.peakVoices >= 28 ? 'amber' : 'zinc'} />
+        <Stat label="UPTIME" value={`${stats.uptimeSec.toFixed(0)}s`} color="zinc" />
+        <Stat label="LIB" value={stats.librarySize} color="violet" />
+      </div>
+
       {/* Last event — the key debug info */}
       <div className="mt-3 rounded border border-zinc-800 bg-zinc-900/50 p-3">
         <div className="mb-1.5 font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500">LAST EVENT</div>

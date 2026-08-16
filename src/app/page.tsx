@@ -119,6 +119,12 @@ export default function Home() {
   const { state: pattern, set: setPatternWithHistory, undo, redo, canUndo, canRedo, reset: resetPatternHistory } = useUndoRedo<Pattern>(structuredClone(DEFAULT_PATTERN))
   const [samples, setSamples] = React.useState<SampleAsset[]>([])
   const [stats, setStats] = React.useState<DeviceStats | null>(null)
+  // Performance tracking refs.
+  const notesPerSecRef = React.useRef(0)
+  const peakVoicesRef = React.useRef(0)
+  const playStartTimeRef = React.useRef(0)
+  const lastTriggeredRef = React.useRef(0)
+  const lastStatsTimeRef = React.useRef(0)
   const [eventLog, setEventLog] = React.useState<EventLogEntry[]>([])
   const [analyser, setAnalyser] = React.useState<AnalyserNode | null>(null)
   const [audioCtx, setAudioCtx] = React.useState<AudioContext | null>(null)
@@ -339,6 +345,19 @@ export default function Home() {
       // Start polling device stats (for debug panel).
       statsIntervalRef.current = setInterval(() => {
         const dev = bundle!.device
+        // Compute notes/sec (rolling, every ~0.5s).
+        const now = performance.now()
+        const dt = (now - lastStatsTimeRef.current) / 1000
+        if (dt > 0.5) {
+          const dNotes = dev.notesTriggered - lastTriggeredRef.current
+          notesPerSecRef.current = dNotes / dt
+          lastTriggeredRef.current = dev.notesTriggered
+          lastStatsTimeRef.current = now
+        }
+        // Track peak voices.
+        if (dev.activeVoices > peakVoicesRef.current) {
+          peakVoicesRef.current = dev.activeVoices
+        }
         const lastEv = dev.lastEvent
         // FIX Bug 3: dedup by eventsReceived counter (not .at — multiple roles share the same .at).
         if (lastEv && dev.eventsReceived !== lastEventAtRef.current) {
@@ -370,6 +389,9 @@ export default function Home() {
           pendingEvents: dev.pendingEvents,
           librarySize: dev.librarySize,
           isStarted: dev.isStarted,
+          notesPerSec: notesPerSecRef.current,
+          peakVoices: peakVoicesRef.current,
+          uptimeSec: dev.isStarted ? (ctxRef.current?.currentTime ?? 0) - playStartTimeRef.current : 0,
           lastEvent: dev.lastEvent,
           lastTransport: dev.lastTransport,
           lastContext: dev.lastContext,
@@ -425,6 +447,12 @@ export default function Home() {
       }
       director.start()
       bundle?.scheduler.start()
+      // Reset performance stats.
+      peakVoicesRef.current = 0
+      notesPerSecRef.current = 0
+      lastTriggeredRef.current = 0
+      lastStatsTimeRef.current = performance.now()
+      playStartTimeRef.current = ctx?.currentTime ?? 0
       setIsPlaying(true)
     }
   }, [])

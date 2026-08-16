@@ -23,6 +23,12 @@ export interface DeviceStats {
   pendingEvents: number
   librarySize: number
   isStarted: boolean
+  /** Notes per second (rolling average over last 1s). */
+  notesPerSec: number
+  /** Peak voice count since last reset. */
+  peakVoices: number
+  /** Total audio render time in seconds (since play started). */
+  uptimeSec: number
   lastEvent: {
     channel: string
     note: number
