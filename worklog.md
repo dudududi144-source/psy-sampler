@@ -2008,3 +2008,17 @@ Work Log:
 Stage Summary:
 - Server running HTTP 200.
 - Commit: 15b029f
+
+---
+Task ID: VISIBILITY-RESUME + BROWSER-VERIFY
+Agent: main
+Task: Resume AudioContext on tab visibility change + full browser verify
+
+Work Log:
+- Added visibilitychange listener: resumes AudioContext when tab becomes visible (browsers suspend it when backgrounded).
+- Browser-verified: PK/RMS meter, RND button, STEMS button, ? help button all present. Zero errors.
+- 301 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+
+Stage Summary:
+- Server running HTTP 200.
+- Commit: 592c6eb
