@@ -2022,3 +2022,20 @@ Work Log:
 Stage Summary:
 - Server running HTTP 200.
 - Commit: 592c6eb
+
+---
+Task ID: PERFORMANCE-STATS
+Agent: main
+Task: Real-time performance stats — notes/sec, peak voices, uptime
+
+Work Log:
+- Extended DeviceStats with notesPerSec, peakVoices, uptimeSec.
+- Added performance tracking refs in page.tsx: notesPerSecRef, peakVoicesRef, playStartTimeRef, lastTriggeredRef, lastStatsTimeRef.
+- Stats interval computes notes/sec (rolling, every 0.5s), tracks peak voices, uptime.
+- Resets on play start.
+- DebugPanel: new performance stats row (N/SEC, PEAK, UPTIME, LIB).
+- 301 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+
+Stage Summary:
+- Server running HTTP 200.
+- Commit: 162994c
