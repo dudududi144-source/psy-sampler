@@ -1232,6 +1232,22 @@ export default function Home() {
     }
   }, [])
 
+  // Resume AudioContext when the tab becomes visible again.
+  // Browsers suspend AudioContext when the tab is backgrounded — without this,
+  // the user returns to the tab and playback is silent until they click PLAY.
+  React.useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        const ctx = ctxRef.current
+        if (ctx && ctx.state === 'suspended') {
+          ctx.resume().catch(() => {})
+        }
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => document.removeEventListener('visibilitychange', handleVisibility)
+  }, [])
+
   // ─── Render: Init Overlay ──────────────────────────────────────────────────
 
   if (!initialized) {
