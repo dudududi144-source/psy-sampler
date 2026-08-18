@@ -371,7 +371,7 @@ export default function Home() {
     } catch (err) {
       console.error('[psy-sampler] initializeAudio failed:', err)
       const message = err instanceof Error ? err.message : String(err)
-      setInitError(`Failed to initialize audio: ${message}. Check that samples/manifest.json is reachable and the AudioContext can start.`)
+      setInitError('Could not start the audio engine. Please refresh and try again.')
       // Clean up partial state on failure.
       if (bundle) bundle.dispose()
       if (host) host.dispose()
