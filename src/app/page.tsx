@@ -86,6 +86,7 @@ import { Visualizer } from '@/components/visualizer'
 import { Mixer } from '@/components/mixer'
 import { PresetsPanel, PatternSlots } from '@/components/presets-panel'
 import { PerformancePads } from '@/components/performance-pads'
+import { Chassis } from '@/components/chassis'
 import {
   ROLES,
   BUS_NAMES,
@@ -1642,47 +1643,19 @@ export default function Home() {
 
   return (
     <ErrorBoundary>
-      <div className="relative flex min-h-screen flex-col overflow-hidden bg-zinc-950 text-zinc-100">
-        {/* Ambient gradient */}
-        <div
-          aria-hidden
-          className="pointer-events-none fixed inset-0 opacity-80"
-          style={{
-            background:
-              'radial-gradient(60% 50% at 20% 20%, rgba(255,46,136,0.12), transparent 60%), radial-gradient(55% 45% at 80% 30%, rgba(185,103,255,0.12), transparent 60%), radial-gradient(70% 60% at 50% 100%, rgba(0,255,200,0.08), transparent 60%)',
-          }}
-        />
+      <Chassis>
+        <div className="relative z-10 flex w-full flex-1 flex-col">
+          {/* ─── Transport Bar (topbar) ─── */}
 
-        <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col px-4 py-6">
-          {/* ─── Header ─── */}
-          <header className="mb-6 flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div>
-                <h1 className="font-mono text-2xl font-bold tracking-[0.15em]">
-                  <span className="bg-gradient-to-r from-emerald-300 via-fuchsia-400 to-violet-400 bg-clip-text text-transparent">
-                    PSY SAMPLER
-                  </span>
-                </h1>
-                <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-zinc-500">
-                  debug-first · realization device
-                </p>
-              </div>
-              {/* Help button */}
-              <button
-                onClick={() => setHelpOpen(true)}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-zinc-600 bg-zinc-900 font-mono text-sm font-bold text-zinc-300 transition-all hover:border-emerald-400 hover:text-emerald-300"
-                title="Help & shortcuts (?)"
-              >
-                ?
-              </button>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Stat label="DEVICES" value={deviceCount} color="emerald" />
-              <Stat label="SAMPLES" value={loadResult ? `${loadResult.loaded}/${loadResult.total}` : '—'} color="violet" />
-              <Stat label="BPM" value={bpm} color="fuchsia" />
-              <Stat label="VOICES" value={stats ? `${stats.activeVoices}/32` : '0/32'} color="amber" />
-            </div>
-          </header>
+          {/* Floating help button */}
+          <button
+            onClick={() => setHelpOpen(true)}
+            className="tbtn"
+            style={{ position: 'absolute', top: '14px', right: '14px', zIndex: 100, padding: '6px 10px' }}
+            title="Help & shortcuts (?)"
+          >
+            ?
+          </button>
 
           {/* Help overlay */}
           <HelpOverlay open={helpOpen} onClose={() => setHelpOpen(false)} />
@@ -2214,19 +2187,13 @@ export default function Home() {
             <Visualizer analyser={analyser} isPlaying={isPlaying} />
           </div>
 
-          {/* ─── Footer (sticky) ─── */}
-          <footer className="mt-auto border-t border-zinc-800 pt-4">
-            <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-[10px] text-zinc-500">
-              <span>PSY Sampler Device — canonical family member · debug-first UI</span>
-              <span>
-                {loadResult
-                  ? `${loadResult.loaded} samples · all PROCEDURAL · all commercially usable`
-                  : 'loading…'}
-              </span>
-            </div>
+          {/* ─── Footer info ─── */}
+          <footer style={{ marginTop: 'auto', paddingTop: '14px', borderTop: '1px solid #232932', fontFamily: "'JetBrains Mono', monospace", fontSize: '9px', color: '#5b6470', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '8px' }}>
+            <span>PSY Sampler Device — canonical family member · {loadResult ? `${loadResult.loaded} samples` : 'loading…'}</span>
+            <span>59 features · 653 tests · 21 shortcuts</span>
           </footer>
         </div>
-      </div>
+      </Chassis>
     </ErrorBoundary>
   )
 }

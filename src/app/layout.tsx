@@ -1,33 +1,23 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "./psy-design.css";
 import { Toaster } from "@/components/ui/toaster";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "PSY Sampler — Production-Ready Realization Device",
-  description: "Web-audio sampler with 36 features: velocity patterns, probability, MIDI, automation, stems, song mode, offline render. 301 tests. 15 shortcuts.",
+  description: "Web-audio sampler with 59 features: velocity patterns, probability, MIDI, automation, stems, song mode, offline render, chord progression, humanize, quantize, ramp.",
   keywords: ["psytrance", "sampler", "web-audio", "groovebox", "music", "react", "midi", "daw"],
   authors: [{ name: "PSY Family" }],
   manifest: "/manifest.json",
   openGraph: {
     title: "PSY Sampler",
-    description: "Web-audio sampler with 36 features: velocity patterns, probability, MIDI, automation, stems, song mode, offline render.",
+    description: "Web-audio sampler with 59 features: velocity patterns, probability, MIDI, automation, stems, song mode, offline render, chord progression, humanize, quantize, ramp.",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "PSY Sampler",
-    description: "Web-audio sampler with 36 features: velocity patterns, probability, MIDI, automation, stems, song mode, offline render.",
+    description: "Web-audio sampler with 59 features: velocity patterns, probability, MIDI, automation, stems, song mode, offline render, chord progression, humanize, quantize, ramp.",
   },
   appleWebApp: {
     capable: true,
@@ -41,7 +31,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: "cover",
-  themeColor: "#0a0a0b",
+  themeColor: "#12141a",
 };
 
 export default function RootLayout({
@@ -54,10 +44,11 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/logo.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/logo.svg" />
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+        <link href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.8/index.css" rel="stylesheet" />
+        <link href="https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@5.0.8/index.css" rel="stylesheet" />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
-      >
+      <body>
         {children}
         <Toaster />
         <script
