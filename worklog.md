@@ -2393,3 +2393,22 @@ Stage Summary:
 - 521 tests pass (was 507, +14), 0 fail, 0 TS errors, 0 lint errors.
 - Pushed to GitHub. Commit: 86db360
 - Density gives control over melodic busyness: sparse (psytrance) to dense (progressive).
+
+---
+Task ID: OCTAVE-CONTROL
+Agent: main
+Task: Add melody octave control — shift lead register -2 to +2 octaves
+
+Work Log:
+- applyProgression + generateChordPattern accept melodyOctave param (default 0, range -2 to +2). octaveShift = round(melodyOctave) * 12.
+- Lead pitch = baseTone + 12 + octaveShift. Bass/texture unaffected (separate RNGs).
+- Clamped to [-2, +2].
+- UI: OCT dropdown (lime, -2/-1/0/+1/+2) in transport bar after DENS.
+- Project persistence: melodyOctave saved. Backward compat defaults to 0.
+- 18 new tests: octave shifts (+1/-1/+2/-2), bass/texture independence, backward compat, determinism, clamping, valid MIDI, persistence (all 5 values).
+- Browser-verified: OCT=+2 → higher pitches (C#4/A3), OCT=-2 → lower (A1/F2). No JS errors.
+
+Stage Summary:
+- 539 tests pass (was 521, +18), 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub. Commit: f948327
+- Octave control lets the user match the melody register to their samples.
