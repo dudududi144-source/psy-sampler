@@ -1,6 +1,6 @@
 'use client'
 
-// PatternEditor — 9×16 step grid with per-step velocity (0..127, MIDI standard).
+// PatternEditor -- 9x16 step grid with per-step velocity (0..127, MIDI standard).
 //
 // Each cell shows its velocity via:
 //   - Opacity (0 = invisible/off, 100 = 79% opacity, 127 = full)
@@ -91,9 +91,9 @@ export function PatternEditor({
   onRampUp?: () => void
   /** Ramp velocities down (breakdown: high→low across pattern). */
   onRampDown?: () => void
-  /** Scale velocities up (louder: ×1.25). */
+  /** Scale velocities up (louder: x1.25). */
   onScaleUp?: () => void
-  /** Scale velocities down (softer: ×0.75). */
+  /** Scale velocities down (softer: x0.75). */
   onScaleDown?: () => void
   /** Fill a single role with a quick pattern. */
   onFillRole?: (role: SampleRole) => void
@@ -234,7 +234,7 @@ export function PatternEditor({
               title="Ramp up — velocity build-up (low→high across pattern)"
               className="preset touch-manipulation min-h-[28px] px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider transition-all"
             >
-              RAMP↑
+              RAMP UP
             </button>
           )}
           {onRampDown && (
@@ -244,14 +244,14 @@ export function PatternEditor({
               title="Ramp down — velocity breakdown (high→low across pattern)"
               className="preset touch-manipulation min-h-[28px] px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider transition-all"
             >
-              RAMP↓
+              RAMP DOWN
             </button>
           )}
           {onScaleUp && (
             <button
               type="button"
               onClick={onScaleUp}
-              title="Scale up — all velocities ×1.25 (louder)"
+              title="Scale up -- all velocities x1.25 (louder)"
               className="preset touch-manipulation min-h-[28px] px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider transition-all"
             >
               SCALE+
@@ -261,7 +261,7 @@ export function PatternEditor({
             <button
               type="button"
               onClick={onScaleDown}
-              title="Scale down — all velocities ×0.75 (softer)"
+              title="Scale down -- all velocities x0.75 (softer)"
               className="preset touch-manipulation min-h-[28px] px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider transition-all"
             >
               SCALE-
@@ -294,7 +294,7 @@ export function PatternEditor({
                 className="touch-manipulation min-h-[28px] rounded border border-cyan-400/40 px-2 py-0.5 font-mono text-[10px] font-bold text-cyan-300 transition-all hover:bg-cyan-500/10 disabled:opacity-30"
                 title="Double pattern (8→16 or 16→32, repeating)"
               >
-                ×2
+                x2
               </button>
             )}
             {onHalf && (
@@ -305,7 +305,7 @@ export function PatternEditor({
                 className="touch-manipulation min-h-[28px] rounded border border-cyan-400/40 px-2 py-0.5 font-mono text-[10px] font-bold text-cyan-300 transition-all hover:bg-cyan-500/10 disabled:opacity-30"
                 title="Half pattern (32→16 or 16→8, keeping first half)"
               >
-                ÷2
+                /2
               </button>
             )}
           </div>
@@ -323,7 +323,7 @@ export function PatternEditor({
             }}
             title="Toggle edit mode: velocity vs probability"
           >
-            {editMode === 'probability' ? '● PROB' : '○ PROB'}
+            PROB
           </button>
           <span className="font-mono text-[10px] text-zinc-500">
             {editMode === 'probability' ? 'click: 100→75→50→25→100%' : 'click: off → vel → accent → off'}
@@ -386,7 +386,7 @@ export function PatternEditor({
                     className="touch-manipulation rounded border border-zinc-700 px-1 font-mono text-[8px] text-zinc-400 hover:bg-zinc-800"
                     title={`Copy ${role} pattern`}
                   >
-                    ⧉
+                    COPY
                   </button>
                   <button
                     type="button"
@@ -400,12 +400,9 @@ export function PatternEditor({
                     className="touch-manipulation rounded border border-zinc-700 px-1 font-mono text-[8px] text-zinc-400 hover:bg-zinc-800 disabled:opacity-30"
                     title={clipboard ? `Paste from ${clipboard.fromRole}` : 'Nothing copied yet'}
                   >
-                    ⤓
+                    PASTE
                   </button>
                 </div>
-                {clipboard && clipboard.fromRole === role && (
-                  <span className="font-mono text-[7px] text-emerald-400">●</span>
-                )}
                 {onFillRole && (
                   <button
                     type="button"

@@ -176,7 +176,7 @@ export function SampleImporter({
           className="hidden"
         />
         <span className="font-mono text-xs text-zinc-400">
-          {dragOver ? '▾ drop to decode' : '⬆ drop .wav here or click'}
+          {dragOver ? 'DROP TO DECODE' : 'DROP WAV HERE OR CLICK'}
         </span>
         <span className="mt-1 font-mono text-[10px] text-zinc-600">
           sample enters graph only after license assertion
@@ -186,7 +186,7 @@ export function SampleImporter({
       {/* Error */}
       {error && (
         <div className="mt-2 rounded border border-red-500/40 bg-red-500/10 p-2 font-mono text-[11px] text-red-300">
-          ⚠ {error}
+          {error}
         </div>
       )}
 
@@ -194,7 +194,7 @@ export function SampleImporter({
       {pending && (
         <div className="mt-3 space-y-2 rounded border border-cyan-500/30 bg-cyan-500/5 p-3">
           <div className="font-mono text-[11px] font-bold uppercase tracking-wider text-cyan-300">
-            ✓ decoded: {pending.file.name} ({pending.buffer.duration.toFixed(2)}s, {pending.buffer.sampleRate}Hz, {pending.buffer.numberOfChannels}ch)
+            decoded: {pending.file.name} ({pending.buffer.duration.toFixed(2)}s, {pending.buffer.sampleRate}Hz, {pending.buffer.numberOfChannels}ch)
           </div>
 
           {/* Role selector */}
@@ -282,7 +282,7 @@ export function SampleImporter({
               type="text"
               value={form.attribution}
               onChange={(e) => setForm((prev) => ({ ...prev, attribution: e.target.value }))}
-              placeholder="e.g. © Jane Doe 2026"
+              placeholder="e.g. Copyright Jane Doe 2026"
               className="mt-0.5 w-full rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-xs text-zinc-200"
             />
           </label>
@@ -293,13 +293,13 @@ export function SampleImporter({
               onClick={submitImport}
               className="min-h-[44px] touch-manipulation flex-1 rounded border border-cyan-400/50 bg-cyan-500/20 px-3 py-2 font-mono text-xs font-bold uppercase tracking-wider text-cyan-200 transition-all hover:bg-cyan-500/30"
             >
-              ✓ import to library
+              import to library
             </button>
             <button
               onClick={cancelImport}
               className="min-h-[44px] touch-manipulation rounded border border-zinc-600 px-3 py-2 font-mono text-xs uppercase tracking-wider text-zinc-400 transition-all hover:bg-zinc-800"
             >
-              ✕ cancel
+              cancel
             </button>
           </div>
         </div>

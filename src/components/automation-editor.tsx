@@ -62,7 +62,7 @@ export function AutomationEditor({
             }}
             title="Toggle automation — applies parameter changes over time during playback"
           >
-            {enabled ? '● RUNNING' : '○ AUTO'}
+            {enabled ? 'RUNNING' : 'AUTO'}
           </button>
         </div>
       </div>
@@ -117,7 +117,7 @@ export function AutomationEditor({
                 <button onClick={() => onClearTrack(target)} disabled={enabled}
                   className="min-h-[36px] w-[36px] touch-manipulation rounded border border-zinc-700 bg-zinc-900 font-mono text-xs text-zinc-400 disabled:opacity-30"
                   title="Clear all breakpoints"
-                >✕</button>
+                >CLR</button>
               )}
             </div>
           )

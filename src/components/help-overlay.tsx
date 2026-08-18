@@ -32,29 +32,29 @@ const SHORTCUTS = [
 ]
 
 const FEATURES = [
-  { icon: '▶', title: 'PLAY', desc: 'Start/stop the pattern loop' },
-  { icon: '⬇', title: 'EXPORT WAV', desc: 'Offline render (deterministic, 28× faster than real-time)' },
-  { icon: '⬇', title: 'STEMS', desc: 'Export drum/music/atmos as separate WAVs (stem mastering)' },
-  { icon: '⬇', title: 'MIDI', desc: 'Export pattern as Standard MIDI File (.mid) for DAWs' },
-  { icon: '⬆', title: 'MIDI', desc: 'Import .mid file from any DAW into the pattern' },
-  { icon: '○', title: 'REC', desc: 'Live recording (captures MIDI + automation + tweaks)' },
-  { icon: '💾', title: 'SAVE', desc: 'Save project as .psy.json (pattern + mixer + song)' },
-  { icon: '📂', title: 'LOAD', desc: 'Load project from .psy.json' },
-  { icon: '○', title: 'PUMP', desc: 'Sidechain ducking (kick ducks music+atmos)' },
-  { icon: '○', title: 'EVOLVE', desc: 'Auto-mutate pattern every 4 bars (deterministic)' },
-  { icon: '○', title: 'FLT', desc: 'Master filter: OFF → LP (auto-wah) → HP' },
-  { icon: '↶', title: 'UNDO/REDO', desc: 'Pattern history (50 steps)' },
-  { icon: '⊡', title: 'TAP', desc: 'Tap tempo detection' },
-  { icon: '🎹', title: 'MIDI', desc: 'Play from MIDI keyboard (Web MIDI API)' },
-  { icon: '⧉', title: 'COPY', desc: 'Copy role pattern to clipboard' },
-  { icon: '⤓', title: 'PASTE', desc: 'Paste clipboard into another role' },
-  { icon: '▣', title: 'PADS', desc: 'Live one-shot triggering (MPC-style, keys 1-9)' },
-  { icon: '♪', title: 'CHORDS', desc: 'Scale-aware bass/lead/texture from diatonic progressions' },
+  { title: 'PLAY', desc: 'Start/stop the pattern loop' },
+  { title: 'EXPORT WAV', desc: 'Offline render (deterministic, 28x faster than real-time)' },
+  { title: 'STEMS', desc: 'Export drum/music/atmos as separate WAVs (stem mastering)' },
+  { title: 'MIDI OUT', desc: 'Export pattern as Standard MIDI File (.mid) for DAWs' },
+  { title: 'MIDI IN', desc: 'Import .mid file from any DAW into the pattern' },
+  { title: 'REC', desc: 'Live recording (captures MIDI + automation + tweaks)' },
+  { title: 'SAVE', desc: 'Save project as .psy.json (pattern + mixer + song)' },
+  { title: 'LOAD', desc: 'Load project from .psy.json' },
+  { title: 'PUMP', desc: 'Sidechain ducking (kick ducks music+atmos)' },
+  { title: 'EVOLVE', desc: 'Auto-mutate pattern every 4 bars (deterministic)' },
+  { title: 'FLT', desc: 'Master filter: OFF to LP (auto-wah) to HP' },
+  { title: 'UNDO/REDO', desc: 'Pattern history (50 steps)' },
+  { title: 'TAP', desc: 'Tap tempo detection' },
+  { title: 'MIDI', desc: 'Play from MIDI keyboard (Web MIDI API)' },
+  { title: 'COPY', desc: 'Copy role pattern to clipboard' },
+  { title: 'PASTE', desc: 'Paste clipboard into another role' },
+  { title: 'PADS', desc: 'Live one-shot triggering (MPC-style, keys 1-9)' },
+  { title: 'CHORDS', desc: 'Scale-aware bass/lead/texture from diatonic progressions' },
 ]
 
 const EDITOR_FEATURES = [
   { title: 'Velocity mode', desc: 'Click cycles: off → 100 → 127 → off' },
-  { title: 'Probability mode', desc: '○ PROB: click cycles 100→75→50→25→100%' },
+  { title: 'Probability mode', desc: 'PROB: click cycles 100, 75, 50, 25, 100%' },
   { title: 'Drag-paint', desc: 'Mousedown + drag paints velocity' },
   { title: 'Shift+drag', desc: 'Paint at accent velocity (127)' },
   { title: 'Alt+drag', desc: 'Erase (set to 0)' },
@@ -82,7 +82,7 @@ export function HelpOverlay({ open, onClose }: { open: boolean; onClose: () => v
             onClick={onClose}
             className="rounded border border-zinc-600 px-3 py-1 font-mono text-xs text-zinc-400 hover:bg-zinc-800"
           >
-            ✕ ESC
+            ESC
           </button>
         </div>
 
@@ -111,7 +111,6 @@ export function HelpOverlay({ open, onClose }: { open: boolean; onClose: () => v
           <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
             {FEATURES.map((f) => (
               <div key={f.title} className="flex items-center gap-2 rounded border border-zinc-800 bg-zinc-900/50 px-2 py-1">
-                <span className="min-w-[24px] text-center font-mono text-sm text-amber-300">{f.icon}</span>
                 <span className="min-w-[80px] font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-200">{f.title}</span>
                 <span className="font-mono text-[11px] text-zinc-400">{f.desc}</span>
               </div>

@@ -85,7 +85,7 @@ export function SongEditor({
           }}
           title="Toggle song mode — plays segments in sequence"
         >
-          {songMode ? '● PLAYING' : '○ SONG'}
+          {songMode ? 'PLAYING' : 'SONG'}
         </button>
       </div>
 
@@ -135,7 +135,7 @@ export function SongEditor({
                     disabled={songMode}
                     className="min-h-[36px] w-[36px] touch-manipulation rounded border border-zinc-700 bg-zinc-900 font-mono text-xs text-zinc-400 disabled:opacity-50"
                   >
-                    −
+                    -
                   </button>
                   <span className="w-12 text-center font-mono text-[11px] tabular-nums text-zinc-300">
                     {seg.bars} bar{seg.bars !== 1 ? 's' : ''}
@@ -164,7 +164,7 @@ export function SongEditor({
                     className="min-h-[36px] w-[36px] touch-manipulation rounded border border-zinc-700 bg-zinc-900 font-mono text-xs text-zinc-400 disabled:opacity-30"
                     title="Move up"
                   >
-                    ↑
+                    UP
                   </button>
                   <button
                     onClick={() => moveSegment(i, 1)}
@@ -172,7 +172,7 @@ export function SongEditor({
                     className="min-h-[36px] w-[36px] touch-manipulation rounded border border-zinc-700 bg-zinc-900 font-mono text-xs text-zinc-400 disabled:opacity-30"
                     title="Move down"
                   >
-                    ↓
+                    DN
                   </button>
                   <button
                     onClick={() => removeSegment(i)}
@@ -180,7 +180,7 @@ export function SongEditor({
                     className="min-h-[36px] w-[36px] touch-manipulation rounded border border-red-500/30 bg-zinc-900 font-mono text-xs text-red-400 disabled:opacity-30"
                     title="Remove segment"
                   >
-                    ✕
+                    DEL
                   </button>
                 </div>
               </div>

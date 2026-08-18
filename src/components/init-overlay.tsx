@@ -65,7 +65,6 @@ export function InitOverlay({
         {error && (
           <div className="w-full max-w-sm rounded-lg p-3 text-left" style={{ border: '1px solid rgba(248,81,73,0.3)', background: 'rgba(248,81,73,0.08)' }}>
             <div className="mb-1 flex items-center gap-2">
-              <span style={{ color: '#f85149' }}>⚠</span>
               <span className="font-mono text-[10px] uppercase tracking-wider" style={{ color: '#f85149' }}>Error</span>
             </div>
             <p className="break-words font-mono text-[10px] leading-relaxed text-[#cfd6df]">{error}</p>

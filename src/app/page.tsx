@@ -1577,7 +1577,7 @@ export default function Home() {
                   : { borderColor: 'rgba(0,255,200,0.5)', boxShadow: '0 0 16px rgba(0,255,200,0.4)' }
               }
             >
-              {isPlaying ? '■ STOP' : '▶ PLAY'}
+              {isPlaying ? 'STOP' : 'PLAY'}
             </Button>
 
             {/* OLED display — real-time audio waveform + harmonic info */}
@@ -1598,7 +1598,7 @@ export default function Home() {
                 className="tbtn h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em] disabled:opacity-50"
                 style={{ boxShadow: exporting ? '0 0 16px rgba(185,103,255,0.6)' : '0 0 8px rgba(185,103,255,0.2)' }}
               >
-                {exporting ? '● EXPORTING…' : '⬇ EXPORT WAV'}
+                {exporting ? 'EXPORTING…' : 'EXPORT WAV'}
               </Button>
 
               {/* Stem export — each bus as separate WAV */}
@@ -1609,7 +1609,7 @@ export default function Home() {
                 style={{ boxShadow: stemExporting ? '0 0 16px rgba(251,191,36,0.6)' : 'none' }}
                 title="Export stems — drum/music/atmos as separate WAVs"
               >
-                {stemExporting ? '● STEMS…' : '⬇ STEMS'}
+                {stemExporting ? 'STEMS…' : 'STEMS'}
               </Button>
 
               {/* MIDI export — .mid file for DAWs */}
@@ -1618,7 +1618,7 @@ export default function Home() {
                 className="tbtn midi h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em]"
                 title="Export pattern as Standard MIDI File (.mid) for your DAW"
               >
-                ⬇ MIDI
+                MIDI OUT
               </Button>
 
               {/* MIDI import — load .mid file */}
@@ -1628,7 +1628,7 @@ export default function Home() {
                 className="tbtn midi h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em] disabled:opacity-50"
                 title="Import .mid file — extract pattern from a DAW"
               >
-                {midiImporting ? '● LOADING…' : '⬆ MIDI'}
+                {midiImporting ? 'LOADING…' : 'MIDI IN'}
               </Button>
               <input
                 ref={midiFileInputRef}
@@ -1644,14 +1644,14 @@ export default function Home() {
                 className="tbtn h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em]"
                 title="Save project (.psy.json)"
               >
-                💾 SAVE
+                SAVE
               </Button>
               <Button
                 onClick={() => projectFileInputRef.current?.click()}
                 className="tbtn h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em]"
                 title="Load project (.psy.json)"
               >
-                📂 LOAD
+                LOAD
               </Button>
               <input ref={projectFileInputRef} type="file" accept=".json,.psy.json,application/json" onChange={onLoadProject} className="hidden" />
             </div>
@@ -1672,7 +1672,7 @@ export default function Home() {
               }}
               title="Metronome (N key) — click on every beat"
             >
-              {metronomeEnabled ? '● MET' : '○ MET'}
+              MET
             </Button>
             <Button
               onClick={() => {
@@ -1683,7 +1683,7 @@ export default function Home() {
               className="tbtn panic h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em]"
               title="Panic — kill all audio immediately"
             >
-              ⛔ PANIC
+              PANIC
             </Button>
 
             {/* Live recording */}
@@ -1698,7 +1698,7 @@ export default function Home() {
               }}
               title="Record live audio — captures whatever you play"
             >
-              {recording ? `● REC ${(recElapsed / 1000).toFixed(1)}s` : '○ REC'}
+              {recording ? `REC ${(recElapsed / 1000).toFixed(1)}s` : 'REC'}
             </Button>
 
             {/* Row 3: Sliders (BPM + Swing + Master + Section + Energy) */}
@@ -1753,7 +1753,7 @@ export default function Home() {
               className="h-11 gap-2 border border-zinc-700 bg-zinc-900 font-mono text-xs font-bold uppercase tracking-[0.15em] text-zinc-300 disabled:opacity-30"
               title="Undo (Ctrl+Z)"
             >
-              ↶ UNDO
+              UNDO
             </Button>
             <Button
               onClick={onRedo}
@@ -1761,7 +1761,7 @@ export default function Home() {
               className="h-11 gap-2 border border-zinc-700 bg-zinc-900 font-mono text-xs font-bold uppercase tracking-[0.15em] text-zinc-300 disabled:opacity-30"
               title="Redo (Ctrl+Shift+Z)"
             >
-              ↷ REDO
+              REDO
             </Button>
 
             {/* Tap tempo */}
@@ -1770,7 +1770,7 @@ export default function Home() {
               className="h-11 gap-2 border border-zinc-700 bg-zinc-900 font-mono text-xs font-bold uppercase tracking-[0.15em] text-amber-300 hover:bg-amber-500/10"
               title="Tap tempo (T key) — tap repeatedly to detect BPM"
             >
-              ⊡ TAP
+              TAP
             </Button>
 
             {/* MIDI input selector */}
@@ -1782,10 +1782,10 @@ export default function Home() {
                 className="h-11 min-w-[140px] rounded border border-zinc-700 bg-zinc-900 px-2 font-mono text-xs text-zinc-300 disabled:opacity-50"
                 title={midi.error || 'Select MIDI input device'}
               >
-                <option value="">{midi.accessGranted ? '🔇 MIDI: none' : 'MIDI…'}</option>
+                <option value="">{midi.accessGranted ? 'MIDI: NONE' : 'MIDI…'}</option>
                 {midi.inputs.map((input) => (
                   <option key={input.id} value={input.id}>
-                    🎹 {input.name}
+                    {input.name}
                   </option>
                 ))}
               </select>
@@ -1796,7 +1796,7 @@ export default function Home() {
             )}
             {midi.lastNote !== null && (
               <span className="font-mono text-[10px] text-emerald-300" title={`Last MIDI note: ${midi.lastNote} (vel ${(midi.lastVelocity ?? 0).toFixed(2)})`}>
-                ♪{midi.lastNote}
+                {midi.lastNote}
               </span>
             )}
             </div>{/* end Row 2 */}
@@ -1805,7 +1805,7 @@ export default function Home() {
           {/* ─── Harmonic status bar — shows the current harmonic structure ─── */}
           <div className="oled flex flex-wrap items-center gap-3 px-4 py-2">
             <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
-              ▌HARMONY
+              HARMONY
             </span>
             <span className="font-mono text-xs font-bold text-emerald-300">
               {NOTE_NAMES[musicalKey]} {SCALE_LABELS[scaleName]}
@@ -1989,7 +1989,7 @@ export default function Home() {
                   }}
                   title="Sidechain ducking — kick ducks music+atmos"
                 >
-                  {pumpEnabled ? '● PUMP' : '○ PUMP'}
+                  PUMP
                 </Button>
 
                 {/* EVOLVE toggle */}
@@ -2008,7 +2008,7 @@ export default function Home() {
                   }}
                   title="Auto-evolve — pattern mutates every 4 bars (deterministic)"
                 >
-                  {evolveEnabled ? '● EVOLVE' : '○ EVOLVE'}
+                  EVOLVE
                 </Button>
 
                 {/* FLT (master filter) toggle */}
@@ -2039,7 +2039,7 @@ export default function Home() {
                   }}
                   title="Master filter — LP=lowpass+auto-wah, HP=highpass, OFF=bypass"
                 >
-                  {filterMode === 'off' ? '○ FLT' : filterMode === 'lp' ? '● LP' : '● HP'}
+                  FLT
                 </Button>
               </div>
               <Mixer busState={busState} onGain={onBusGain} onEQ={onBusEQ} onSaturation={onBusSaturation} onMute={onBusMute} onSolo={onBusSolo} />
@@ -2111,7 +2111,7 @@ export default function Home() {
 
           {/* ─── Footer ─── */}
           <footer style={{ marginTop: 'auto', paddingTop: '14px', borderTop: '1px solid #232932', fontFamily: "'JetBrains Mono', monospace", fontSize: '9px', color: '#5b6470', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '8px' }}>
-            <span>© 2026 PSY Family</span>
+            <span>Copyright 2026 PSY Family</span>
             <span>{loadResult ? `${loadResult.loaded} samples loaded` : 'loading…'}</span>
           </footer>
         </div>

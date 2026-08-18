@@ -133,7 +133,7 @@ export function PerformancePads({
           className="stitle font-mono text-xs font-bold tracking-widest"
           style={{ '--c': '#f87171' } as React.CSSProperties}
         >
-          ▣ PERFORMANCE PADS
+          PERFORMANCE PADS
         </h2>
         <span className="font-mono text-[10px] text-zinc-600" title="Keys 1-9 trigger pads. Shift = accent (127), Alt = ghost (50).">
           KEYS 1-9 · SHIFT=ACC · ALT=GHOST

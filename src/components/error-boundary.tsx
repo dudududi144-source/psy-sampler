@@ -39,8 +39,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
       return (
         <div className="fixed inset-0 z-50 grid place-items-center bg-zinc-950 p-6">
           <div className="max-w-md rounded-lg border border-red-500/30 bg-zinc-900 p-6 text-center">
-            <div className="mb-3 text-4xl">⚠️</div>
-            <h2 className="mb-2 font-mono text-lg font-bold text-red-300">Render Error</h2>
+            <h2 className="mb-2 font-mono text-lg font-bold text-red-300">ERROR</h2>
             <p className="mb-4 font-mono text-xs text-zinc-400">
               {this.state.error?.message ?? 'Unknown error'}
             </p>

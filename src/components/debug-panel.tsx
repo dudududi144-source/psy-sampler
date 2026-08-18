@@ -82,7 +82,7 @@ export function DebugPanel({ stats, eventLog }: { stats: DeviceStats; eventLog: 
             <div className="flex justify-between">
               <span className="text-zinc-500">triggered</span>
               <span className={lastEv.triggered ? 'text-emerald-300' : 'text-amber-300'}>
-                {lastEv.triggered ? '✓ YES' : '✗ SKIPPED'}
+                {lastEv.triggered ? 'YES' : 'SKIPPED'}
               </span>
             </div>
           </div>
@@ -162,7 +162,7 @@ export function DebugPanel({ stats, eventLog }: { stats: DeviceStats; eventLog: 
                   <span className="w-10 shrink-0 tabular-nums text-violet-300">v{e.velocity.toFixed(2)}</span>
                   <span className="flex-1 truncate text-emerald-300">{e.sampleId ?? '—'}</span>
                   <span className={e.triggered ? 'text-emerald-400' : 'text-amber-400'}>
-                    {e.triggered ? '✓' : '✗'}
+                    {e.triggered ? 'YES' : 'NO'}
                   </span>
                 </div>
               )

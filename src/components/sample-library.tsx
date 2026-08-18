@@ -128,7 +128,6 @@ export function SampleLibrary({
                       NON-COMM
                     </Badge>
                   )}
-                  <span className="font-mono text-[11px] text-zinc-600">▶</span>
                 </button>
                 {onRemove && (
                   <button
@@ -136,7 +135,7 @@ export function SampleLibrary({
                     className="shrink-0 touch-manipulation rounded border border-red-500/30 px-1.5 py-0.5 font-mono text-[10px] text-red-400 hover:bg-red-500/10"
                     title={`Remove ${s.metadata.id}`}
                   >
-                    ✕
+                    DEL
                   </button>
                 )}
               </div>

@@ -169,7 +169,7 @@ export function Visualizer({ analyser, isPlaying }: { analyser: AnalyserNode | n
             ))}
           </div>
           <span className="font-mono text-[11px] text-zinc-600">
-            {isPlaying ? '● LIVE' : '○ IDLE'}
+            {isPlaying ? 'LIVE' : 'IDLE'}
           </span>
         </div>
       </div>

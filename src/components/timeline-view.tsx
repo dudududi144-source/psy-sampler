@@ -50,7 +50,7 @@ export function TimelineView({
           TIMELINE · {totalBars} bars · {totalSec.toFixed(1)}s
         </h2>
         <span className="font-mono text-[10px] text-zinc-500">
-          {songMode ? `▶ bar ${currentGlobalBar}/${totalBars}` : '○ stopped'}
+          {songMode ? `BAR ${currentGlobalBar}/${totalBars}` : 'STOPPED'}
         </span>
       </div>
       <div className="mb-1 flex h-4 overflow-hidden rounded-sm border border-zinc-800 bg-zinc-900/50">
