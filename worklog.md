@@ -2283,3 +2283,21 @@ Stage Summary:
 - 409 tests pass, 0 fail, 0 TS errors, 0 lint errors.
 - Pushed to GitHub. Commit: 0f3af02
 - 45 features total. The chord progression is now a full melodic sequencer with visible pitches.
+
+---
+Task ID: PITCH-MIDI
+Agent: main
+Task: Pitch-aware MIDI round-trip + project persistence
+
+Work Log:
+- MIDI export: exportMidiFile accepts optional noteMap. Exported .mid uses override pitch instead of ROLE_NOTES — chord arpeggio exports with actual melody.
+- MIDI import: importMidiFile returns noteMap populated with actual MIDI pitches. Imported melodies preserved.
+- Project persistence: ProjectState.noteMap (optional, backward compat). Save/load preserves chord progression melody.
+- Page: all 4 handlers wired (export, import, save, load). clearNoteMap() on clear/randomize/fill/preset-load.
+- 13 new tests: pitch-aware export (override, null fallback, arpeggio), pitch-aware import (populated, null on silent, 9 roles), full round-trip (arpeggio + bass roots survive), project persistence (create, serialize, backward compat, full project).
+- Browser-verified: CHORDS generates progression, 10 pitch labels visible, MIDI export works without errors.
+
+Stage Summary:
+- 422 tests pass (was 409, +13), 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub. Commit: d923dab
+- The NoteMap now survives the full DAW workflow: generate → export MIDI → DAW → import MIDI → same melody.

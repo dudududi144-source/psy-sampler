@@ -1,6 +1,6 @@
 # PSY Sampler Device
 
-> A canonical realization device in the PSY family. 45 features. 409 tests. 17 shortcuts. PWA. MIDI round-trip.
+> A canonical realization device in the PSY family. 46 features. 422 tests. 17 shortcuts. PWA. MIDI round-trip.
 
 ```
                  PSY4 (Host)
@@ -30,9 +30,9 @@
 
 The PSY Sampler is a **realization device** — it receives `NoteEvent`s from a host and renders them as audio using sample playback. It does NOT compose, schedule, or own transport. It is a pure HOW layer.
 
-**45 features · 409 tests · 17 keyboard shortcuts · PWA installable · MIDI round-trip · 31 samples**
+**46 features · 422 tests · 17 keyboard shortcuts · PWA installable · MIDI round-trip (pitch-aware) · 31 samples**
 
-## Features (45)
+## Features (46)
 
 ### Pattern Editor (8)
 1. Per-step velocity (0-127 MIDI standard)
@@ -80,18 +80,19 @@ The PSY Sampler is a **realization device** — it receives `NoteEvent`s from a 
 35. Sample import (drag-drop WAV, provenance-enforced)
 36. Multi-output (bus direct MediaStreams)
 
-### Performance (3)
+### Performance (5)
 37. Performance pads (3×3 grid, live one-shot triggering, keys 1-9)
 38. Chord progression generator (9 scales, diatonic triads, key + D shortcut)
 39. Per-step NoteMap (pitch override — piano-roll lite, chord-tone arpeggio)
+40. Pitch-aware MIDI round-trip (export/import preserves melody)
+41. Project persistence with NoteMap (save/load .psy.json preserves pitches)
 
-### UX (4)
-40. Metronome (1kHz click, downbeat 1.5kHz, N shortcut)
-41. Panic button (instant all-voice kill)
-42. Per-role fill (FILL button per role, seeded)
-43. Double/half pattern (×2/÷2, extend or shrink)
-44. Visualizer (3 modes: bars/wave/both + peak/RMS meter)
-45. Help overlay (? key, all shortcuts + features)
+### UX (5)
+42. Metronome (1kHz click, downbeat 1.5kHz, N shortcut)
+43. Panic button (instant all-voice kill)
+44. Per-role fill (FILL button per role, seeded)
+45. Double/half pattern (×2/÷2, extend or shrink)
+46. Help overlay (? key, all shortcuts + features) + Visualizer (3 modes)
 
 ## Keyboard Shortcuts (17)
 
@@ -149,7 +150,7 @@ Same inputs → byte-identical audio:
 
 ## Testing
 
-- **409 tests** across 28 files
+- **422 tests** across 29 files
 - **167,165 expects**
 - MIDI round-trip proof (export → import → same pattern)
 - Real audio rendering + spectral analysis
