@@ -170,11 +170,11 @@ export function PatternEditor({
   }, [])
 
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-950/80 p-4">
+    <div className="section p-4" style={{ '--c': '#fbbf24' } as React.CSSProperties}>
       <div className="mb-3 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <h2
-            className="font-mono text-xs font-bold uppercase tracking-[0.2em] stitle"
+            className="stitle font-mono text-xs font-bold uppercase tracking-[0.2em]"
             style={{ '--c': '#fbbf24' } as React.CSSProperties}
           >
             PATTERN · {stepCount} steps
@@ -191,7 +191,7 @@ export function PatternEditor({
             <button
               type="button"
               onClick={onRandomize}
-              title="Randomize pattern (seeded — deterministic)"
+              title="Randomize pattern (X key)"
               className="preset touch-manipulation min-h-[28px] px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider transition-all"
             >
               RND
@@ -201,17 +201,20 @@ export function PatternEditor({
             <button
               type="button"
               onClick={onChords}
-              title="Generate chord-aware bass/lead (seeded — scale + key from context)"
+              title="Generate chord-aware bass/lead (D key)"
               className="preset touch-manipulation min-h-[28px] px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider transition-all"
             >
               CHORDS
             </button>
           )}
+        </div>
+        {/* Velocity tools — compact group */}
+        <div className="flex items-center gap-1">
           {onHumanize && (
             <button
               type="button"
               onClick={onHumanize}
-              title="Humanize velocities — add groove via random variation (H key)"
+              title="Add groove (H key)"
               className="preset touch-manipulation min-h-[28px] px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider transition-all"
             >
               HUM
@@ -221,7 +224,7 @@ export function PatternEditor({
             <button
               type="button"
               onClick={onQuantize}
-              title="Quantize velocities — snap to standard tiers (Q key)"
+              title="Snap to tiers (Q key)"
               className="preset touch-manipulation min-h-[28px] px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider transition-all"
             >
               QUANT
@@ -231,7 +234,7 @@ export function PatternEditor({
             <button
               type="button"
               onClick={onRampUp}
-              title="Ramp up — velocity build-up (low→high across pattern)"
+              title="Velocity build-up"
               className="preset touch-manipulation min-h-[28px] px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider transition-all"
             >
               RAMP UP
@@ -241,7 +244,7 @@ export function PatternEditor({
             <button
               type="button"
               onClick={onRampDown}
-              title="Ramp down — velocity breakdown (high→low across pattern)"
+              title="Velocity breakdown"
               className="preset touch-manipulation min-h-[28px] px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider transition-all"
             >
               RAMP DOWN
