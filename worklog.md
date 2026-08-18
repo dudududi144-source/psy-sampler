@@ -2746,3 +2746,38 @@ Stage Summary:
 - GitHub Pages live: https://dudududi144-source.github.io/psy-sampler/
 - The app now has REAL hardware knobs — not flat sliders. This is the
   single most impactful visual change for the PSY aesthetic.
+
+---
+Task ID: ROAST-FIXES
+Agent: main
+Task: Self-roast vs top-tier + fix gaps
+
+Roast comparison: psy-sampler vs Octatrack/MPC/Kontakt/Ableton
+Top 10 gaps identified, fixing by impact priority:
+
+Fix 1: Declutter UI (commit 855eb77)
+- Moved 9 harmony controls from transport bar to HARMONY section
+- Removed pattern statistics bar (redundant)
+- Transport bar: 30 elements → ~15 elements
+
+Fix 2: Mixer with 15 PSY knobs (commit a85746e)
+- Replaced 15 flat sliders with 15 PsyKnob components
+- Per bus: GAIN + EQ-LOW + EQ-MID + EQ-HIGH + SATURATION
+- 48px knobs with bus accent colors
+- Total knobs in app: 5 (transport) + 15 (mixer) = 20
+
+Remaining roast gaps (by priority):
+3. Waveform display in OLED — show actual sample waveform
+4. Track meters — per-bus level meters
+5. Pattern position visualization — bar/beat indicator
+6. Layout: single-view dense, not scroll page
+7. Time-stretching (audio engine gap)
+8. Sample slicing (workflow gap)
+9. Real samples (31 procedural → need real audio)
+10. Code organization (2200-line page.tsx)
+
+Stage Summary:
+- 653 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub. Commits: 855eb77, a85746e
+- GitHub Pages: https://dudududi144-source.github.io/psy-sampler/
+- 20 PSY knobs total (was 5). Gap with Octatrack (90+) reduced.
