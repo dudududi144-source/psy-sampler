@@ -2571,3 +2571,22 @@ Stage Summary:
 - All assets verified: HTML=200, Manifest=200, Samples=200, JS=200, CSS=200.
 - Pushed to GitHub. Commit: 0802bd4
 - The app initializes and works correctly on the permanent GitHub Pages URL.
+
+---
+Task ID: SCALE-UI
+Agent: main
+Task: Wire scalePattern to UI (SCALE+/SCALE- buttons) + redeploy
+
+Work Log:
+- SCALE+ button (green): all velocities ×1.25 (louder, clamps to 127)
+- SCALE- button (yellow): all velocities ×0.75 (softer, clamps to 1)
+- Completes the velocity toolkit: Q (quantize) / H (humanize) / RAMP↑↓ / SCALE+-
+- Cleaned up .vercel build artifacts, added to eslint ignores + .gitignore
+- Rebuilt + redeployed to GitHub Pages. Build succeeded.
+- Browser-verified on GitHub Pages: HUM, QUANT, RAMP↑, RAMP↓, SCALE+, SCALE- all visible. No errors.
+
+Stage Summary:
+- 653 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub. Commit: 431d265
+- GitHub Pages updated: https://dudududi144-source.github.io/psy-sampler/
+- Complete velocity toolkit: 6 operations (quantize, humanize, ramp up/down, scale up/down).
