@@ -2319,3 +2319,22 @@ Stage Summary:
 - 445 tests pass (was 422, +23), 0 fail, 0 TS errors, 0 lint errors.
 - Pushed to GitHub. Commit: a6bec4f
 - The chord progression generator now works for ANY key + scale — psytrance (A phrygian dominant), techno (C minor), progressive (D dorian), etc.
+
+---
+Task ID: ARPEGGIO-PATTERNS
+Agent: main
+Task: Add arpeggio pattern variations — up/down/upDown/downUp/random/chordal
+
+Work Log:
+- ArpeggioPattern type: 6 patterns. ARPEGGIO_SEQUENCES table for non-random.
+- getArpeggioToneIndex(pattern, pos, rng): returns tone index 0-3 (root/3rd/5th/octave).
+- applyProgression + generateChordPattern accept optional arpeggio param (default 'up').
+- UI: ARP dropdown (amber) in transport bar. 6 options with descriptive labels.
+- Page: arpeggio state passed to generateChordPattern. Toast shows pattern name.
+- 29 new tests: ARPEGGIO_LABELS, tone sequences (per-chord verification), pattern differences, determinism, generateChordPattern pass-through, all 6 patterns valid.
+- Browser-verified: chordal → root-only lead (F4/D4/E4), up → full arpeggio (A2/C#4/A3/A4/C#5/F4). No JS errors.
+
+Stage Summary:
+- 474 tests pass (was 445, +29), 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub. Commit: 6f64c59
+- 6 arpeggio patterns give different melodic textures from the same chords.
