@@ -2448,3 +2448,19 @@ Stage Summary:
 - 574 tests pass (was 558, +16), 0 fail, 0 TS errors, 0 lint errors.
 - Pushed to GitHub. Commit: 57aa654
 - Humanization adds the micro-variation that makes a groove feel alive.
+
+---
+Task ID: H-SHORTCUT
+Agent: main
+Task: Add H keyboard shortcut for humanize
+
+Work Log:
+- H key: humanize velocities. Mirrors HUM button — applies 50% variation with random seed.
+- 20 keyboard shortcuts total (was 19). Help overlay updated.
+- Test updated: 20 callbacks (was 19).
+- Browser-verified: H key changes kick velocity 94→91 (±3). No JS errors.
+
+Stage Summary:
+- 574 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub. Commit: 77266f8
+- 20 keyboard shortcuts for a fast groove workflow: D (generate) → H (humanize) → A/B (cycle patterns).

@@ -1,6 +1,6 @@
 # PSY Sampler Device
 
-> A canonical realization device in the PSY family. 55 features. 574 tests. 19 shortcuts. PWA. MIDI round-trip.
+> A canonical realization device in the PSY family. 55 features. 574 tests. 20 shortcuts. PWA. MIDI round-trip.
 
 ```
                  PSY4 (Host)
@@ -30,7 +30,7 @@
 
 The PSY Sampler is a **realization device** — it receives `NoteEvent`s from a host and renders them as audio using sample playback. It does NOT compose, schedule, or own transport. It is a pure HOW layer.
 
-**55 features · 574 tests · 19 keyboard shortcuts · PWA installable · MIDI round-trip (pitch-aware) · 31 samples**
+**55 features · 574 tests · 20 keyboard shortcuts · PWA installable · MIDI round-trip (pitch-aware) · 31 samples**
 
 ## Features (55)
 
@@ -103,7 +103,7 @@ The PSY Sampler is a **realization device** — it receives `NoteEvent`s from a 
 54. Double/half pattern (×2/÷2, extend or shrink)
 55. Help overlay (? key, all shortcuts + features) + Visualizer (3 modes)
 
-## Keyboard Shortcuts (19)
+## Keyboard Shortcuts (20)
 
 | Key | Action |
 |---|---|
@@ -124,6 +124,7 @@ The PSY Sampler is a **realization device** — it receives `NoteEvent`s from a 
 | D | Generate chord-aware bass/lead |
 | A | Cycle arpeggio pattern |
 | B | Cycle bass pattern |
+| H | Humanize velocities |
 | X | Randomize pattern |
 | N | Toggle metronome |
 
