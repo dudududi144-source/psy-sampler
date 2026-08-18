@@ -164,3 +164,50 @@ export function rampPattern(
   void steps
   return out
 }
+
+// ─── Velocity scaler (uniform gain) ───────────────────────────────────────
+
+/**
+ * Scale every active velocity by a uniform factor — a global gain trim.
+ *
+ * @param pattern The input pattern.
+ * @param factor  Multiplier applied to each active velocity.
+ *                1.0 = passthrough, 0.5 = softer, 1.5 = louder, 2.0 = much louder.
+ * @returns A new pattern with scaled velocities (input is NOT mutated).
+ *
+ * Behavior:
+ *   - Each active velocity (vel > 0) is multiplied by `factor`.
+ *   - The result is rounded and clamped to 1-127: an active note is NEVER
+ *     silenced (min stays 1) and NEVER exceeds MIDI max (max stays 127).
+ *   - Silent steps (0) stay 0 — the function does not activate steps.
+ *   - factor=1.0 is a passthrough that still returns a fresh (cloned) pattern.
+ *
+ * Use cases:
+ *   - Quick gain trim on a busy loop ("make the hats a touch louder").
+ *   - Balancing a pattern against a reference (factor = refAvg / thisAvg).
+ *   - Build intensity: scale by 1.25 going into a drop, 0.75 leaving it.
+ *
+ * Does NOT change which steps are active. Does NOT touch the NoteMap.
+ */
+export function scalePattern(pattern: Pattern, factor: number): Pattern {
+  // Passthrough on factor=1 (still returns a clone — never the same reference).
+  const f = factor
+  const out: Pattern = { ...pattern }
+  for (const role of Object.keys(out) as SampleRole[]) {
+    const row = out[role]
+    if (!row) continue
+    const newRow = new Array<number>(row.length)
+    for (let i = 0; i < row.length; i++) {
+      const vel = row[i]!
+      if (vel <= 0) {
+        newRow[i] = 0 // silent stays silent
+        continue
+      }
+      const scaled = vel * f
+      // Round to nearest, clamp to 1-127 (never 0 on active, never >127).
+      newRow[i] = Math.max(1, Math.min(127, Math.round(scaled)))
+    }
+    out[role] = newRow
+  }
+  return out
+}
