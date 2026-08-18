@@ -131,6 +131,9 @@ export default function Home() {
   const [arpeggio, setArpeggio] = React.useState<ArpeggioPattern>('up')
   // Bass pattern for the chord progression bass. Default 'root' (downbeats).
   const [bassPattern, setBassPattern] = React.useState<BassPattern>('root')
+  // Lead density: probability of a note firing on each 8th step. 0.2 = sparse,
+  // 0.6 = default, 1.0 = every 8th note. Controls how busy the melody is.
+  const [density, setDensity] = React.useState(0.6)
   const [currentStep, setCurrentStep] = React.useState(0)
   const { state: pattern, set: setPatternWithHistory, undo, redo, canUndo, canRedo, reset: resetPatternHistory } = useUndoRedo<Pattern>(structuredClone(DEFAULT_PATTERN))
   // NoteMap: per-step pitch overrides (from chord progression). Tracked in
@@ -659,7 +662,7 @@ export default function Home() {
     const ctx = director.getContext()
     const currentPattern = director.getPattern()
     const seed = Math.floor(Math.random() * 1000000)
-    const { pattern: newPattern, noteMap: newNoteMap, progression } = generateChordPattern(currentPattern, ctx, seed, arpeggio, bassPattern)
+    const { pattern: newPattern, noteMap: newNoteMap, progression } = generateChordPattern(currentPattern, ctx, seed, arpeggio, bassPattern, density)
     director.setPattern(newPattern)
     director.setNoteMap(newNoteMap)
     setNoteMap(newNoteMap)
@@ -670,7 +673,7 @@ export default function Home() {
       title: `Chords: ${progression.label}`,
       description: `${progression.roman} · ${arpeggio} arp · ${bassPattern} bass`,
     })
-  }, [setPatternWithHistory, arpeggio, bassPattern])
+  }, [setPatternWithHistory, arpeggio, bassPattern, density])
 
   /** Double the pattern (8→16 or 16→32, repeating). */
   const onDoublePattern = React.useCallback(() => {
@@ -1109,12 +1112,12 @@ export default function Home() {
   // ─── Project save/load ─────────────────────────────────────────────────────
   const onSaveProject = React.useCallback(() => {
     const project = createProject(`psy-sampler-${new Date().toISOString().slice(0, 10)}`, {
-      bpm, swing, masterVolume, section, energy, pattern, noteMap, musicalKey, scaleName, busState,
+      bpm, swing, masterVolume, section, energy, pattern, noteMap, musicalKey, scaleName, arpeggio, bassPattern, density, busState,
       filterMode, pumpEnabled, evolveEnabled, song,
     })
     downloadProject(project)
     toast({ title: 'Project saved', description: `${project.name}.psy.json` })
-  }, [bpm, swing, masterVolume, section, energy, pattern, noteMap, musicalKey, scaleName, busState, filterMode, pumpEnabled, evolveEnabled, song])
+  }, [bpm, swing, masterVolume, section, energy, pattern, noteMap, musicalKey, scaleName, arpeggio, bassPattern, density, busState, filterMode, pumpEnabled, evolveEnabled, song])
 
   const onLoadProject = React.useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -1130,6 +1133,9 @@ export default function Home() {
       // Restore musical key + scale (for chord progression).
       setMusicalKey(project.musicalKey ?? 9)
       setScaleName(project.scaleName ?? 'phrygianDominant')
+      setArpeggio((project.arpeggio ?? 'up') as ArpeggioPattern)
+      setBassPattern((project.bassPattern ?? 'root') as BassPattern)
+      setDensity(project.density ?? 0.6)
       directorRef.current?.setContext({
         key: NOTE_NAMES[project.musicalKey ?? 9],
         rootPc: project.musicalKey ?? 9,
@@ -1712,6 +1718,14 @@ export default function Home() {
                   <option key={key} value={key}>{label}</option>
                 ))}
               </select>
+            </div>
+
+            {/* Lead density slider — controls how busy the melody is.
+                0.2 = sparse (few notes), 0.6 = default, 1.0 = every 8th note. */}
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">DENS</span>
+              <Slider value={[density]} onValueChange={(v) => setDensity(v[0]!)} min={0.2} max={1} step={0.1} className="w-20" />
+              <span className="w-8 font-mono text-xs tabular-nums text-cyan-300">{density.toFixed(1)}</span>
             </div>
 
             {/* Energy slider */}

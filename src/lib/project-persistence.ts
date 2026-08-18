@@ -26,6 +26,12 @@ export interface ProjectState {
   musicalKey?: number
   /** Scale name (e.g. 'phrygianDominant'). Optional — defaults to 'phrygianDominant'. */
   scaleName?: string
+  /** Arpeggio pattern. Optional — defaults to 'up'. */
+  arpeggio?: string
+  /** Bass pattern. Optional — defaults to 'root'. */
+  bassPattern?: string
+  /** Lead density (0.2-1.0). Optional — defaults to 0.6. */
+  density?: number
   busState: Record<BusName, BusMixerState>
   filterMode: 'off' | 'lp' | 'hp'
   pumpEnabled: boolean
@@ -69,6 +75,9 @@ export function validateProject(obj: unknown): ProjectState | null {
     noteMap: (typeof raw.noteMap === 'object' && raw.noteMap !== null ? raw.noteMap : {}) as NoteMap,
     musicalKey: typeof raw.musicalKey === 'number' ? raw.musicalKey : 9,
     scaleName: typeof raw.scaleName === 'string' ? raw.scaleName : 'phrygianDominant',
+    arpeggio: typeof raw.arpeggio === 'string' ? raw.arpeggio : 'up',
+    bassPattern: typeof raw.bassPattern === 'string' ? raw.bassPattern : 'root',
+    density: typeof raw.density === 'number' ? raw.density : 0.6,
     busState: raw.busState as Record<BusName, BusMixerState>,
     filterMode: (raw.filterMode === 'lp' || raw.filterMode === 'hp' ? raw.filterMode : 'off'),
     pumpEnabled: typeof raw.pumpEnabled === 'boolean' ? raw.pumpEnabled : false,

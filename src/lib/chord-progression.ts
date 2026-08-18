@@ -323,12 +323,20 @@ export function applyProgression(
   seed: number,
   arpeggio: ArpeggioPattern = 'up',
   bass: BassPattern = 'root',
+  density: number = 0.6,
 ): { pattern: Pattern; noteMap: NoteMap } {
+  // Separate RNGs per role so lead/bass/texture are independent — changing
+  // the density (lead RNG consumption) must NOT shift the bass/texture RNG.
+  // Lead keeps the base seed for backward compat; bass + texture use derived seeds.
   const rng = new Rng(seed >>> 0)
+  const bassRng = new Rng((seed ^ 0xb55a) >>> 0)
+  const texRng = new Rng((seed ^ 0xa44b) >>> 0)
   const out: Pattern = { ...pattern }
   const noteMap: NoteMap = {}
   const steps = out.kick.length
   const chordSpan = Math.max(1, Math.floor(steps / progression.chords.length))
+  // Clamp density to 0.05-1.0 — never 0 (would silence the lead entirely).
+  const leadDensity = Math.max(0.05, Math.min(1, density))
 
   // Lead: chord-tone arpeggio, 8th notes (every 2 steps).
   // Generated FIRST so the lead is independent of the bass pattern's RNG
@@ -343,7 +351,7 @@ export function applyProgression(
     const chordIdx = Math.floor(i / chordSpan) % progression.chords.length
     const chord = progression.chords[chordIdx]
     if (!chord) continue
-    if (rng.next() < 0.6) {
+    if (rng.next() < leadDensity) {
       leadRow[i] = rng.int(70, 100)
       // Get the tone index from the selected arpeggio pattern.
       const toneIdx = getArpeggioToneIndex(arpeggio, arpIdx, rng)
@@ -368,10 +376,10 @@ export function applyProgression(
     const chordIdx = Math.floor(i / chordSpan) % progression.chords.length
     const chord = progression.chords[chordIdx]
     if (!chord) continue
-    const { active, toneIdx } = getBassToneAt(bass, i, rng)
+    const { active, toneIdx } = getBassToneAt(bass, i, bassRng)
     if (active) {
       // Strong beats (i%4===0) = vel 90-110; off-beats = vel 70-90.
-      bassRow[i] = i % 4 === 0 ? rng.int(90, 110) : rng.int(70, 90)
+      bassRow[i] = i % 4 === 0 ? bassRng.int(90, 110) : bassRng.int(70, 90)
       // toneIdx 0=root, 2=5th, 3=root+12 (octave).
       bassNotes[i] = toneIdx < 3
         ? chord.tones[toneIdx]
@@ -386,10 +394,10 @@ export function applyProgression(
   const texNotes: (number | null)[] = new Array(steps).fill(null)
   for (let c = 0; c < progression.chords.length; c++) {
     const i = c * chordSpan
-    if (i < steps && rng.next() < 0.5) {
+    if (i < steps && texRng.next() < 0.5) {
       const chord = progression.chords[c]
       if (chord) {
-        texRow[i] = rng.int(50, 70)
+        texRow[i] = texRng.int(50, 70)
         texNotes[i] = chord.rootNote + 12 // mid register
       }
     }
@@ -415,8 +423,9 @@ export function generateChordPattern(
   seed: number,
   arpeggio: ArpeggioPattern = 'up',
   bass: BassPattern = 'root',
+  density: number = 0.6,
 ): { pattern: Pattern; noteMap: NoteMap; progression: Progression } {
   const progression = generateProgression(ctx, seed)
-  const { pattern: newPattern, noteMap } = applyProgression(pattern, progression, seed, arpeggio, bass)
+  const { pattern: newPattern, noteMap } = applyProgression(pattern, progression, seed, arpeggio, bass, density)
   return { pattern: newPattern, noteMap, progression }
 }
