@@ -27,7 +27,10 @@ const SHORTCUTS = [
 
 const FEATURES = [
   { icon: '▶', title: 'PLAY', desc: 'Start/stop the pattern loop' },
-  { icon: '⬇', title: 'EXPORT WAV', desc: 'Offline render (deterministic, faster than real-time)' },
+  { icon: '⬇', title: 'EXPORT WAV', desc: 'Offline render (deterministic, 28× faster than real-time)' },
+  { icon: '⬇', title: 'STEMS', desc: 'Export drum/music/atmos as separate WAVs (stem mastering)' },
+  { icon: '⬇', title: 'MIDI', desc: 'Export pattern as Standard MIDI File (.mid) for DAWs' },
+  { icon: '⬆', title: 'MIDI', desc: 'Import .mid file from any DAW into the pattern' },
   { icon: '○', title: 'REC', desc: 'Live recording (captures MIDI + automation + tweaks)' },
   { icon: '💾', title: 'SAVE', desc: 'Save project as .psy.json (pattern + mixer + song)' },
   { icon: '📂', title: 'LOAD', desc: 'Load project from .psy.json' },
