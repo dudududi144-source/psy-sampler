@@ -76,10 +76,10 @@ export function SampleLibrary({
   const fresh = nowPlayingSampleId !== null && (now - nowPlayingAt) < NOW_PLAYING_MS
 
   return (
-    <div className="section rounded-lg border border-zinc-800 bg-zinc-950/80 p-4">
+    <div className="section p-4">
       <div className="mb-3 flex items-center justify-between">
         <h2
-          className="stitle font-mono text-xs font-bold uppercase tracking-[0.2em] text-violet-300"
+          className="stitle font-mono text-xs font-bold uppercase tracking-[0.2em]"
           style={{ '--c': '#b8e05a' } as React.CSSProperties}
         >
           LIBRARY · {samples.length} samples

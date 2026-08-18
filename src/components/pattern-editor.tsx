@@ -175,7 +175,7 @@ export function PatternEditor({
       <div className="mb-3 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <h2
-            className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-fuchsia-300 stitle"
+            className="font-mono text-xs font-bold uppercase tracking-[0.2em] stitle"
             style={{ '--c': '#fbbf24' } as React.CSSProperties}
           >
             PATTERN · {stepCount} steps
@@ -184,7 +184,7 @@ export function PatternEditor({
             type="button"
             onClick={onClearPattern}
             title="Clear pattern (set all steps off)"
-            className="preset touch-manipulation min-h-[28px] rounded border border-amber-400/40 bg-amber-500/10 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-amber-300 transition-all hover:bg-amber-500/20"
+            className="preset touch-manipulation min-h-[28px] px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider transition-all"
           >
             CLR
           </button>
@@ -193,7 +193,7 @@ export function PatternEditor({
               type="button"
               onClick={onRandomize}
               title="Randomize pattern (seeded — deterministic)"
-              className="preset touch-manipulation min-h-[28px] rounded border border-cyan-400/40 bg-cyan-500/10 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-cyan-300 transition-all hover:bg-cyan-500/20"
+              className="preset touch-manipulation min-h-[28px] px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider transition-all"
             >
               RND
             </button>
@@ -203,7 +203,7 @@ export function PatternEditor({
               type="button"
               onClick={onChords}
               title="Generate chord-aware bass/lead (seeded — scale + key from context)"
-              className="preset touch-manipulation min-h-[28px] rounded border border-violet-400/40 bg-violet-500/10 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-violet-300 transition-all hover:bg-violet-500/20"
+              className="preset touch-manipulation min-h-[28px] px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider transition-all"
             >
               CHORDS
             </button>
@@ -213,7 +213,7 @@ export function PatternEditor({
               type="button"
               onClick={onHumanize}
               title="Humanize velocities — add groove via random variation (H key)"
-              className="preset touch-manipulation min-h-[28px] rounded border border-teal-400/40 bg-teal-500/10 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-teal-300 transition-all hover:bg-teal-500/20"
+              className="preset touch-manipulation min-h-[28px] px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider transition-all"
             >
               HUM
             </button>
@@ -223,7 +223,7 @@ export function PatternEditor({
               type="button"
               onClick={onQuantize}
               title="Quantize velocities — snap to standard tiers (Q key)"
-              className="preset touch-manipulation min-h-[28px] rounded border border-zinc-500/40 bg-zinc-700/20 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-300 transition-all hover:bg-zinc-700/40"
+              className="preset touch-manipulation min-h-[28px] px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider transition-all"
             >
               QUANT
             </button>
@@ -233,7 +233,7 @@ export function PatternEditor({
               type="button"
               onClick={onRampUp}
               title="Ramp up — velocity build-up (low→high across pattern)"
-              className="preset touch-manipulation min-h-[28px] rounded border border-green-400/40 bg-green-500/10 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-green-300 transition-all hover:bg-green-500/20"
+              className="preset touch-manipulation min-h-[28px] px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider transition-all"
             >
               RAMP↑
             </button>
@@ -243,7 +243,7 @@ export function PatternEditor({
               type="button"
               onClick={onRampDown}
               title="Ramp down — velocity breakdown (high→low across pattern)"
-              className="preset touch-manipulation min-h-[28px] rounded border border-red-400/40 bg-red-500/10 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-red-300 transition-all hover:bg-red-500/20"
+              className="preset touch-manipulation min-h-[28px] px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider transition-all"
             >
               RAMP↓
             </button>
@@ -253,7 +253,7 @@ export function PatternEditor({
               type="button"
               onClick={onScaleUp}
               title="Scale up — all velocities ×1.25 (louder)"
-              className="preset touch-manipulation min-h-[28px] rounded border border-green-400/40 bg-green-500/10 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-green-300 transition-all hover:bg-green-500/20"
+              className="preset touch-manipulation min-h-[28px] px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider transition-all"
             >
               SCALE+
             </button>
@@ -263,7 +263,7 @@ export function PatternEditor({
               type="button"
               onClick={onScaleDown}
               title="Scale down — all velocities ×0.75 (softer)"
-              className="preset touch-manipulation min-h-[28px] rounded border border-yellow-400/40 bg-yellow-500/10 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-yellow-300 transition-all hover:bg-yellow-500/20"
+              className="preset touch-manipulation min-h-[28px] px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider transition-all"
             >
               SCALE-
             </button>
@@ -446,7 +446,7 @@ export function PatternEditor({
                       onPointerLeave={editMode === 'velocity' ? endDrag : undefined}
                       aria-label={`${role} step ${step + 1} ${isActive ? `velocity ${velocity}` : 'off'}${hasProb ? ` prob ${Math.round(prob * 100)}%` : ''}`}
                       className={[
-                        'relative aspect-square flex-1 min-h-[44px] min-w-[44px] items-center justify-center rounded-sm border transition-all hover:brightness-125 touch-manipulation select-none',
+                        'relative aspect-square flex-1 min-h-[44px] min-w-[44px] items-center justify-center transition-all hover:brightness-125 touch-manipulation select-none',
                         'seq-btn',
                         isAccent ? 'seq-btn on accent' : isActive ? 'seq-btn on' : '',
                         isCurrent ? 'seq-btn playing' : '',
@@ -508,7 +508,7 @@ export function PatternEditor({
         const stats = patternStats(pattern)
         const densityPct = Math.round(stats.density * 100)
         return (
-          <div className="oled mt-2 flex flex-wrap items-center gap-3 rounded border border-zinc-800 bg-zinc-900/30 px-3 py-1.5 font-mono text-[10px] text-zinc-400">
+          <div className="oled mt-2 flex flex-wrap items-center gap-3 px-3 py-1.5 font-mono text-[10px]">
             <span>
               <span className="text-zinc-600">NOTES</span>{' '}
               <span className="font-bold text-zinc-300">{stats.activeNotes}</span>

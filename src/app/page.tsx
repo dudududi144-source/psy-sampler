@@ -1656,7 +1656,7 @@ export default function Home() {
             <div className="flex flex-wrap items-center gap-2 sm:gap-3">
             <Button
               onClick={togglePlay}
-              className="tbtn power h-11 gap-2 border font-mono text-xs font-bold uppercase tracking-[0.15em]"
+              className="tbtn power h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em]"
               variant={isPlaying ? 'destructive' : 'default'}
               style={
                 isPlaying
@@ -1817,7 +1817,7 @@ export default function Home() {
             <Button
               onClick={handleExportWav}
               disabled={exporting}
-              className="tbtn h-11 gap-2 border border-violet-400/50 bg-zinc-900 font-mono text-xs font-bold uppercase tracking-[0.15em] text-violet-300 hover:bg-violet-500/10 disabled:opacity-50"
+              className="tbtn h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em] disabled:opacity-50"
               style={{ boxShadow: exporting ? '0 0 16px rgba(185,103,255,0.6)' : '0 0 8px rgba(185,103,255,0.2)' }}
             >
               {exporting ? '● EXPORTING…' : '⬇ EXPORT WAV'}
@@ -1827,7 +1827,7 @@ export default function Home() {
             <Button
               onClick={handleExportStems}
               disabled={stemExporting}
-              className="tbtn h-11 gap-2 border border-amber-400/50 bg-zinc-900 font-mono text-xs font-bold uppercase tracking-[0.15em] text-amber-300 hover:bg-amber-500/10 disabled:opacity-50"
+              className="tbtn h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em] disabled:opacity-50"
               style={{ boxShadow: stemExporting ? '0 0 16px rgba(251,191,36,0.6)' : 'none' }}
               title="Export stems — drum/music/atmos as separate WAVs"
             >
@@ -1837,7 +1837,7 @@ export default function Home() {
             {/* MIDI export — .mid file for DAWs */}
             <Button
               onClick={handleExportMidi}
-              className="tbtn midi h-11 gap-2 border border-cyan-400/50 bg-zinc-900 font-mono text-xs font-bold uppercase tracking-[0.15em] text-cyan-300 hover:bg-cyan-500/10"
+              className="tbtn midi h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em]"
               title="Export pattern as Standard MIDI File (.mid) for your DAW"
             >
               ⬇ MIDI
@@ -1847,7 +1847,7 @@ export default function Home() {
             <Button
               onClick={() => midiFileInputRef.current?.click()}
               disabled={midiImporting}
-              className="tbtn midi h-11 gap-2 border border-cyan-400/50 bg-zinc-900 font-mono text-xs font-bold uppercase tracking-[0.15em] text-cyan-300 hover:bg-cyan-500/10 disabled:opacity-50"
+              className="tbtn midi h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em] disabled:opacity-50"
               title="Import .mid file — extract pattern from a DAW"
             >
               {midiImporting ? '● LOADING…' : '⬆ MIDI'}
@@ -1867,7 +1867,7 @@ export default function Home() {
                 setMetronomeEnabled(next)
                 metronomeRef.current?.setEnabled(next)
               }}
-              className="tbtn h-11 gap-2 border font-mono text-xs font-bold uppercase tracking-[0.15em]"
+              className="tbtn h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em]"
               style={{
                 borderColor: metronomeEnabled ? 'rgba(251,191,36,0.6)' : 'rgba(63,63,70,0.8)',
                 color: metronomeEnabled ? '#fbbf24' : '#71717a',
@@ -1884,7 +1884,7 @@ export default function Home() {
                 bundleRef.current?.scheduler.stop()
                 toast({ title: 'PANIC', description: 'All voices stopped' })
               }}
-              className="tbtn panic h-11 gap-2 border border-red-500/50 bg-red-500/10 font-mono text-xs font-bold uppercase tracking-[0.15em] text-red-400 hover:bg-red-500/20"
+              className="tbtn panic h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em]"
               title="Panic — kill all audio immediately"
             >
               ⛔ PANIC
@@ -1893,7 +1893,7 @@ export default function Home() {
             {/* Live recording */}
             <Button
               onClick={toggleRecord}
-              className="tbtn rec h-11 gap-2 border font-mono text-xs font-bold uppercase tracking-[0.15em]"
+              className="tbtn rec h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em]"
               style={{
                 borderColor: recording ? 'rgba(239,68,68,0.8)' : 'rgba(63,63,70,0.8)',
                 color: recording ? '#ef4444' : '#71717a',
@@ -1908,14 +1908,14 @@ export default function Home() {
             {/* Project save/load */}
             <Button
               onClick={onSaveProject}
-              className="tbtn h-11 gap-2 border border-emerald-500/40 bg-emerald-500/10 font-mono text-xs font-bold uppercase tracking-[0.15em] text-emerald-300 hover:bg-emerald-500/20"
+              className="tbtn h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em]"
               title="Save project (.psy.json)"
             >
               💾 SAVE
             </Button>
             <Button
               onClick={() => projectFileInputRef.current?.click()}
-              className="tbtn h-11 gap-2 border border-cyan-500/40 bg-cyan-500/10 font-mono text-xs font-bold uppercase tracking-[0.15em] text-cyan-300 hover:bg-cyan-500/20"
+              className="tbtn h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em]"
               title="Load project (.psy.json)"
             >
               📂 LOAD
@@ -2049,7 +2049,7 @@ export default function Home() {
           </div>
 
           {/* ─── Harmonic status bar — shows the current harmonic structure ─── */}
-          <div className="oled flex flex-wrap items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900/50 px-4 py-2">
+          <div className="oled flex flex-wrap items-center gap-3 px-4 py-2">
             <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
               ▌HARMONY
             </span>

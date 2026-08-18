@@ -69,7 +69,7 @@ function Pad({
         const vel = e.shiftKey ? 127 : e.altKey ? 50 : 100
         onTrigger(role, vel)
       }}
-      className={`seq-btn${active ? ' on' : ''} relative flex aspect-square select-none items-center justify-center rounded-lg border-2 transition-all duration-75 active:scale-95 disabled:opacity-40 disabled:active:scale-100`}
+      className={`seq-btn${active ? ' on' : ''} relative flex aspect-square select-none items-center justify-center transition-all duration-75 active:scale-95 disabled:opacity-40 disabled:active:scale-100`}
       style={{
         borderColor: active ? color : 'rgba(255,255,255,0.08)',
         backgroundColor: active
@@ -127,10 +127,10 @@ export function PerformancePads({
   }, [nowPlayingRole, nowPlayingAt])
 
   return (
-    <section className="section rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
+    <section className="section p-4">
       <div className="mb-3 flex items-center justify-between">
         <h2
-          className="stitle font-mono text-xs font-bold tracking-widest text-zinc-400"
+          className="stitle font-mono text-xs font-bold tracking-widest"
           style={{ '--c': '#f87171' } as React.CSSProperties}
         >
           ▣ PERFORMANCE PADS

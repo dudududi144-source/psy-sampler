@@ -23,10 +23,10 @@ export function TimelineView({
 
   if (song.segments.length === 0) {
     return (
-      <div className="section rounded-lg border border-zinc-800 bg-zinc-950/80 p-4">
+      <div className="section p-4">
         <div className="mb-2 flex items-center justify-between">
           <h2
-            className="stitle font-mono text-xs font-bold uppercase tracking-[0.2em] text-cyan-300"
+            className="stitle font-mono text-xs font-bold uppercase tracking-[0.2em]"
             style={{ '--c': '#f07dc2' } as React.CSSProperties}
           >
             TIMELINE
@@ -41,10 +41,10 @@ export function TimelineView({
   }
 
   return (
-    <div className="section rounded-lg border border-zinc-800 bg-zinc-950/80 p-4">
+    <div className="section p-4">
       <div className="mb-2 flex items-center justify-between">
         <h2
-          className="stitle font-mono text-xs font-bold uppercase tracking-[0.2em] text-cyan-300"
+          className="stitle font-mono text-xs font-bold uppercase tracking-[0.2em]"
           style={{ '--c': '#f07dc2' } as React.CSSProperties}
         >
           TIMELINE · {totalBars} bars · {totalSec.toFixed(1)}s

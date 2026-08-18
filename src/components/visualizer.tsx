@@ -141,7 +141,7 @@ export function Visualizer({ analyser, isPlaying }: { analyser: AnalyserNode | n
   }, [analyser, isPlaying, mode])
 
   return (
-    <div ref={containerRef} className="viz3d-bezel rounded-lg border border-zinc-800 bg-zinc-950/80 p-4">
+    <div ref={containerRef} className="viz3d-bezel p-4">
       <div className="mb-2 flex items-center justify-between">
         <h2 className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-amber-300">ANALYSER</h2>
         <div className="flex items-center gap-2">

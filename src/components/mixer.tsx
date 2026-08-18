@@ -38,10 +38,10 @@ export function Mixer({
   onSolo: (name: BusName) => void
 }) {
   return (
-    <div className="section rounded-lg border border-zinc-800 bg-zinc-950/80 p-4">
+    <div className="section p-4">
       <div className="mb-3 flex items-center justify-between">
         <h2
-          className="stitle font-mono text-xs font-bold uppercase tracking-[0.2em] text-amber-300"
+          className="stitle font-mono text-xs font-bold uppercase tracking-[0.2em]"
           style={{ '--c': '#4dd6e8' } as React.CSSProperties}
         >
           MIXER · 3 buses
@@ -95,7 +95,7 @@ export function Mixer({
                 <button
                   onClick={() => onMute(name)}
                   title="Mute"
-                  className="tbtn flex-1 min-h-[44px] touch-manipulation rounded border px-1 py-2 font-mono text-[11px] uppercase tracking-wider transition-all"
+                  className="tbtn flex-1 min-h-[44px] touch-manipulation px-1 py-2 font-mono text-[11px] uppercase tracking-wider transition-all"
                   style={{
                     borderColor: state.muted ? '#fbbf24' : '#3f3f46',
                     color: state.muted ? '#fbbf24' : '#71717a',
@@ -107,7 +107,7 @@ export function Mixer({
                 <button
                   onClick={() => onSolo(name)}
                   title="Solo"
-                  className="tbtn flex-1 min-h-[44px] touch-manipulation rounded border px-1 py-2 font-mono text-[11px] uppercase tracking-wider transition-all"
+                  className="tbtn flex-1 min-h-[44px] touch-manipulation px-1 py-2 font-mono text-[11px] uppercase tracking-wider transition-all"
                   style={{
                     borderColor: state.solo ? '#00ffc8' : '#3f3f46',
                     color: state.solo ? '#00ffc8' : '#71717a',
