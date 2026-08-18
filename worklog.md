@@ -2530,3 +2530,25 @@ Stage Summary:
 - 653 tests pass (was 634, +19), 0 fail, 0 TS errors, 0 lint errors.
 - Pushed to GitHub. Commit: e7dc43b
 - Vercel temp deployment: https://temporary-instant-tuba-pn41j4u.vercel.app
+
+---
+Task ID: GITHUB-PAGES-DEPLOY
+Agent: main
+Task: Deploy to GitHub Pages (permanent URL, no Vercel)
+
+Work Log:
+- Configured static export: output=export, basePath=/psy-sampler, assetPrefix=/psy-sampler/
+- Removed unused API route (Hello World placeholder, not used by the app)
+- Built static export with npx next build → out/ folder (2.2MB)
+- Added .nojekyll file to disable Jekyll (serves _next/ folder assets)
+- Pushed to gh-pages branch via manual git push (gh-pages tool missed .nojekyll)
+- Triggered GitHub Pages build via API
+- Build succeeded after adding .nojekyll (previous builds errored without it)
+- All assets verified: HTML/CSS/JS/logo/manifest/SW all HTTP 200
+- Permanent URL: https://dudududi144-source.github.io/psy-sampler/
+
+Stage Summary:
+- GitHub Pages deployment is LIVE and permanent (no expiration)
+- Local dev server still runs on port 3000 with standalone output
+- Pushed to GitHub. Commit: 613f046
+- The app is accessible to anyone with the URL.

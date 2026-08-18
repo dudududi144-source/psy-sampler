@@ -167,7 +167,8 @@ Same inputs → byte-identical audio:
 
 ## Live Demo
 
-- **Vercel deployment:** https://temporary-instant-tuba-pn41j4u.vercel.app (temporary — claim within 60 min)
+- **GitHub Pages (permanent):** https://dudududi144-source.github.io/psy-sampler/
+- ~~Vercel (expired): https://temporary-instant-tuba-pn41j4u.vercel.app~~
 
 ## Testing
 
