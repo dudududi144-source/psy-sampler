@@ -1,21 +1,18 @@
-// Velocity humanization — adds groove to a pattern by applying slight random
-// velocity variation. This is a POST-PROCESSING step: it works on ANY pattern
-// (generated or hand-edited), not just chord-progression output.
+// Velocity humanization + quantization — post-processing steps that work on
+// ANY pattern (generated or hand-edited).
 //
-// What it does:
-//   - For each active step (velocity > 0), applies ±(amount * 15) variation.
-//   - 0 = no change (passthrough), 1 = maximum variation (±15).
-//   - Clamps to 1-127 (never 0 — won't silence an active note).
-//   - Does NOT change WHICH steps are active (only velocities).
-//   - Does NOT touch the NoteMap (pitches are preserved).
+// HUMANIZE: adds groove via random variation (±amount * 15 per note).
+// QUANTIZE: snaps velocities to standard tiers (removes variation).
 //
-// Determinism: when a seed is provided, the same (pattern, amount, seed) →
-// same output. Without a seed, uses Math.random (non-deterministic, for live
-// "add groove" workflow).
+// Together they form a complete velocity workflow:
+//   1. Generate (D) → velocities are random
+//   2. Quantize (Q) → snap to standard steps (clean, punchy)
+//   3. Humanize (H) → add subtle variation on top (groove, alive)
 //
-// Why this matters: a perfectly quantized pattern with fixed velocities feels
-// robotic. Humanization adds the micro-variation that makes a groove feel
-// alive — the difference between a drum machine and a drummer.
+// Both:
+//   - Do NOT change which steps are active (0 stays 0, >0 stays >0).
+//   - Do NOT touch the NoteMap (pitches are preserved).
+//   - Return a new pattern (input is NOT mutated).
 
 import type { Pattern } from './demo-director'
 import type { SampleRole } from '@/psy-sampler'
@@ -57,6 +54,57 @@ export function humanizePattern(pattern: Pattern, amount: number, seed?: number)
         : (Math.random() * 2 - 1) * variation
       // Clamp to 1-127 (never 0 — won't silence an active note).
       newRow[i] = Math.max(1, Math.min(127, Math.round(vel + offset)))
+    }
+    out[role] = newRow
+  }
+  return out
+}
+
+// ─── Quantization ───────────────────────────────────────────────────────────
+
+/** Standard velocity tiers for quantization. Each tier is a "step" value. */
+const QUANTIZE_TIERS: Record<number, number[]> = {
+  3: [0, 100, 127],          // off, normal, accent — the most musical
+  4: [0, 64, 100, 127],      // off, soft, normal, accent
+  5: [0, 32, 64, 96, 127],   // off, very-soft, soft, normal, accent
+}
+
+/**
+ * Snap each velocity to the nearest standard tier value.
+ *
+ * @param pattern The input pattern.
+ * @param tiers 3 (default), 4, or 5. More tiers = finer granularity.
+ * @returns A new pattern with snapped velocities (input is NOT mutated).
+ *
+ * Silent steps (0) stay 0. Active notes snap to the nearest tier ≥1 (never
+ * silenced). This is the complement to humanize: quantize REMOVES variation,
+ * humanize ADDS it. The standard workflow is quantize → humanize for clean
+ * but groovy velocities.
+ */
+export function quantizePattern(pattern: Pattern, tiers: number = 3): Pattern {
+  const steps = QUANTIZE_TIERS[tiers] ?? QUANTIZE_TIERS[3]!
+  const out: Pattern = { ...pattern }
+  for (const role of Object.keys(out) as SampleRole[]) {
+    const row = out[role]
+    if (!row) continue
+    const newRow = new Array<number>(row.length)
+    for (let i = 0; i < row.length; i++) {
+      const vel = row[i]!
+      if (vel <= 0) {
+        newRow[i] = 0 // silent stays silent
+        continue
+      }
+      // Find the nearest tier. Active notes never snap to 0 (min is steps[1]).
+      let nearest = steps[1]! // the lowest non-zero tier
+      let minDist = Math.abs(vel - nearest)
+      for (let t = 1; t < steps.length; t++) {
+        const dist = Math.abs(vel - steps[t]!)
+        if (dist < minDist) {
+          minDist = dist
+          nearest = steps[t]!
+        }
+      }
+      newRow[i] = nearest
     }
     out[role] = newRow
   }

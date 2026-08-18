@@ -48,6 +48,7 @@ export function PatternEditor({
   onRandomize,
   onChords,
   onHumanize,
+  onQuantize,
   onFillRole,
   onDouble,
   onHalf,
@@ -80,6 +81,8 @@ export function PatternEditor({
   onChords?: () => void
   /** Humanize velocities (add groove via random variation). */
   onHumanize?: () => void
+  /** Quantize velocities (snap to standard tiers). */
+  onQuantize?: () => void
   /** Fill a single role with a quick pattern. */
   onFillRole?: (role: SampleRole) => void
   /** Double the pattern (8→16 or 16→32). */
@@ -191,10 +194,20 @@ export function PatternEditor({
             <button
               type="button"
               onClick={onHumanize}
-              title="Humanize velocities — add groove via random variation"
+              title="Humanize velocities — add groove via random variation (H key)"
               className="touch-manipulation min-h-[28px] rounded border border-teal-400/40 bg-teal-500/10 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-teal-300 transition-all hover:bg-teal-500/20"
             >
               HUM
+            </button>
+          )}
+          {onQuantize && (
+            <button
+              type="button"
+              onClick={onQuantize}
+              title="Quantize velocities — snap to standard tiers (Q key)"
+              className="touch-manipulation min-h-[28px] rounded border border-zinc-500/40 bg-zinc-700/20 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-300 transition-all hover:bg-zinc-700/40"
+            >
+              QUANT
             </button>
           )}
           {/* Pattern length selector */}

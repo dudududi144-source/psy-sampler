@@ -26,6 +26,7 @@ const SHORTCUTS = [
   { key: 'A', desc: 'Cycle arpeggio pattern (up→down→upDown→downUp→random→chordal)' },
   { key: 'B', desc: 'Cycle bass pattern (root→walking→octave→pedal→arp)' },
   { key: 'H', desc: 'Humanize velocities (add groove via random variation)' },
+  { key: 'Q', desc: 'Quantize velocities (snap to off/normal/accent tiers)' },
   { key: 'X', desc: 'Randomize pattern (seeded — deterministic)' },
   { key: 'N', desc: 'Toggle metronome (click on every beat)' },
 ]

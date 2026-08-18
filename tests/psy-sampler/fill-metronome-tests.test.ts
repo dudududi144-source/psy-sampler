@@ -170,7 +170,7 @@ describe('Metronome', () => {
 // ─── Keyboard shortcuts count ──────────────────────────────────────────────────
 
 describe('Keyboard shortcuts', () => {
-  it('KeyboardShortcutsOptions has 20 callbacks', () => {
+  it('KeyboardShortcutsOptions has 21 callbacks', () => {
     // Verify the interface has all expected fields by checking the type.
     // This is a compile-time check — if it compiles, it's correct.
     const opts = {
@@ -180,8 +180,8 @@ describe('Keyboard shortcuts', () => {
       onTogglePump: () => {}, onToggleEvolve: () => {}, onToggleRecord: () => {},
       onPadTrigger: (_n: number) => {}, onGenerateChords: () => {},
       onCycleArpeggio: () => {}, onCycleBass: () => {}, onHumanize: () => {},
-      onRandomize: () => {}, onToggleMetronome: () => {},
+      onQuantize: () => {}, onRandomize: () => {}, onToggleMetronome: () => {},
     }
-    expect(Object.keys(opts).length).toBe(20)
+    expect(Object.keys(opts).length).toBe(21)
   })
 })

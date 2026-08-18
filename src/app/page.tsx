@@ -70,7 +70,7 @@ import { useMidiInput, roleForNote } from '@/lib/use-midi-input'
 import { MIXER_PRESETS, type MixerPreset } from '@/lib/mixer-presets'
 import { Metronome } from '@/lib/metronome'
 import { generateChordPattern, NOTE_NAMES, SCALE_LABELS, ARPEGGIO_LABELS, BASS_LABELS, type ArpeggioPattern, type BassPattern } from '@/lib/chord-progression'
-import { humanizePattern } from '@/lib/humanize'
+import { humanizePattern, quantizePattern } from '@/lib/humanize'
 import { TimelineView } from '@/components/timeline-view'
 import { AutomationEditor } from '@/components/automation-editor'
 import { HelpOverlay } from '@/components/help-overlay'
@@ -693,6 +693,19 @@ export default function Home() {
     setPatternWithHistory(structuredClone(humanized))
     try { autosavePattern(humanized) } catch { /* */ }
     toast({ title: 'Humanized', description: 'Velocity variation added (±7.5 per note)' })
+  }, [pattern, setPatternWithHistory])
+
+  /** Quantize velocities — snap to standard tiers (off/normal/accent).
+   *  The complement to humanize: removes variation for clean, punchy hits.
+   *  Standard workflow: quantize → humanize (clean but groovy). */
+  const onQuantize = React.useCallback(() => {
+    const director = directorRef.current
+    if (!director) return
+    const quantized = quantizePattern(pattern, 3) // 3 tiers: off, normal, accent
+    director.setPattern(quantized)
+    setPatternWithHistory(structuredClone(quantized))
+    try { autosavePattern(quantized) } catch { /* */ }
+    toast({ title: 'Quantized', description: 'Velocities snapped to off/normal/accent' })
   }, [pattern, setPatternWithHistory])
 
   /** Double the pattern (8→16 or 16→32, repeating). */
@@ -1455,6 +1468,7 @@ export default function Home() {
       toast({ title: `Bass: ${BASS_LABELS[next]}`, description: 'B key cycles patterns' })
     },
     onHumanize: onHumanize,
+    onQuantize: onQuantize,
     onRandomize: onRandomizePattern,
     onToggleMetronome: () => {
       const next = !metronomeEnabled
@@ -2070,6 +2084,7 @@ export default function Home() {
               onRandomize={onRandomizePattern}
               onChords={onGenerateChords}
               onHumanize={onHumanize}
+              onQuantize={onQuantize}
               noteMap={noteMap}
               onFillRole={onFillRole}
               onDouble={onDoublePattern}

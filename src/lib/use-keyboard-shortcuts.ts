@@ -22,6 +22,7 @@
 //   A              → cycle arpeggio pattern (up→down→upDown→downUp→random→chordal)
 //   B              → cycle bass pattern (root→walking→octave→pedal→arp)
 //   H              → humanize velocities (add groove via random variation)
+//   Q              → quantize velocities (snap to standard tiers)
 
 import * as React from 'react'
 
@@ -45,6 +46,7 @@ export interface KeyboardShortcutsOptions {
   onCycleArpeggio?: () => void
   onCycleBass?: () => void
   onHumanize?: () => void
+  onQuantize?: () => void
   onRandomize?: () => void
   onToggleMetronome?: () => void
   enabled?: boolean
@@ -56,7 +58,7 @@ export function useKeyboardShortcuts(opts: KeyboardShortcutsOptions): void {
     onToggleMute, onToggleSolo, onClearPattern, onCycleVisualizer,
     onCycleFilter, onTogglePump, onToggleEvolve, onToggleRecord,
     onPadTrigger, onGenerateChords, onCycleArpeggio, onCycleBass, onHumanize,
-    onRandomize, onToggleMetronome, enabled = true,
+    onQuantize, onRandomize, onToggleMetronome, enabled = true,
   } = opts
 
   React.useEffect(() => {
@@ -148,6 +150,9 @@ export function useKeyboardShortcuts(opts: KeyboardShortcutsOptions): void {
         case 'KeyH':
           if (onHumanize) { e.preventDefault(); onHumanize() }
           break
+        case 'KeyQ':
+          if (onQuantize) { e.preventDefault(); onQuantize() }
+          break
         case 'KeyX':
           if (onRandomize) { e.preventDefault(); onRandomize() }
           break
@@ -164,6 +169,6 @@ export function useKeyboardShortcuts(opts: KeyboardShortcutsOptions): void {
     onToggleMute, onToggleSolo, onClearPattern, onCycleVisualizer,
     onCycleFilter, onTogglePump, onToggleEvolve, onToggleRecord,
     onPadTrigger, onGenerateChords, onCycleArpeggio, onCycleBass, onHumanize,
-    onRandomize, onToggleMetronome, enabled,
+    onQuantize, onRandomize, onToggleMetronome, enabled,
   ])
 }
