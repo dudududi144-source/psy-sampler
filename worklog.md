@@ -2375,3 +2375,21 @@ Stage Summary:
 - 507 tests pass, 0 fail, 0 TS errors, 0 lint errors.
 - Pushed to GitHub. Commits: a48068c (status bar), ea441f6 (A/B shortcuts)
 - The harmonic structure is now always visible + quick-cycleable via keyboard.
+
+---
+Task ID: DENSITY-CONTROL
+Agent: main
+Task: Add lead density control — sparse to dense melody (0.2-1.0)
+
+Work Log:
+- applyProgression + generateChordPattern accept density param (default 0.6). Controls lead note probability per 8th step.
+- Separate RNGs per role: lead=base seed, bass=seed^0xb55a, texture=seed^0xa44b. Lead/bass/texture now fully independent — changing density no longer shifts bass/texture.
+- UI: DENS slider (cyan, 0.2-1.0, step 0.1) in transport bar after BASS.
+- Project persistence: density + arpeggio + bassPattern saved. Backward compat: defaults to 0.6/up/root.
+- 14 new tests: max/sparse density, determinism, backward compat, bass/texture independence, clamping, persistence.
+- Browser-verified: DENS slider renders, CHORDS generates, no JS errors.
+
+Stage Summary:
+- 521 tests pass (was 507, +14), 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub. Commit: 86db360
+- Density gives control over melodic busyness: sparse (psytrance) to dense (progressive).

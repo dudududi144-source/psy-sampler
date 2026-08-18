@@ -1,6 +1,6 @@
 # PSY Sampler Device
 
-> A canonical realization device in the PSY family. 51 features. 507 tests. 19 shortcuts. PWA. MIDI round-trip.
+> A canonical realization device in the PSY family. 52 features. 521 tests. 19 shortcuts. PWA. MIDI round-trip.
 
 ```
                  PSY4 (Host)
@@ -30,9 +30,9 @@
 
 The PSY Sampler is a **realization device** — it receives `NoteEvent`s from a host and renders them as audio using sample playback. It does NOT compose, schedule, or own transport. It is a pure HOW layer.
 
-**51 features · 507 tests · 19 keyboard shortcuts · PWA installable · MIDI round-trip (pitch-aware) · 31 samples**
+**52 features · 521 tests · 19 keyboard shortcuts · PWA installable · MIDI round-trip (pitch-aware) · 31 samples**
 
-## Features (51)
+## Features (52)
 
 ### Pattern Editor (8)
 1. Per-step velocity (0-127 MIDI standard)
@@ -91,13 +91,14 @@ The PSY Sampler is a **realization device** — it receives `NoteEvent`s from a 
 44. Bass pattern variations (root/walking/octave/pedal/arp)
 45. Harmonic status bar (persistent key/scale/arp/bass/progression display)
 46. A/B keyboard shortcuts (cycle arpeggio + bass patterns)
+47. Lead density control (sparse 0.2 → dense 1.0, slider)
 
 ### UX (5)
-47. Metronome (1kHz click, downbeat 1.5kHz, N shortcut)
-48. Panic button (instant all-voice kill)
-49. Per-role fill (FILL button per role, seeded)
-50. Double/half pattern (×2/÷2, extend or shrink)
-51. Help overlay (? key, all shortcuts + features) + Visualizer (3 modes)
+48. Metronome (1kHz click, downbeat 1.5kHz, N shortcut)
+49. Panic button (instant all-voice kill)
+50. Per-role fill (FILL button per role, seeded)
+51. Double/half pattern (×2/÷2, extend or shrink)
+52. Help overlay (? key, all shortcuts + features) + Visualizer (3 modes)
 
 ## Keyboard Shortcuts (19)
 
@@ -157,7 +158,7 @@ Same inputs → byte-identical audio:
 
 ## Testing
 
-- **507 tests** across 32 files
+- **521 tests** across 33 files
 - **167,165 expects**
 - MIDI round-trip proof (export → import → same pattern)
 - Real audio rendering + spectral analysis
