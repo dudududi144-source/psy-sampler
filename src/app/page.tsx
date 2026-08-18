@@ -64,6 +64,7 @@ import { readMidiFile } from '@/lib/midi-import'
 import { Button } from '@/components/ui/button'
 import { PsyKnob } from '@/components/psy-knob'
 import { PsyCycleButton } from '@/components/psy-cycle-button'
+import { PsyOled } from '@/components/psy-oled'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { useKeyboardShortcuts } from '@/lib/use-keyboard-shortcuts'
 import { useUndoRedo } from '@/lib/use-undo-redo'
@@ -1667,6 +1668,15 @@ export default function Home() {
             >
               {isPlaying ? '■ STOP' : '▶ PLAY'}
             </Button>
+
+            {/* OLED display — real-time audio waveform + harmonic info */}
+            <PsyOled
+              analyser={analyser}
+              active={isPlaying}
+              name={`${bpm} BPM · ${NOTE_NAMES[musicalKey]} ${SCALE_LABELS[scaleName]}`}
+              meta={lastProgression ? lastProgression.label : `${stepCount} steps`}
+              style={{ flex: 1, minWidth: '300px', marginBottom: '4px' }}
+            />
 
             {/* Row 3: Sliders (BPM + Swing + Master + Section + Energy) */}
             </div>
