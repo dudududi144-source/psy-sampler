@@ -2858,3 +2858,29 @@ Stage Summary:
 - GitHub Pages live: https://dudududi144-source.github.io/psy-sampler/
 - No debug panels, no technical jargon, no engineering text.
 - The app now looks like a product, not a developer demo.
+
+---
+Task ID: VISUALIZER-PSY
+Agent: main
+Task: Visualizer PSY colors — cyan/purple/pink bars, OLED trail
+
+Replaced all emerald/fuchsia/violet colors with PSY palette:
+- Bar hue ramp: 190°→300° (cyan→purple→pink), matching PsySynthPro viz3d
+- Bar lightness: 30+amp*40% (PSY spec)
+- Bar glow: hsl(hue,100%,60%) shadow per bar
+- Trail clear: rgba(2,10,15,0.42) (PSY OLED dark, was rgba(9,9,11,0.35))
+- Waveform: #86f7ff (PSY cyan phosphor) with #00e5ff glow
+- Peak meter: #3fb950→#d29922→#f85149 (green→amber→red, PSY perf HUD)
+- RMS meter: #7ff3ff (PSY cyan, was violet #a78bfa)
+
+Verified on GitHub Pages: knobs=20, seqBtn=153, chassis=true, vizBezel=true
+
+Total roast fixes: 20+
+- Design: chassis, knobs, cycle buttons, OLED, step cells, visualizer
+- Cleanup: debug panel, StubDevice, toasts, footer, errors, InitOverlay
+- All PSY colors throughout — no emerald/fuchsia/zinc remains in visuals
+
+Stage Summary:
+- 653 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub. Commit: 7e20d3f
+- GitHub Pages live: https://dudududi144-source.github.io/psy-sampler/
