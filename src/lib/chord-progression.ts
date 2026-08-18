@@ -156,6 +156,47 @@ const PROGRESSION_TEMPLATES: number[][] = [
   [0, 4, 5, 3],  // i - V - VI - IV
 ]
 
+// ─── Arpeggio patterns ───────────────────────────────────────────────────────
+//
+// Tone indices: 0=root, 1=3rd, 2=5th, 3=octave(root+12).
+// Each pattern defines the SEQUENCE of tone indices the lead plays.
+// The cycle repeats across the bar. Different patterns = different melodic
+// textures from the same chords.
+
+export type ArpeggioPattern = 'up' | 'down' | 'upDown' | 'downUp' | 'random' | 'chordal'
+
+/** Human-readable labels for the UI. */
+export const ARPEGGIO_LABELS: Record<ArpeggioPattern, string> = {
+  up: 'Up (1-3-5-8)',
+  down: 'Down (8-5-3-1)',
+  upDown: 'Up-Down (1-3-5-8-5-3)',
+  downUp: 'Down-Up (8-5-3-1-3-5)',
+  random: 'Random',
+  chordal: 'Chordal (root only)',
+}
+
+/** Base tone-index sequences (random uses rng at call time). */
+const ARPEGGIO_SEQUENCES: Record<Exclude<ArpeggioPattern, 'random'>, number[]> = {
+  up: [0, 1, 2, 3],
+  down: [3, 2, 1, 0],
+  upDown: [0, 1, 2, 3, 2, 1],
+  downUp: [3, 2, 1, 0, 1, 2],
+  chordal: [0, 0, 0, 0], // dronal — always root (psytrance staple)
+}
+
+/**
+ * Get the tone index for arpeggio position `pos` using the given pattern.
+ * For 'random', each position is a random choice from [0,1,2,3] via the rng.
+ * Returns 0-3 (tone index into chord.tones, where 3 = root+12 octave).
+ */
+function getArpeggioToneIndex(pattern: ArpeggioPattern, pos: number, rng: Rng): number {
+  if (pattern === 'random') {
+    return rng.int(0, 3)
+  }
+  const seq = ARPEGGIO_SEQUENCES[pattern]
+  return seq[pos % seq.length]!
+}
+
 /**
  * Generate a 4-bar chord progression from the context's key + scale.
  * Seeded: same (ctx, seed) → same progression.
@@ -205,6 +246,7 @@ export function applyProgression(
   pattern: Pattern,
   progression: Progression,
   seed: number,
+  arpeggio: ArpeggioPattern = 'up',
 ): { pattern: Pattern; noteMap: NoteMap } {
   const rng = new Rng(seed >>> 0)
   const out: Pattern = { ...pattern }
@@ -234,7 +276,8 @@ export function applyProgression(
   noteMap.bass = bassNotes
 
   // Lead: chord-tone arpeggio, 8th notes (every 2 steps).
-  // Cycles through chord tones: root, 3rd, 5th, octave(root+12).
+  // The arpeggio pattern controls the SEQUENCE of chord tones:
+  //   'up' = root→3rd→5th→octave, 'down' = octave→5th→3rd→root, etc.
   // Pitch is one octave above the chord root for a melodic register.
   const leadRow = new Array<number>(steps).fill(0)
   const leadNotes: (number | null)[] = new Array(steps).fill(null)
@@ -245,8 +288,9 @@ export function applyProgression(
     if (!chord) continue
     if (rng.next() < 0.6) {
       leadRow[i] = rng.int(70, 100)
-      // Arpeggio cycle: root, 3rd, 5th, octave — all +12 for melodic register.
-      const toneIdx = arpIdx % 4
+      // Get the tone index from the selected arpeggio pattern.
+      const toneIdx = getArpeggioToneIndex(arpeggio, arpIdx, rng)
+      // toneIdx 0-2 = chord.tones[idx]; 3 = root+12 (octave).
       const baseTone = toneIdx < 3
         ? chord.tones[toneIdx]
         : chord.tones[0] + 12 // octave
@@ -289,8 +333,9 @@ export function generateChordPattern(
   pattern: Pattern,
   ctx: Pick<MusicalContext, 'rootPc' | 'scale'>,
   seed: number,
+  arpeggio: ArpeggioPattern = 'up',
 ): { pattern: Pattern; noteMap: NoteMap; progression: Progression } {
   const progression = generateProgression(ctx, seed)
-  const { pattern: newPattern, noteMap } = applyProgression(pattern, progression, seed)
+  const { pattern: newPattern, noteMap } = applyProgression(pattern, progression, seed, arpeggio)
   return { pattern: newPattern, noteMap, progression }
 }

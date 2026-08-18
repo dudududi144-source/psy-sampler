@@ -69,7 +69,7 @@ import { useUndoRedo } from '@/lib/use-undo-redo'
 import { useMidiInput, roleForNote } from '@/lib/use-midi-input'
 import { MIXER_PRESETS, type MixerPreset } from '@/lib/mixer-presets'
 import { Metronome } from '@/lib/metronome'
-import { generateChordPattern, NOTE_NAMES, SCALE_LABELS } from '@/lib/chord-progression'
+import { generateChordPattern, NOTE_NAMES, SCALE_LABELS, ARPEGGIO_LABELS, type ArpeggioPattern } from '@/lib/chord-progression'
 import { TimelineView } from '@/components/timeline-view'
 import { AutomationEditor } from '@/components/automation-editor'
 import { HelpOverlay } from '@/components/help-overlay'
@@ -127,6 +127,8 @@ export default function Home() {
   // context so the next CHORDS generation uses the new harmonic territory.
   const [musicalKey, setMusicalKey] = React.useState(9) // 9 = A (rootPc)
   const [scaleName, setScaleName] = React.useState('phrygianDominant')
+  // Arpeggio pattern for the chord progression lead. Default 'up' (root→3rd→5th→octave).
+  const [arpeggio, setArpeggio] = React.useState<ArpeggioPattern>('up')
   const [currentStep, setCurrentStep] = React.useState(0)
   const { state: pattern, set: setPatternWithHistory, undo, redo, canUndo, canRedo, reset: resetPatternHistory } = useUndoRedo<Pattern>(structuredClone(DEFAULT_PATTERN))
   // NoteMap: per-step pitch overrides (from chord progression). Tracked in
@@ -652,7 +654,7 @@ export default function Home() {
     const ctx = director.getContext()
     const currentPattern = director.getPattern()
     const seed = Math.floor(Math.random() * 1000000)
-    const { pattern: newPattern, noteMap: newNoteMap, progression } = generateChordPattern(currentPattern, ctx, seed)
+    const { pattern: newPattern, noteMap: newNoteMap, progression } = generateChordPattern(currentPattern, ctx, seed, arpeggio)
     director.setPattern(newPattern)
     director.setNoteMap(newNoteMap)
     setNoteMap(newNoteMap)
@@ -660,9 +662,9 @@ export default function Home() {
     try { autosavePattern(newPattern) } catch { /* */ }
     toast({
       title: `Chords: ${progression.label}`,
-      description: `${progression.roman} · melodic arpeggio (pitch-aware)`,
+      description: `${progression.roman} · ${arpeggio} arpeggio`,
     })
-  }, [setPatternWithHistory])
+  }, [setPatternWithHistory, arpeggio])
 
   /** Double the pattern (8→16 or 16→32, repeating). */
   const onDoublePattern = React.useCallback(() => {
@@ -1657,6 +1659,21 @@ export default function Home() {
                 title="Scale for chord progression (9 diatonic scales)"
               >
                 {Object.entries(SCALE_LABELS).map(([key, label]) => (
+                  <option key={key} value={key}>{label}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Arpeggio pattern selector — controls the lead's melodic shape. */}
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">ARP</span>
+              <select
+                value={arpeggio}
+                onChange={(e) => setArpeggio(e.target.value as ArpeggioPattern)}
+                className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-base sm:text-xs text-amber-300"
+                title="Arpeggio pattern for lead (up/down/up-down/random/chordal)"
+              >
+                {Object.entries(ARPEGGIO_LABELS).map(([key, label]) => (
                   <option key={key} value={key}>{label}</option>
                 ))}
               </select>
