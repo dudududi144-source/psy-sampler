@@ -1,18 +1,16 @@
 'use client'
 
-import * as React from 'react'
-
-// Mixer — 3-bus (drum/music/atmos) panel with gain + EQ + saturation + mute + solo per bus.
+// Mixer — 3-bus panel with PSY knobs for gain + EQ + saturation.
 //
-// Each bus card has:
-//   - Gain slider (0..1.2)
-//   - 3-band EQ sliders (low/mid/high, -24..+24 dB) — shapes the bus tone
-//   - Saturation slider (0..10) — adds warmth/bite via waveshaper
-//   - Mute + Solo buttons
-//   - Roles indicator
+// Each bus has 5 PsyKnobs:
+//   GAIN (0..1.2), EQ-LOW (-24..+24dB), EQ-MID, EQ-HIGH, SAT (0..10)
+// Plus mute + solo buttons.
+//
+// This replaces the old horizontal SliderRow with real PSY hardware knobs.
+// 15 knobs total (5 per bus × 3 buses).
 
-import type { BusName } from '@/psy-sampler'
-import { Slider } from '@/components/ui/slider'
+import * as React from 'react'
+import { PsyKnob } from '@/components/psy-knob'
 import {
   BUS_NAMES,
   BUS_COLORS,
@@ -21,6 +19,7 @@ import {
   ROLE_LABEL,
   type BusMixerState,
 } from '@/components/types'
+import type { BusName } from '@/psy-sampler'
 
 export function Mixer({
   busState,
@@ -38,16 +37,10 @@ export function Mixer({
   onSolo: (name: BusName) => void
 }) {
   return (
-    <div className="section p-4">
-      <div className="mb-3 flex items-center justify-between">
-        <h2
-          className="stitle font-mono text-xs font-bold uppercase tracking-[0.2em]"
-          style={{ '--c': '#4dd6e8' } as React.CSSProperties}
-        >
-          MIXER · 3 buses
-        </h2>
-        <span className="font-mono text-[10px] text-zinc-500">gain · eq · sat · mute · solo</span>
-      </div>
+    <div className="section" style={{ '--c': '#4dd6e8' } as React.CSSProperties}>
+      <h2 className="stitle" style={{ '--c': '#4dd6e8' } as React.CSSProperties}>
+        MIXER · 3 BUSES
+      </h2>
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {BUS_NAMES.map((name) => {
           const state = busState[name]
@@ -56,71 +49,142 @@ export function Mixer({
           return (
             <div
               key={name}
-              className="rounded border border-zinc-800 bg-zinc-900/40 p-2"
-              style={state.muted ? { opacity: 0.4 } : undefined}
+              style={{
+                padding: '8px 12px',
+                borderLeft: `1px solid ${color}33`,
+                opacity: state.muted ? 0.4 : 1,
+              }}
             >
-              <div className="mb-1.5 flex items-center justify-between">
-                <span className="font-mono text-[10px] font-bold uppercase tracking-wider" style={{ color }}>
+              {/* Bus name + role count */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span
+                  style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontSize: '10px',
+                    fontWeight: 700,
+                    letterSpacing: '1.5px',
+                    color,
+                    textTransform: 'uppercase',
+                  }}
+                >
                   {name}
                 </span>
-                <span className="font-mono text-[10px] text-zinc-600">{roles.length} roles</span>
+                <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '9px', color: '#5b6470' }}>
+                  {roles.length} ROLES
+                </span>
               </div>
 
-              {/* Gain slider */}
-              <SliderRow label="G" color={color} value={state.gain} min={0} max={1.2} step={0.01} onChange={(v) => onGain(name, v)} display={state.gain.toFixed(2)} />
-
-              {/* 3-band EQ */}
-              <div className="mt-1.5 space-y-1">
-                <SliderRow label="L" color="#60a5fa" value={state.eqLow} min={-24} max={24} step={0.5} onChange={(v) => onEQ(name, 'low', v)} display={`${state.eqLow > 0 ? '+' : ''}${state.eqLow.toFixed(0)}`} />
-                <SliderRow label="M" color="#a78bfa" value={state.eqMid} min={-24} max={24} step={0.5} onChange={(v) => onEQ(name, 'mid', v)} display={`${state.eqMid > 0 ? '+' : ''}${state.eqMid.toFixed(0)}`} />
-                <SliderRow label="H" color="#f472b6" value={state.eqHigh} min={-24} max={24} step={0.5} onChange={(v) => onEQ(name, 'high', v)} display={`${state.eqHigh > 0 ? '+' : ''}${state.eqHigh.toFixed(0)}`} />
-              </div>
-
-              {/* Saturation */}
-              <div className="mt-1.5">
-                <SliderRow
-                  label="S"
-                  color={state.saturation > 0.1 ? '#fb923c' : '#52525b'}
+              {/* Knob row — 5 PSY knobs */}
+              <div className="krow" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
+                <PsyKnob
+                  value={state.gain}
+                  min={0}
+                  max={1.2}
+                  def={0.85}
+                  step={0.01}
+                  size={48}
+                  color={color}
+                  label="GAIN"
+                  fmt={v => v.toFixed(2)}
+                  onChange={v => onGain(name, v)}
+                />
+                <PsyKnob
+                  value={state.eqLow}
+                  min={-24}
+                  max={24}
+                  def={0}
+                  step={0.5}
+                  size={48}
+                  color="#60a5fa"
+                  label="EQ L"
+                  fmt={v => `${v > 0 ? '+' : ''}${v.toFixed(0)}`}
+                  onChange={v => onEQ(name, 'low', v)}
+                />
+                <PsyKnob
+                  value={state.eqMid}
+                  min={-24}
+                  max={24}
+                  def={0}
+                  step={0.5}
+                  size={48}
+                  color="#a78bfa"
+                  label="EQ M"
+                  fmt={v => `${v > 0 ? '+' : ''}${v.toFixed(0)}`}
+                  onChange={v => onEQ(name, 'mid', v)}
+                />
+                <PsyKnob
+                  value={state.eqHigh}
+                  min={-24}
+                  max={24}
+                  def={0}
+                  step={0.5}
+                  size={48}
+                  color="#f472b6"
+                  label="EQ H"
+                  fmt={v => `${v > 0 ? '+' : ''}${v.toFixed(0)}`}
+                  onChange={v => onEQ(name, 'high', v)}
+                />
+                <PsyKnob
                   value={state.saturation}
                   min={0}
                   max={10}
+                  def={0}
                   step={0.1}
-                  onChange={(v) => onSaturation(name, v)}
-                  display={state.saturation > 0.1 ? state.saturation.toFixed(1) : 'off'}
+                  size={48}
+                  color={state.saturation > 0.1 ? '#fb923c' : '#52525b'}
+                  label="SAT"
+                  fmt={v => v > 0.1 ? v.toFixed(1) : 'off'}
+                  onChange={v => onSaturation(name, v)}
                 />
               </div>
 
               {/* Mute + Solo buttons */}
-              <div className="mt-2 flex gap-1">
+              <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
                 <button
                   onClick={() => onMute(name)}
-                  title="Mute"
-                  className="tbtn flex-1 min-h-[44px] touch-manipulation px-1 py-2 font-mono text-[11px] uppercase tracking-wider transition-all"
+                  className="tbtn"
                   style={{
-                    borderColor: state.muted ? '#fbbf24' : '#3f3f46',
+                    flex: 1,
+                    padding: '6px',
+                    fontSize: '9px',
+                    letterSpacing: '1.8px',
                     color: state.muted ? '#fbbf24' : '#71717a',
-                    backgroundColor: state.muted ? 'rgba(251,191,36,0.1)' : 'transparent',
+                    borderColor: state.muted ? '#fbbf24' : '#000',
+                    backgroundColor: state.muted ? 'rgba(251,191,36,0.1)' : undefined,
                   }}
                 >
-                  M
+                  MUTE
                 </button>
                 <button
                   onClick={() => onSolo(name)}
-                  title="Solo"
-                  className="tbtn flex-1 min-h-[44px] touch-manipulation px-1 py-2 font-mono text-[11px] uppercase tracking-wider transition-all"
+                  className="tbtn"
                   style={{
-                    borderColor: state.solo ? '#00ffc8' : '#3f3f46',
+                    flex: 1,
+                    padding: '6px',
+                    fontSize: '9px',
+                    letterSpacing: '1.8px',
                     color: state.solo ? '#00ffc8' : '#71717a',
-                    backgroundColor: state.solo ? 'rgba(0,255,200,0.1)' : 'transparent',
+                    borderColor: state.solo ? '#00ffc8' : '#000',
+                    backgroundColor: state.solo ? 'rgba(0,255,200,0.1)' : undefined,
                   }}
                 >
-                  S
+                  SOLO
                 </button>
               </div>
+
               {/* Roles indicator */}
-              <div className="mt-1.5 flex flex-wrap gap-0.5">
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '6px', justifyContent: 'center' }}>
                 {roles.map((r) => (
-                  <span key={r} className="font-mono text-[10px] uppercase tracking-wider" style={{ color: ROLE_COLORS[r] }}>
+                  <span
+                    key={r}
+                    style={{
+                      fontFamily: "'JetBrains Mono', monospace",
+                      fontSize: '9px',
+                      letterSpacing: '1px',
+                      color: ROLE_COLORS[r],
+                      textTransform: 'uppercase',
+                    }}
+                  >
                     {ROLE_LABEL[r].trim()}
                   </span>
                 ))}
@@ -129,44 +193,6 @@ export function Mixer({
           )
         })}
       </div>
-    </div>
-  )
-}
-
-/** A compact horizontal slider row with a label and a value display. */
-function SliderRow({
-  label,
-  color,
-  value,
-  min,
-  max,
-  step,
-  onChange,
-  display,
-}: {
-  label: string
-  color: string
-  value: number
-  min: number
-  max: number
-  step: number
-  onChange: (value: number) => void
-  display: string
-}) {
-  return (
-    <div className="flex items-center gap-1">
-      <span className="w-3 shrink-0 font-mono text-[10px] text-zinc-600">{label}</span>
-      <Slider
-        value={[value]}
-        onValueChange={(v) => onChange(v[0]!)}
-        min={min}
-        max={max}
-        step={step}
-        className="flex-1"
-      />
-      <span className="w-8 shrink-0 text-right font-mono text-[10px] tabular-nums" style={{ color }}>
-        {display}
-      </span>
     </div>
   )
 }
