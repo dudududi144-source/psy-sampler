@@ -2884,3 +2884,40 @@ Stage Summary:
 - 653 tests pass, 0 fail, 0 TS errors, 0 lint errors.
 - Pushed to GitHub. Commit: 7e20d3f
 - GitHub Pages live: https://dudududi144-source.github.io/psy-sampler/
+
+---
+Task ID: ROAST-EMOJI-HELP
+Agent: main
+Task: Remove all emojis + add HELP button + present capabilities
+
+Critical cleanup per user request: "no emojis allowed — not professional"
+
+Removed 70+ emojis/Unicode symbols from 13 files:
+- Transport: PLAY/STOP (was PLAY/STOP), EXPORT WAV (was EXPORT WAV),
+  STEMS, MIDI OUT/MIDI IN, MET, PANIC, REC, SAVE, LOAD, UNDO, REDO, TAP
+- Toggle buttons: same text for on/off (MET/REC/PUMP/EVOLVE/FLT/PROB)
+  — state shown via CSS styling only, no O/circle symbols
+- Pattern: COPY/PASTE (was symbols), RAMP UP/DOWN (was arrows)
+- Help overlay: removed ALL 18 icon fields
+- Warnings: removed all warning symbols
+- Sample importer: DROP TO DECODE, DROP WAV HERE OR CLICK
+- Song editor: PLAYING/SONG, UP/DN
+- Timeline: BAR/STOPPED
+- x2//2 (was multiplication/division symbols)
+- Copyright 2026 PSY Family (was (c) symbol)
+- 0 emoji matches in verification
+
+Added visible HELP button:
+- Cyan (#86f7ff) .tbtn in Row 2, pushed to right edge
+- Opens help overlay with all 21 keyboard shortcuts
+- Makes features discoverable (was only accessible via Shift+/ key)
+
+Cleaned Row 2 buttons to .tbtn class (removed conflicting Tailwind bg/border).
+
+Verified on GitHub Pages: 0 emojis, helpBtn=true, knobs=20, chassis=true.
+
+Stage Summary:
+- 653 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub. Commits: b2252f7, e4b545e
+- GitHub Pages live: https://dudududi144-source.github.io/psy-sampler/
+- TEXT ONLY. No emojis. No Unicode symbols. Professional.
