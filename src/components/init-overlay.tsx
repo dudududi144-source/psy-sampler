@@ -37,7 +37,7 @@ export function InitOverlay({
           <h1 className="font-mono text-3xl font-bold tracking-[0.15em]">
             <span className="bg-gradient-to-r from-[#86f7ff] via-[#b967ff] to-[#4dd6e8] bg-clip-text text-transparent">PSY SAMPLER</span>
           </h1>
-          <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.3em] text-[#5b6470]">canonical realization device</p>
+          <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.3em] text-[#5b6470]">web-audio sampler</p>
         </div>
 
         {/* Loading progress bar */}
@@ -73,8 +73,7 @@ export function InitOverlay({
         )}
 
         <p className="font-mono text-[11px] leading-relaxed text-[#5b6470]">
-          creates AudioContext, InMemoryChannel, DeviceHost. registers SamplerDevice + StubDevice.
-          drives a 16-step pattern via DemoDirector. all events are visible in the debug panel.
+          Professional web-audio sampler with chord progression generator, velocity tools, and MIDI export.
         </p>
 
         {!loadProgress && (

@@ -1,8 +1,8 @@
 'use client'
 
-// PSY Sampler — FULL UI (control surface + debugger + mixer + recorder).
+// PSY Sampler — FULL UI (control surface + mixer + recorder).
 //
-// This UI is a CONTROL SURFACE + DEBUGGER, not a source of truth.
+// This UI is a CONTROL SURFACE, not a source of truth.
 // The DemoDirector owns the pattern; the UI projects device state.
 //
 // All 13 P0+P1 features:
@@ -12,7 +12,7 @@
 //  4.  Transport bar (PLAY/STOP, BPM, Swing, Master Vol, Section, Energy)
 //  5.  Pattern editor (9×16 with current step + now-playing row highlight)
 //  6.  Sample library (audition, waveform thumbnail, COMMERCIAL badge, highlight)
-//  7.  Debug panel (stats + lastEvent + transport + context + capabilities + event log)
+//  7.  Performance pads (live one-shot triggering)
 //  8.  Mixer panel (3 buses: gain + mute + solo)
 //  9.  Pattern presets (6 buttons: Psytrance/Techno/Progressive/Breaks/Minimal/Dark)
 //  10. Pattern save/load (4 slots + clear)
@@ -36,10 +36,6 @@ import {
 import {
   DeviceHost,
   InMemoryChannel,
-  type PsyDevice,
-  type MusicalContext,
-  type DeviceCapabilities,
-  type MusicalTransport,
 } from '@/psy-foundation-shim'
 import { DemoTransport } from '@/lib/demo-transport'
 import { DemoDirector, DEFAULT_PATTERN, ROLE_NOTES, type Pattern, type NoteMap } from '@/lib/demo-director'
@@ -78,8 +74,6 @@ import { AutomationEditor } from '@/components/automation-editor'
 import { HelpOverlay } from '@/components/help-overlay'
 import { toast } from '@/hooks/use-toast'
 import { InitOverlay } from '@/components/init-overlay'
-import { Stat } from '@/components/stat-badge'
-import { DebugPanel } from '@/components/debug-panel'
 import { PatternEditor } from '@/components/pattern-editor'
 import { SampleLibrary } from '@/components/sample-library'
 import { SampleImporter } from '@/components/sample-importer'
@@ -93,24 +87,9 @@ import {
   ROLES,
   BUS_NAMES,
   SECTIONS,
-  EVENT_LOG_MAX,
-  type DeviceStats,
-  type EventLogEntry,
   type LoadProgress,
   type BusMixerState,
 } from '@/components/types'
-
-// Minimal stub device for coexistence proof (2nd device on the host).
-class StubDevice implements PsyDevice {
-  readonly id = 'stub-observer'
-  eventsReceived = 0
-  capabilities(): DeviceCapabilities {
-    return { audio: false, midi: false, inputs: 0, outputs: 0, voices: 0, latencyMs: 0, roles: ['observer'] }
-  }
-  onTransport(): void {}
-  onContext(): void {}
-  onEvent(): void { this.eventsReceived++ }
-}
 
 // ─── Main Page ───────────────────────────────────────────────────────────────
 
@@ -152,17 +131,8 @@ export default function Home() {
   // always see the current harmonic structure (not just a fleeting toast).
   const [lastProgression, setLastProgression] = React.useState<{ label: string; roman: string } | null>(null)
   const [samples, setSamples] = React.useState<SampleAsset[]>([])
-  const [stats, setStats] = React.useState<DeviceStats | null>(null)
-  // Performance tracking refs.
-  const notesPerSecRef = React.useRef(0)
-  const peakVoicesRef = React.useRef(0)
-  const playStartTimeRef = React.useRef(0)
-  const lastTriggeredRef = React.useRef(0)
-  const lastStatsTimeRef = React.useRef(0)
-  const [eventLog, setEventLog] = React.useState<EventLogEntry[]>([])
   const [analyser, setAnalyser] = React.useState<AnalyserNode | null>(null)
   const [audioCtx, setAudioCtx] = React.useState<AudioContext | null>(null)
-  const [deviceCount, setDeviceCount] = React.useState(0)
   const [loadResult, setLoadResult] = React.useState<{ loaded: number; skipped: number; total: number } | null>(null)
   const [slotNames, setSlotNames] = React.useState<string[]>(['', '', '', ''])
   const [nowPlaying, setNowPlaying] = React.useState<{ role: SampleRole | null; sampleId: string | null; at: number }>({
@@ -259,9 +229,7 @@ export default function Home() {
   const hostRef = React.useRef<DeviceHost | null>(null)
   const directorRef = React.useRef<DemoDirector | null>(null)
   const transportRef = React.useRef<DemoTransport | null>(null)
-  const stubRef = React.useRef<StubDevice | null>(null)
   const statsIntervalRef = React.useRef<ReturnType<typeof setInterval> | null>(null)
-  const eventLogIdRef = React.useRef(0)
   const lastEventAtRef = React.useRef<number>(-1) // tracks dev.lastEvent.at to dedup
   const initializingRef = React.useRef(false)
 
@@ -314,14 +282,8 @@ export default function Home() {
       bundleRef.current = bundle
       setAnalyser(bundle.audioGraph.analyser)
 
-      // Stub device for coexistence proof
-      const stub = new StubDevice()
-      stubRef.current = stub
-
-      // Register both devices
+      // Register the sampler device on the host.
       host.register(bundle.device)
-      host.register(stub)
-      setDeviceCount(host.deviceCount)
 
       // Try to restore the autosaved pattern, otherwise use DEFAULT.
       let initialPattern = pattern
@@ -390,61 +352,16 @@ export default function Home() {
       // Clear any existing interval before setting a new one.
       if (statsIntervalRef.current) clearInterval(statsIntervalRef.current)
 
-      // Start polling device stats (for debug panel).
+      // Poll the device's last event to drive "now playing" highlights in the UI.
       statsIntervalRef.current = setInterval(() => {
         const dev = bundle!.device
-        // Compute notes/sec (rolling, every ~0.5s).
-        const now = performance.now()
-        const dt = (now - lastStatsTimeRef.current) / 1000
-        if (dt > 0.5) {
-          const dNotes = dev.notesTriggered - lastTriggeredRef.current
-          notesPerSecRef.current = dNotes / dt
-          lastTriggeredRef.current = dev.notesTriggered
-          lastStatsTimeRef.current = now
-        }
-        // Track peak voices.
-        if (dev.activeVoices > peakVoicesRef.current) {
-          peakVoicesRef.current = dev.activeVoices
-        }
         const lastEv = dev.lastEvent
-        // FIX Bug 3: dedup by eventsReceived counter (not .at — multiple roles share the same .at).
+        // Dedup by eventsReceived counter (not .at — multiple roles share the same .at).
         if (lastEv && dev.eventsReceived !== lastEventAtRef.current) {
           lastEventAtRef.current = dev.eventsReceived
           const role = parseChannel(lastEv.channel).role
           setNowPlaying({ role, sampleId: lastEv.sampleId ?? null, at: Date.now() })
-          // Append to event log (newest first).
-          setEventLog((prev) => {
-            const entry: EventLogEntry = {
-              id: eventLogIdRef.current++,
-              channel: lastEv.channel,
-              note: lastEv.note,
-              velocity: lastEv.velocity,
-              at: lastEv.at,
-              sampleId: lastEv.sampleId,
-              triggered: lastEv.triggered,
-              receivedAt: Date.now(),
-            }
-            const next = [entry, ...prev]
-            if (next.length > EVENT_LOG_MAX) next.length = EVENT_LOG_MAX
-            return next
-          })
         }
-        setStats({
-          eventsReceived: dev.eventsReceived,
-          notesTriggered: dev.notesTriggered,
-          notesSkipped: dev.notesSkipped,
-          activeVoices: dev.activeVoices,
-          pendingEvents: dev.pendingEvents,
-          librarySize: dev.librarySize,
-          isStarted: dev.isStarted,
-          notesPerSec: notesPerSecRef.current,
-          peakVoices: peakVoicesRef.current,
-          uptimeSec: dev.isStarted ? (ctxRef.current?.currentTime ?? 0) - playStartTimeRef.current : 0,
-          lastEvent: dev.lastEvent,
-          lastTransport: dev.lastTransport,
-          lastContext: dev.lastContext,
-          capabilities: dev.capabilities(),
-        })
       }, 100)
 
       // Refresh slot names from localStorage.
@@ -495,12 +412,6 @@ export default function Home() {
       }
       director.start()
       bundle?.scheduler.start()
-      // Reset performance stats.
-      peakVoicesRef.current = 0
-      notesPerSecRef.current = 0
-      lastTriggeredRef.current = 0
-      lastStatsTimeRef.current = performance.now()
-      playStartTimeRef.current = ctx?.currentTime ?? 0
       setIsPlaying(true)
     }
   }, [])
@@ -648,7 +559,7 @@ export default function Home() {
     const result = structuredClone(director.getPattern())
     setPatternWithHistory(result)
     try { autosavePattern(result) } catch { /* */ }
-    toast({ title: 'Pattern randomized', description: 'Seeded RNG — same seed → same pattern' })
+    toast({ title: 'Pattern randomized' })
   }, [setPatternWithHistory])
 
   /** Fill a single role with a quick pattern. */
@@ -695,7 +606,7 @@ export default function Home() {
     director.setPattern(humanized)
     setPatternWithHistory(structuredClone(humanized))
     try { autosavePattern(humanized) } catch { /* */ }
-    toast({ title: 'Humanized', description: 'Velocity variation added (±7.5 per note)' })
+    toast({ title: 'Groove added' })
   }, [pattern, setPatternWithHistory])
 
   /** Quantize velocities — snap to standard tiers (off/normal/accent).
@@ -708,7 +619,7 @@ export default function Home() {
     director.setPattern(quantized)
     setPatternWithHistory(structuredClone(quantized))
     try { autosavePattern(quantized) } catch { /* */ }
-    toast({ title: 'Quantized', description: 'Velocities snapped to off/normal/accent' })
+    toast({ title: 'Quantized' })
   }, [pattern, setPatternWithHistory])
 
   /** Ramp up — velocity build-up (low→high across pattern).
@@ -720,7 +631,7 @@ export default function Home() {
     director.setPattern(ramped)
     setPatternWithHistory(structuredClone(ramped))
     try { autosavePattern(ramped) } catch { /* */ }
-    toast({ title: 'Ramp up', description: 'Velocity build-up: 40→127 across pattern' })
+    toast({ title: 'Build-up applied' })
   }, [pattern, setPatternWithHistory])
 
   /** Ramp down — velocity breakdown (high→low across pattern).
@@ -732,7 +643,7 @@ export default function Home() {
     director.setPattern(ramped)
     setPatternWithHistory(structuredClone(ramped))
     try { autosavePattern(ramped) } catch { /* */ }
-    toast({ title: 'Ramp down', description: 'Velocity breakdown: 127→40 across pattern' })
+    toast({ title: 'Breakdown applied' })
   }, [pattern, setPatternWithHistory])
 
   /** Scale up — all velocities ×1.25 (louder). Clamps to 127. */
@@ -743,7 +654,7 @@ export default function Home() {
     director.setPattern(scaled)
     setPatternWithHistory(structuredClone(scaled))
     try { autosavePattern(scaled) } catch { /* */ }
-    toast({ title: 'Scale up', description: 'All velocities ×1.25 (louder)' })
+    toast({ title: 'Louder' })
   }, [pattern, setPatternWithHistory])
 
   /** Scale down — all velocities ×0.75 (softer). Clamps to 1. */
@@ -754,7 +665,7 @@ export default function Home() {
     director.setPattern(scaled)
     setPatternWithHistory(structuredClone(scaled))
     try { autosavePattern(scaled) } catch { /* */ }
-    toast({ title: 'Scale down', description: 'All velocities ×0.75 (softer)' })
+    toast({ title: 'Softer' })
   }, [pattern, setPatternWithHistory])
 
   /** Double the pattern (8→16 or 16→32, repeating). */
@@ -1454,7 +1365,7 @@ export default function Home() {
       })
       toast({
         title: `Rendered ${result.eventsRealized} events in ${result.renderMs.toFixed(0)}ms`,
-        description: `${bars} bars @ ${bpm} BPM · ${durationSec.toFixed(1)}s · deterministic WAV`,
+        description: `${bars} bars @ ${bpm} BPM · ${durationSec.toFixed(1)}s`,
       })
     } catch (err) {
       console.error('[psy-sampler] Offline WAV export failed:', err)
@@ -2090,8 +2001,8 @@ export default function Home() {
             </div>
           </div>
 
-          {/* ─── Main grid: pattern editor (left) + debug (right) ─── */}
-          <div className="section grid gap-4 lg:grid-cols-2">
+          {/* ─── Main grid: pattern editor ─── */}
+          <div className="section">
             <PatternEditor
               pattern={pattern}
               currentStep={currentStep}
@@ -2119,7 +2030,6 @@ export default function Home() {
               nowPlayingAt={nowPlaying.at}
               onClearPattern={onClearPattern}
             />
-            {stats && <DebugPanel stats={stats} eventLog={eventLog} />}
           </div>
 
           {/* ─── Mixer + Presets + Slots ─── */}
@@ -2192,8 +2102,8 @@ export default function Home() {
 
           {/* ─── Footer ─── */}
           <footer style={{ marginTop: 'auto', paddingTop: '14px', borderTop: '1px solid #232932', fontFamily: "'JetBrains Mono', monospace", fontSize: '9px', color: '#5b6470', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '8px' }}>
+            <span>© 2026 PSY Family</span>
             <span>{loadResult ? `${loadResult.loaded} samples loaded` : 'loading…'}</span>
-            <span>59 features · 653 tests · 21 shortcuts</span>
           </footer>
         </div>
       </Chassis>

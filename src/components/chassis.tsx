@@ -25,7 +25,7 @@ export function Chassis({ children }: { children: React.ReactNode }) {
       {/* Brand footer */}
       <div className="brand">
         PSY SAMPLER
-        <span>canonical realization device · build 2026</span>
+        <span>web-audio sampler · build 2026</span>
       </div>
     </div>
   )
