@@ -44,7 +44,7 @@ export function InitOverlay({
         {loadProgress && (
           <div className="w-full max-w-sm">
             <div className="mb-1 flex items-center justify-between font-mono text-[10px] text-[#9aa3af]">
-              <span className="uppercase tracking-wider" style={{ color: '#86f7ff' }}>loading samples…</span>
+              <span className="uppercase tracking-wider" style={{ color: '#86f7ff' }}>Loading sounds…</span>
               <span className="tabular-nums">{loadProgress.loaded}/{loadProgress.total}</span>
             </div>
             <div className="h-2 overflow-hidden rounded-full border border-[#0b2836] bg-[#020a0f]">
@@ -86,7 +86,7 @@ export function InitOverlay({
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 2v10" /><path d="M18.4 6.6a9 9 0 1 1-12.77.04" />
             </svg>
-            {initializing ? 'initializing…' : 'click to initialize audio'}
+            {initializing ? 'Loading…' : 'Click to start'}
           </Button>
         )}
 
@@ -95,16 +95,14 @@ export function InitOverlay({
           <Button
             onClick={onInit}
             disabled={initializing}
-            className="h-10 gap-2 border border-fuchsia-400/50 bg-zinc-900 font-mono text-xs font-semibold uppercase tracking-[0.2em] text-fuchsia-300 hover:bg-fuchsia-500/10"
+            className="h-10 gap-2 border border-[#0b2836] bg-[#03131a] font-mono text-xs font-semibold uppercase tracking-[0.2em] hover:brightness-125"
+            style={{ color: '#f85149' }}
           >
-            retry initialization
+            Retry
           </Button>
         )}
 
-        {/* Keyboard hint */}
-        <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-zinc-600">
-          shortcuts: <span className="text-[#9aa3af]">[space]</span> play/stop · <span className="text-[#9aa3af]">[esc]</span> stop
-        </div>
+        {/* Press ? for help */}
       </div>
     </div>
   )
