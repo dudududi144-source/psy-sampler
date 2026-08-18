@@ -2464,3 +2464,20 @@ Stage Summary:
 - 574 tests pass, 0 fail, 0 TS errors, 0 lint errors.
 - Pushed to GitHub. Commit: 77266f8
 - 20 keyboard shortcuts for a fast groove workflow: D (generate) → H (humanize) → A/B (cycle patterns).
+
+---
+Task ID: QUANTIZE
+Agent: main
+Task: Add velocity quantize — snap to standard tiers (Q key)
+
+Work Log:
+- quantizePattern(pattern, tiers) in humanize.ts. 3/4/5 tier snapping. Default 3 (off/normal/accent). Never silences active, never activates silent. Pure, deterministic.
+- UI: QUANT button (zinc) after HUM. Q key shortcut. 21 shortcuts total.
+- The complement to humanize: quantize REMOVES variation, humanize ADDS it. Workflow: generate (D) → quantize (Q) → humanize (H) = clean but groovy.
+- 22 new tests: 3/4/5 tier snapping, no-silence, no-activate, 127 stays, 100 stays, low snaps to 100, no-mutation, determinism, defaults, invalid fallback, all 9 roles, 32-step, active-count, extreme velocities, quantize-after-humanize.
+- Browser-verified: kick velocity 91→100 after Q. All kick steps now 'off' or 'velocity 100' only. No JS errors.
+
+Stage Summary:
+- 596 tests pass (was 574, +22), 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub. Commit: feb1090
+- Complete velocity workflow: generate → quantize → humanize.

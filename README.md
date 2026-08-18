@@ -1,6 +1,6 @@
 # PSY Sampler Device
 
-> A canonical realization device in the PSY family. 55 features. 574 tests. 20 shortcuts. PWA. MIDI round-trip.
+> A canonical realization device in the PSY family. 56 features. 596 tests. 21 shortcuts. PWA. MIDI round-trip.
 
 ```
                  PSY4 (Host)
@@ -30,9 +30,9 @@
 
 The PSY Sampler is a **realization device** — it receives `NoteEvent`s from a host and renders them as audio using sample playback. It does NOT compose, schedule, or own transport. It is a pure HOW layer.
 
-**55 features · 574 tests · 20 keyboard shortcuts · PWA installable · MIDI round-trip (pitch-aware) · 31 samples**
+**56 features · 596 tests · 21 keyboard shortcuts · PWA installable · MIDI round-trip (pitch-aware) · 31 samples**
 
-## Features (55)
+## Features (56)
 
 ### Pattern Editor (8)
 1. Per-step velocity (0-127 MIDI standard)
@@ -95,15 +95,16 @@ The PSY Sampler is a **realization device** — it receives `NoteEvent`s from a 
 48. Melody octave control (shift lead register -2 to +2 octaves)
 49. Bass octave control (shift bass register -2 to +2 octaves, independent)
 50. Velocity humanization (add groove via random variation, HUM button)
+51. Velocity quantization (snap to standard tiers, QUANT button)
 
 ### UX (5)
-51. Metronome (1kHz click, downbeat 1.5kHz, N shortcut)
-52. Panic button (instant all-voice kill)
-53. Per-role fill (FILL button per role, seeded)
-54. Double/half pattern (×2/÷2, extend or shrink)
-55. Help overlay (? key, all shortcuts + features) + Visualizer (3 modes)
+52. Metronome (1kHz click, downbeat 1.5kHz, N shortcut)
+53. Panic button (instant all-voice kill)
+54. Per-role fill (FILL button per role, seeded)
+55. Double/half pattern (×2/÷2, extend or shrink)
+56. Help overlay (? key, all shortcuts + features) + Visualizer (3 modes)
 
-## Keyboard Shortcuts (20)
+## Keyboard Shortcuts (21)
 
 | Key | Action |
 |---|---|
@@ -125,6 +126,7 @@ The PSY Sampler is a **realization device** — it receives `NoteEvent`s from a 
 | A | Cycle arpeggio pattern |
 | B | Cycle bass pattern |
 | H | Humanize velocities |
+| Q | Quantize velocities |
 | X | Randomize pattern |
 | N | Toggle metronome |
 
@@ -162,7 +164,7 @@ Same inputs → byte-identical audio:
 
 ## Testing
 
-- **574 tests** across 36 files
+- **596 tests** across 37 files
 - **167,165 expects**
 - MIDI round-trip proof (export → import → same pattern)
 - Real audio rendering + spectral analysis
