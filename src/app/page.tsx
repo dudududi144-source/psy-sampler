@@ -603,6 +603,17 @@ export default function Home() {
     toast({ title: 'Pattern randomized', description: 'Seeded RNG — same seed → same pattern' })
   }, [setPatternWithHistory])
 
+  /** Fill a single role with a quick pattern. */
+  const onFillRole = React.useCallback((role: SampleRole) => {
+    const director = directorRef.current
+    if (!director) return
+    director.fillRole(role)
+    const result = structuredClone(director.getPattern())
+    setPatternWithHistory(result)
+    try { autosavePattern(result) } catch { /* */ }
+    toast({ title: `Filled ${role}`, description: 'Quick pattern generated for this role' })
+  }, [setPatternWithHistory])
+
   const onUndo = React.useCallback(() => {
     undo()
     // Sync the director with the undone pattern after the state updates.
@@ -1745,6 +1756,7 @@ export default function Home() {
               onCopyRole={onCopyRole}
               onPasteRole={onPasteRole}
               onRandomize={onRandomizePattern}
+              onFillRole={onFillRole}
               nowPlayingRole={nowPlaying.role}
               nowPlayingAt={nowPlaying.at}
               onClearPattern={onClearPattern}

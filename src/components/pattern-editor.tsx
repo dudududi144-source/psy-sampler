@@ -38,6 +38,7 @@ export function PatternEditor({
   onCopyRole,
   onPasteRole,
   onRandomize,
+  onFillRole,
   nowPlayingRole,
   nowPlayingAt,
   onClearPattern,
@@ -60,6 +61,8 @@ export function PatternEditor({
   onPasteRole?: (role: SampleRole) => boolean
   /** Randomize the pattern (seeded). */
   onRandomize?: () => void
+  /** Fill a single role with a quick pattern. */
+  onFillRole?: (role: SampleRole) => void
   nowPlayingRole: SampleRole | null
   nowPlayingAt: number
   onClearPattern: () => void
@@ -267,6 +270,16 @@ export function PatternEditor({
                 </div>
                 {clipboard && clipboard.fromRole === role && (
                   <span className="font-mono text-[7px] text-emerald-400">●</span>
+                )}
+                {onFillRole && (
+                  <button
+                    type="button"
+                    onClick={(e) => { e.stopPropagation(); onFillRole(role) }}
+                    className="touch-manipulation rounded border border-zinc-700 px-1 font-mono text-[8px] text-fuchsia-400 hover:bg-fuchsia-500/10"
+                    title={`Fill ${role} with a quick pattern`}
+                  >
+                    FILL
+                  </button>
                 )}
               </div>
               <div className="flex flex-1 gap-1">
