@@ -1454,6 +1454,7 @@ export default function Home() {
       setBassPattern(next)
       toast({ title: `Bass: ${BASS_LABELS[next]}`, description: 'B key cycles patterns' })
     },
+    onHumanize: onHumanize,
     onRandomize: onRandomizePattern,
     onToggleMetronome: () => {
       const next = !metronomeEnabled

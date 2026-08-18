@@ -21,6 +21,7 @@
 //   D              → generate chord-aware bass/lead (scale + key from context)
 //   A              → cycle arpeggio pattern (up→down→upDown→downUp→random→chordal)
 //   B              → cycle bass pattern (root→walking→octave→pedal→arp)
+//   H              → humanize velocities (add groove via random variation)
 
 import * as React from 'react'
 
@@ -43,6 +44,7 @@ export interface KeyboardShortcutsOptions {
   onGenerateChords?: () => void
   onCycleArpeggio?: () => void
   onCycleBass?: () => void
+  onHumanize?: () => void
   onRandomize?: () => void
   onToggleMetronome?: () => void
   enabled?: boolean
@@ -53,7 +55,7 @@ export function useKeyboardShortcuts(opts: KeyboardShortcutsOptions): void {
     onTogglePlay, onStop, onUndo, onRedo, onTapTempo, onToggleHelp,
     onToggleMute, onToggleSolo, onClearPattern, onCycleVisualizer,
     onCycleFilter, onTogglePump, onToggleEvolve, onToggleRecord,
-    onPadTrigger, onGenerateChords, onCycleArpeggio, onCycleBass,
+    onPadTrigger, onGenerateChords, onCycleArpeggio, onCycleBass, onHumanize,
     onRandomize, onToggleMetronome, enabled = true,
   } = opts
 
@@ -143,6 +145,9 @@ export function useKeyboardShortcuts(opts: KeyboardShortcutsOptions): void {
         case 'KeyB':
           if (onCycleBass) { e.preventDefault(); onCycleBass() }
           break
+        case 'KeyH':
+          if (onHumanize) { e.preventDefault(); onHumanize() }
+          break
         case 'KeyX':
           if (onRandomize) { e.preventDefault(); onRandomize() }
           break
@@ -158,7 +163,7 @@ export function useKeyboardShortcuts(opts: KeyboardShortcutsOptions): void {
     onTogglePlay, onStop, onUndo, onRedo, onTapTempo, onToggleHelp,
     onToggleMute, onToggleSolo, onClearPattern, onCycleVisualizer,
     onCycleFilter, onTogglePump, onToggleEvolve, onToggleRecord,
-    onPadTrigger, onGenerateChords, onCycleArpeggio, onCycleBass,
+    onPadTrigger, onGenerateChords, onCycleArpeggio, onCycleBass, onHumanize,
     onRandomize, onToggleMetronome, enabled,
   ])
 }

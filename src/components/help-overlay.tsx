@@ -25,6 +25,7 @@ const SHORTCUTS = [
   { key: 'D', desc: 'Generate chord-aware bass/lead (scale + key from context)' },
   { key: 'A', desc: 'Cycle arpeggio pattern (up→down→upDown→downUp→random→chordal)' },
   { key: 'B', desc: 'Cycle bass pattern (root→walking→octave→pedal→arp)' },
+  { key: 'H', desc: 'Humanize velocities (add groove via random variation)' },
   { key: 'X', desc: 'Randomize pattern (seeded — deterministic)' },
   { key: 'N', desc: 'Toggle metronome (click on every beat)' },
 ]
