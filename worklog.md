@@ -2552,3 +2552,22 @@ Stage Summary:
 - Local dev server still runs on port 3000 with standalone output
 - Pushed to GitHub. Commit: 613f046
 - The app is accessible to anyone with the URL.
+
+---
+Task ID: MANIFEST-FIX
+Agent: main
+Task: Fix GitHub Pages manifest 404 + CSP eval error
+
+Work Log:
+- Root cause: manifestUrl was '/samples/manifest.json' (absolute path). On GitHub Pages with basePath /psy-sampler/, this resolved to the wrong URL (without basePath) → 404.
+- Fix: changed to 'samples/manifest.json' (relative). Resolves correctly with basePath on GitHub Pages AND without basePath in dev mode.
+- The sample file field was already relative ('samples/kick.wav') — no change needed.
+- The CSP eval error was a secondary effect of the init crash — once the manifest loads, the app initializes without triggering eval.
+- Rebuilt + redeployed to gh-pages. Build succeeded ("built", no error).
+- Browser-verified on GitHub Pages: init button clicked → full UI appears (PLAY, CHORDS, KEY dropdown). No errors. No CSP warnings.
+
+Stage Summary:
+- GitHub Pages is fully functional: https://dudududi144-source.github.io/psy-sampler/
+- All assets verified: HTML=200, Manifest=200, Samples=200, JS=200, CSS=200.
+- Pushed to GitHub. Commit: 0802bd4
+- The app initializes and works correctly on the permanent GitHub Pages URL.
