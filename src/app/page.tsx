@@ -69,6 +69,7 @@ import { useUndoRedo } from '@/lib/use-undo-redo'
 import { useMidiInput, roleForNote } from '@/lib/use-midi-input'
 import { MIXER_PRESETS, type MixerPreset } from '@/lib/mixer-presets'
 import { Metronome } from '@/lib/metronome'
+import { generateChordPattern } from '@/lib/chord-progression'
 import { TimelineView } from '@/components/timeline-view'
 import { AutomationEditor } from '@/components/automation-editor'
 import { HelpOverlay } from '@/components/help-overlay'
@@ -614,6 +615,23 @@ export default function Home() {
     setPatternWithHistory(result)
     try { autosavePattern(result) } catch { /* */ }
     toast({ title: `Filled ${role}`, description: 'Quick pattern generated for this role' })
+  }, [setPatternWithHistory])
+
+  /** Generate a chord-aware bass/lead/texture pattern from the current key + scale. */
+  const onGenerateChords = React.useCallback(() => {
+    const director = directorRef.current
+    if (!director) return
+    const ctx = director.getContext()
+    const currentPattern = director.getPattern()
+    const seed = Math.floor(Math.random() * 1000000)
+    const { pattern: newPattern, progression } = generateChordPattern(currentPattern, ctx, seed)
+    director.setPattern(newPattern)
+    setPatternWithHistory(structuredClone(newPattern))
+    try { autosavePattern(newPattern) } catch { /* */ }
+    toast({
+      title: `Chords: ${progression.label}`,
+      description: `${progression.roman} · bass on downbeats, lead 8th arpeggio`,
+    })
   }, [setPatternWithHistory])
 
   /** Double the pattern (8→16 or 16→32, repeating). */
@@ -1338,6 +1356,7 @@ export default function Home() {
     },
     onToggleRecord: toggleRecord,
     onPadTrigger,
+    onGenerateChords: onGenerateChords,
     onRandomize: onRandomizePattern,
     onToggleMetronome: () => {
       const next = !metronomeEnabled
@@ -1821,6 +1840,7 @@ export default function Home() {
               onCopyRole={onCopyRole}
               onPasteRole={onPasteRole}
               onRandomize={onRandomizePattern}
+              onChords={onGenerateChords}
               onFillRole={onFillRole}
               onDouble={onDoublePattern}
               onHalf={onHalfPattern}

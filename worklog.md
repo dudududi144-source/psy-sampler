@@ -2196,3 +2196,21 @@ Work Log:
 Stage Summary:
 - Server running HTTP 200.
 - Commit: 628c3e5
+
+---
+Task ID: PERF-PADS
+Agent: main
+Task: Add performance pads — live MPC-style one-shot triggering
+
+Work Log:
+- Created PerformancePads component: 3×3 grid, one pad per role, visual feedback (flash on trigger, shared NOW_PLAYING_MS window with PatternEditor + SampleLibrary).
+- triggerPad handler in page.tsx publishes NoteEvent to host (same path as sequencer + MIDI). Velocity tiers: default 100, Shift=127 accent, Alt=50 ghost.
+- Keyboard shortcuts: Digit1-9 → pads (replaced step-count 1/2/3; step-count remains on visible 8/16/32 buttons).
+- Help overlay updated: PADS feature card + 1-9 shortcut entry.
+- 16 new tests: role mapping stability, color/label uniqueness, velocity normalization, active-state time-window logic, boundary conditions.
+- Browser-verified: clicking kick pad triggers "Event late by 76.3ms — playing immediately" — confirms NoteEvent published and device processed it. No JS errors.
+
+Stage Summary:
+- 356 tests pass (was 340, +16), 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub. Commit: 257b752
+- 43 features total. Server running HTTP 200.

@@ -22,6 +22,7 @@ const SHORTCUTS = [
   { key: 'E', desc: 'Toggle auto-evolve' },
   { key: 'R', desc: 'Toggle live recording' },
   { key: '1-9', desc: 'Trigger performance pads (Shift=accent, Alt=ghost)' },
+  { key: 'D', desc: 'Generate chord-aware bass/lead (scale + key from context)' },
   { key: 'X', desc: 'Randomize pattern (seeded — deterministic)' },
   { key: 'N', desc: 'Toggle metronome (click on every beat)' },
 ]
@@ -44,6 +45,7 @@ const FEATURES = [
   { icon: '⧉', title: 'COPY', desc: 'Copy role pattern to clipboard' },
   { icon: '⤓', title: 'PASTE', desc: 'Paste clipboard into another role' },
   { icon: '▣', title: 'PADS', desc: 'Live one-shot triggering (MPC-style, keys 1-9)' },
+  { icon: '♪', title: 'CHORDS', desc: 'Scale-aware bass/lead/texture from diatonic progressions' },
 ]
 
 const EDITOR_FEATURES = [

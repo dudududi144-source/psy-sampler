@@ -528,6 +528,11 @@ export class DemoDirector {
     return this.pattern
   }
 
+  /** Current musical context (key + scale + section + energy). */
+  getContext(): MusicalContext {
+    return this.context
+  }
+
   get currentStep(): number {
     return this.step
   }

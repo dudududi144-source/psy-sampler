@@ -18,6 +18,7 @@
 //   E              → toggle evolve
 //   R              → toggle record (live capture)
 //   1-9            → trigger performance pads (top-left → bottom-right)
+//   D              → generate chord-aware bass/lead (scale + key from context)
 
 import * as React from 'react'
 
@@ -37,6 +38,7 @@ export interface KeyboardShortcutsOptions {
   onToggleEvolve?: () => void
   onToggleRecord?: () => void
   onPadTrigger?: (index: number) => void
+  onGenerateChords?: () => void
   onRandomize?: () => void
   onToggleMetronome?: () => void
   enabled?: boolean
@@ -47,7 +49,7 @@ export function useKeyboardShortcuts(opts: KeyboardShortcutsOptions): void {
     onTogglePlay, onStop, onUndo, onRedo, onTapTempo, onToggleHelp,
     onToggleMute, onToggleSolo, onClearPattern, onCycleVisualizer,
     onCycleFilter, onTogglePump, onToggleEvolve, onToggleRecord,
-    onPadTrigger, onRandomize, onToggleMetronome, enabled = true,
+    onPadTrigger, onGenerateChords, onRandomize, onToggleMetronome, enabled = true,
   } = opts
 
   React.useEffect(() => {
@@ -127,6 +129,9 @@ export function useKeyboardShortcuts(opts: KeyboardShortcutsOptions): void {
             onPadTrigger(parseInt(e.code.replace('Digit', ''), 10) - 1)
           }
           break
+        case 'KeyD':
+          if (onGenerateChords) { e.preventDefault(); onGenerateChords() }
+          break
         case 'KeyX':
           if (onRandomize) { e.preventDefault(); onRandomize() }
           break
@@ -142,6 +147,6 @@ export function useKeyboardShortcuts(opts: KeyboardShortcutsOptions): void {
     onTogglePlay, onStop, onUndo, onRedo, onTapTempo, onToggleHelp,
     onToggleMute, onToggleSolo, onClearPattern, onCycleVisualizer,
     onCycleFilter, onTogglePump, onToggleEvolve, onToggleRecord,
-    onPadTrigger, onRandomize, onToggleMetronome, enabled,
+    onPadTrigger, onGenerateChords, onRandomize, onToggleMetronome, enabled,
   ])
 }

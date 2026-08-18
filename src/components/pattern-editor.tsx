@@ -38,6 +38,7 @@ export function PatternEditor({
   onCopyRole,
   onPasteRole,
   onRandomize,
+  onChords,
   onFillRole,
   onDouble,
   onHalf,
@@ -63,6 +64,8 @@ export function PatternEditor({
   onPasteRole?: (role: SampleRole) => boolean
   /** Randomize the pattern (seeded). */
   onRandomize?: () => void
+  /** Generate a chord-aware bass/lead/texture pattern (seeded). */
+  onChords?: () => void
   /** Fill a single role with a quick pattern. */
   onFillRole?: (role: SampleRole) => void
   /** Double the pattern (8→16 or 16→32). */
@@ -158,6 +161,16 @@ export function PatternEditor({
               className="touch-manipulation min-h-[28px] rounded border border-cyan-400/40 bg-cyan-500/10 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-cyan-300 transition-all hover:bg-cyan-500/20"
             >
               RND
+            </button>
+          )}
+          {onChords && (
+            <button
+              type="button"
+              onClick={onChords}
+              title="Generate chord-aware bass/lead (seeded — scale + key from context)"
+              className="touch-manipulation min-h-[28px] rounded border border-violet-400/40 bg-violet-500/10 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-violet-300 transition-all hover:bg-violet-500/20"
+            >
+              CHORDS
             </button>
           )}
           {/* Pattern length selector */}
