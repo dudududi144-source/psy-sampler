@@ -134,6 +134,9 @@ export default function Home() {
   // Lead density: probability of a note firing on each 8th step. 0.2 = sparse,
   // 0.6 = default, 1.0 = every 8th note. Controls how busy the melody is.
   const [density, setDensity] = React.useState(0.6)
+  // Melody octave offset: -2 to +2. Shifts the lead register by whole octaves
+  // so the user can match the melody to their sample's optimal register.
+  const [melodyOctave, setMelodyOctave] = React.useState(0)
   const [currentStep, setCurrentStep] = React.useState(0)
   const { state: pattern, set: setPatternWithHistory, undo, redo, canUndo, canRedo, reset: resetPatternHistory } = useUndoRedo<Pattern>(structuredClone(DEFAULT_PATTERN))
   // NoteMap: per-step pitch overrides (from chord progression). Tracked in
@@ -662,7 +665,7 @@ export default function Home() {
     const ctx = director.getContext()
     const currentPattern = director.getPattern()
     const seed = Math.floor(Math.random() * 1000000)
-    const { pattern: newPattern, noteMap: newNoteMap, progression } = generateChordPattern(currentPattern, ctx, seed, arpeggio, bassPattern, density)
+    const { pattern: newPattern, noteMap: newNoteMap, progression } = generateChordPattern(currentPattern, ctx, seed, arpeggio, bassPattern, density, melodyOctave)
     director.setPattern(newPattern)
     director.setNoteMap(newNoteMap)
     setNoteMap(newNoteMap)
@@ -673,7 +676,7 @@ export default function Home() {
       title: `Chords: ${progression.label}`,
       description: `${progression.roman} · ${arpeggio} arp · ${bassPattern} bass`,
     })
-  }, [setPatternWithHistory, arpeggio, bassPattern, density])
+  }, [setPatternWithHistory, arpeggio, bassPattern, density, melodyOctave])
 
   /** Double the pattern (8→16 or 16→32, repeating). */
   const onDoublePattern = React.useCallback(() => {
@@ -1112,12 +1115,12 @@ export default function Home() {
   // ─── Project save/load ─────────────────────────────────────────────────────
   const onSaveProject = React.useCallback(() => {
     const project = createProject(`psy-sampler-${new Date().toISOString().slice(0, 10)}`, {
-      bpm, swing, masterVolume, section, energy, pattern, noteMap, musicalKey, scaleName, arpeggio, bassPattern, density, busState,
+      bpm, swing, masterVolume, section, energy, pattern, noteMap, musicalKey, scaleName, arpeggio, bassPattern, density, melodyOctave, busState,
       filterMode, pumpEnabled, evolveEnabled, song,
     })
     downloadProject(project)
     toast({ title: 'Project saved', description: `${project.name}.psy.json` })
-  }, [bpm, swing, masterVolume, section, energy, pattern, noteMap, musicalKey, scaleName, arpeggio, bassPattern, density, busState, filterMode, pumpEnabled, evolveEnabled, song])
+  }, [bpm, swing, masterVolume, section, energy, pattern, noteMap, musicalKey, scaleName, arpeggio, bassPattern, density, melodyOctave, busState, filterMode, pumpEnabled, evolveEnabled, song])
 
   const onLoadProject = React.useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -1136,6 +1139,7 @@ export default function Home() {
       setArpeggio((project.arpeggio ?? 'up') as ArpeggioPattern)
       setBassPattern((project.bassPattern ?? 'root') as BassPattern)
       setDensity(project.density ?? 0.6)
+      setMelodyOctave(project.melodyOctave ?? 0)
       directorRef.current?.setContext({
         key: NOTE_NAMES[project.musicalKey ?? 9],
         rootPc: project.musicalKey ?? 9,
@@ -1726,6 +1730,22 @@ export default function Home() {
               <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">DENS</span>
               <Slider value={[density]} onValueChange={(v) => setDensity(v[0]!)} min={0.2} max={1} step={0.1} className="w-20" />
               <span className="w-8 font-mono text-xs tabular-nums text-cyan-300">{density.toFixed(1)}</span>
+            </div>
+
+            {/* Melody octave selector — shifts the lead register by whole octaves.
+                -2 to +2. Lets the user match the melody to their sample's optimal register. */}
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">OCT</span>
+              <select
+                value={melodyOctave}
+                onChange={(e) => setMelodyOctave(parseInt(e.target.value, 10))}
+                className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-base sm:text-xs text-lime-300"
+                title="Melody octave offset (-2 to +2, shifts lead register)"
+              >
+                {[-2, -1, 0, 1, 2].map((oct) => (
+                  <option key={oct} value={oct}>{oct > 0 ? `+${oct}` : oct}</option>
+                ))}
+              </select>
             </div>
 
             {/* Energy slider */}

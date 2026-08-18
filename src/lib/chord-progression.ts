@@ -324,6 +324,7 @@ export function applyProgression(
   arpeggio: ArpeggioPattern = 'up',
   bass: BassPattern = 'root',
   density: number = 0.6,
+  melodyOctave: number = 0,
 ): { pattern: Pattern; noteMap: NoteMap } {
   // Separate RNGs per role so lead/bass/texture are independent — changing
   // the density (lead RNG consumption) must NOT shift the bass/texture RNG.
@@ -337,6 +338,9 @@ export function applyProgression(
   const chordSpan = Math.max(1, Math.floor(steps / progression.chords.length))
   // Clamp density to 0.05-1.0 — never 0 (would silence the lead entirely).
   const leadDensity = Math.max(0.05, Math.min(1, density))
+  // Melody octave offset: -2 to +2. Shifts the lead register by whole octaves
+  // so the user can match the melody to their sample's optimal register.
+  const octaveShift = Math.max(-2, Math.min(2, Math.round(melodyOctave))) * 12
 
   // Lead: chord-tone arpeggio, 8th notes (every 2 steps).
   // Generated FIRST so the lead is independent of the bass pattern's RNG
@@ -359,7 +363,7 @@ export function applyProgression(
       const baseTone = toneIdx < 3
         ? chord.tones[toneIdx]
         : chord.tones[0] + 12 // octave
-      leadNotes[i] = baseTone + 12 // one octave up for melodic register
+      leadNotes[i] = baseTone + 12 + octaveShift // melodic register + octave offset
       arpIdx++
     }
   }
@@ -424,8 +428,9 @@ export function generateChordPattern(
   arpeggio: ArpeggioPattern = 'up',
   bass: BassPattern = 'root',
   density: number = 0.6,
+  melodyOctave: number = 0,
 ): { pattern: Pattern; noteMap: NoteMap; progression: Progression } {
   const progression = generateProgression(ctx, seed)
-  const { pattern: newPattern, noteMap } = applyProgression(pattern, progression, seed, arpeggio, bass, density)
+  const { pattern: newPattern, noteMap } = applyProgression(pattern, progression, seed, arpeggio, bass, density, melodyOctave)
   return { pattern: newPattern, noteMap, progression }
 }
