@@ -1082,12 +1082,12 @@ export default function Home() {
   // ─── Project save/load ─────────────────────────────────────────────────────
   const onSaveProject = React.useCallback(() => {
     const project = createProject(`psy-sampler-${new Date().toISOString().slice(0, 10)}`, {
-      bpm, swing, masterVolume, section, energy, pattern, busState,
+      bpm, swing, masterVolume, section, energy, pattern, noteMap, busState,
       filterMode, pumpEnabled, evolveEnabled, song,
     })
     downloadProject(project)
     toast({ title: 'Project saved', description: `${project.name}.psy.json` })
-  }, [bpm, swing, masterVolume, section, energy, pattern, busState, filterMode, pumpEnabled, evolveEnabled, song])
+  }, [bpm, swing, masterVolume, section, energy, pattern, noteMap, busState, filterMode, pumpEnabled, evolveEnabled, song])
 
   const onLoadProject = React.useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -1102,6 +1102,10 @@ export default function Home() {
       setSection(project.section); setEnergy(project.energy)
       resetPatternHistory(structuredClone(project.pattern))
       directorRef.current?.setPattern(structuredClone(project.pattern))
+      // Restore pitch overrides (chord progression melody).
+      const loadedNoteMap = project.noteMap ?? {}
+      directorRef.current?.setNoteMap(loadedNoteMap)
+      setNoteMap(loadedNoteMap)
       setBusState(project.busState)
       const graph = bundleRef.current?.audioGraph
       if (graph) {
@@ -1129,12 +1133,12 @@ export default function Home() {
   /** Export the current pattern as a Standard MIDI File (.mid). */
   const handleExportMidi = React.useCallback(() => {
     try {
-      downloadMidiFile(pattern, bpm, stepCount)
-      toast({ title: 'MIDI exported', description: `${stepCount} steps · ${bpm} BPM · 9 channels` })
+      downloadMidiFile(pattern, bpm, stepCount, noteMap)
+      toast({ title: 'MIDI exported', description: `${stepCount} steps · ${bpm} BPM · 9 channels · pitch-aware` })
     } catch (err) {
       toast({ title: 'MIDI export failed', description: err instanceof Error ? err.message : String(err), variant: 'destructive' })
     }
-  }, [pattern, bpm, stepCount])
+  }, [pattern, bpm, stepCount, noteMap])
 
   /** Import a .mid file into the pattern. */
   const midiFileInputRef = React.useRef<HTMLInputElement>(null)
@@ -1156,6 +1160,9 @@ export default function Home() {
       setStepCount(result.stepCount)
       directorRef.current?.setPattern(structuredClone(result.pattern))
       resetPatternHistory(structuredClone(result.pattern))
+      // Apply imported pitch overrides (melody from the DAW).
+      directorRef.current?.setNoteMap(result.noteMap)
+      setNoteMap(result.noteMap)
       setBpm(result.bpm)
       directorRef.current?.setBpm(result.bpm)
       toast({

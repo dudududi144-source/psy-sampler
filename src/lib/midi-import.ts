@@ -16,7 +16,7 @@
 //   0 = kick, 1 = bass, 2 = lead, 3 = hat-closed, 4 = hat-open,
 //   5 = clap, 6 = perc, 7 = texture, 8 = fx
 
-import type { Pattern } from './demo-director'
+import type { Pattern, NoteMap } from './demo-director'
 import type { SampleRole } from '@/psy-sampler'
 
 const CHANNEL_TO_ROLE: SampleRole[] = [
@@ -46,6 +46,8 @@ function readUint16(bytes: Uint8Array, offset: number): number {
 
 export interface MidiImportResult {
   pattern: Pattern
+  /** Per-step pitch overrides captured from the MIDI file. null = use ROLE_NOTES. */
+  noteMap: NoteMap
   bpm: number
   stepCount: number
   notesImported: number
@@ -180,13 +182,16 @@ export function importMidiFile(
   else if (calculatedSteps > 12) stepCount = 16
   else stepCount = 8
 
-  // Build empty pattern.
+  // Build empty pattern + noteMap.
   const pattern: Pattern = {} as Pattern
+  const noteMap: NoteMap = {}
   for (const role of CHANNEL_TO_ROLE) {
     pattern[role] = new Array(stepCount).fill(0)
+    noteMap[role] = new Array(stepCount).fill(null)
   }
 
-  // Place note-on events into steps.
+  // Place note-on events into steps. Capture the pitch in the noteMap so
+  // imported melodies (e.g. a chord arpeggio from a DAW) are preserved.
   let notesImported = 0
   for (const ev of noteEvents) {
     if (!ev.isOn) continue
@@ -199,12 +204,13 @@ export function importMidiFile(
       const existing = pattern[role]![step]!
       if (ev.velocity > existing) {
         pattern[role]![step] = Math.max(1, Math.min(127, ev.velocity))
+        noteMap[role]![step] = ev.note // capture the actual MIDI pitch
         notesImported++
       }
     }
   }
 
-  return { pattern, bpm, stepCount, notesImported }
+  return { pattern, noteMap, bpm, stepCount, notesImported }
 }
 
 /** Read a .mid file from a File object and parse it. */

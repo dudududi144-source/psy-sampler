@@ -5,7 +5,7 @@
 //   2. Save it as a .psy.json file (download)
 //   3. Load it later (or share it with someone else)
 
-import type { Pattern } from './demo-director'
+import type { Pattern, NoteMap } from './demo-director'
 import type { Song } from './song-persistence'
 import type { BusName } from '@/psy-sampler'
 import type { BusMixerState } from '@/components/types'
@@ -20,6 +20,8 @@ export interface ProjectState {
   section: string
   energy: number
   pattern: Pattern
+  /** Per-step pitch overrides (from chord progression). Optional for backward compat. */
+  noteMap?: NoteMap
   busState: Record<BusName, BusMixerState>
   filterMode: 'off' | 'lp' | 'hp'
   pumpEnabled: boolean
@@ -60,6 +62,7 @@ export function validateProject(obj: unknown): ProjectState | null {
     section: typeof raw.section === 'string' ? raw.section : 'DROP',
     energy: typeof raw.energy === 'number' ? raw.energy : 0.7,
     pattern: raw.pattern as Pattern,
+    noteMap: (typeof raw.noteMap === 'object' && raw.noteMap !== null ? raw.noteMap : {}) as NoteMap,
     busState: raw.busState as Record<BusName, BusMixerState>,
     filterMode: (raw.filterMode === 'lp' || raw.filterMode === 'hp' ? raw.filterMode : 'off'),
     pumpEnabled: typeof raw.pumpEnabled === 'boolean' ? raw.pumpEnabled : false,

@@ -11,7 +11,7 @@
 // Each step becomes a Note On + Note Off pair. Velocity = pattern value (0-127).
 // BPM is encoded in the tempo meta event.
 
-import type { Pattern } from './demo-director'
+import type { Pattern, NoteMap } from './demo-director'
 import { ROLE_NOTES, STEPS } from './demo-director'
 
 /** MIDI file header */
@@ -45,9 +45,12 @@ function uint16(val: number): number[] {
  * @param pattern The 9×N velocity pattern.
  * @param bpm Tempo in beats per minute.
  * @param stepCount Number of steps (8/16/32).
+ * @param noteMap Optional per-step pitch overrides. When present, the exported
+ *   MIDI uses the override pitch instead of ROLE_NOTES — so a chord-progression
+ *   arpeggio exports with its actual melody, not a fixed pitch per role.
  * @returns Blob for download as .mid
  */
-export function exportMidiFile(pattern: Pattern, bpm: number, stepCount: number = STEPS): Blob {
+export function exportMidiFile(pattern: Pattern, bpm: number, stepCount: number = STEPS, noteMap?: NoteMap): Blob {
   const ticksPerQuarter = 96 // standard resolution
   const ticksPerStep = ticksPerQuarter / 4 // 16th notes
   const roles = Object.keys(pattern) as Array<keyof Pattern>
@@ -124,7 +127,10 @@ export function exportMidiFile(pattern: Pattern, bpm: number, stepCount: number 
       const role = roles[roleIdx]
       const velocity = pattern[role]?.[step] ?? 0
       if (velocity <= 0) continue
-      const note = ROLE_NOTES[role] ?? 60
+      // Pitch: use the NoteMap override if present, else ROLE_NOTES.
+      // This makes the exported MIDI carry the actual chord-progression
+      // arpeggio melody, not a fixed pitch per role.
+      const note = noteMap?.[role]?.[step] ?? ROLE_NOTES[role] ?? 60
 
       // Note On
       events.push({
@@ -182,8 +188,8 @@ export function exportMidiFile(pattern: Pattern, bpm: number, stepCount: number 
 }
 
 /** Trigger a download of the MIDI file. */
-export function downloadMidiFile(pattern: Pattern, bpm: number, stepCount?: number, filename?: string): void {
-  const blob = exportMidiFile(pattern, bpm, stepCount)
+export function downloadMidiFile(pattern: Pattern, bpm: number, stepCount?: number, noteMap?: NoteMap, filename?: string): void {
+  const blob = exportMidiFile(pattern, bpm, stepCount, noteMap)
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
