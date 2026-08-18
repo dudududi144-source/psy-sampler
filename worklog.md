@@ -2039,3 +2039,19 @@ Work Log:
 Stage Summary:
 - Server running HTTP 200.
 - Commit: 162994c
+
+---
+Task ID: MIDI-EXPORT
+Agent: main
+Task: Add MIDI export — Standard MIDI File (.mid) for DAWs
+
+Work Log:
+- Created midi-export.ts: exportMidiFile() generates SMF format 0, single track, 96 ticks/quarter. Each role → MIDI channel 0-8. Velocity = pattern value. Tempo meta event. Variable-length delta encoding.
+- Added ⬇ MIDI button (cyan) in transport bar.
+- handleExportMidi handler with toast.
+- This closes the #1 competitive gap vs PSY6 ULTIMATE and PsySynthPro.
+- 301 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+
+Stage Summary:
+- Server running HTTP 200.
+- Commit: 8a5b61f
