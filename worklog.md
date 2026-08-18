@@ -2514,3 +2514,19 @@ Stage Summary:
 - 634 tests pass (was 614, +20), 0 fail, 0 TS errors, 0 lint errors.
 - Pushed to GitHub. Commit: 51a082b
 - The user can now see pattern density + velocity range at a glance.
+
+---
+Task ID: SCALE + DEPLOY
+Agent: main
+Task: Add velocity scaler + deploy to Vercel
+
+Work Log:
+- scalePattern(pattern, factor) in humanize.ts. Multiplies active velocities by factor. 1.0=passthrough, 0.5=softer, 1.5=louder. Clamps 1-127. No-mutation.
+- 19 new tests: passthrough, halving, doubling+clamp, no-silence, no-activate, no-mutation, clamping, all 9 roles, 32/8-step, edge cases.
+- Deployed to Vercel using --temporary flag. Public URL: https://temporary-instant-tuba-pn41j4u.vercel.app
+- The deployment is temporary (60 min). Claim link: https://vercel.com/claim-deployment?code=c0ec84bb-9aba-4876-9a1a-1a9a222cad6c
+
+Stage Summary:
+- 653 tests pass (was 634, +19), 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub. Commit: e7dc43b
+- Vercel temp deployment: https://temporary-instant-tuba-pn41j4u.vercel.app

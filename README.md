@@ -1,6 +1,6 @@
 # PSY Sampler Device
 
-> A canonical realization device in the PSY family. 58 features. 634 tests. 21 shortcuts. PWA. MIDI round-trip.
+> A canonical realization device in the PSY family. 59 features. 653 tests. 21 shortcuts. PWA. MIDI round-trip.
 
 ```
                  PSY4 (Host)
@@ -30,9 +30,9 @@
 
 The PSY Sampler is a **realization device** — it receives `NoteEvent`s from a host and renders them as audio using sample playback. It does NOT compose, schedule, or own transport. It is a pure HOW layer.
 
-**58 features · 634 tests · 21 keyboard shortcuts · PWA installable · MIDI round-trip (pitch-aware) · 31 samples**
+**59 features · 653 tests · 21 keyboard shortcuts · PWA installable · MIDI round-trip (pitch-aware) · 31 samples**
 
-## Features (58)
+## Features (59)
 
 ### Pattern Editor (8)
 1. Per-step velocity (0-127 MIDI standard)
@@ -98,13 +98,14 @@ The PSY Sampler is a **realization device** — it receives `NoteEvent`s from a 
 51. Velocity quantization (snap to standard tiers, QUANT button)
 52. Velocity ramp (build-up/breakdown, RAMP↑/RAMP↓ buttons)
 53. Pattern statistics (density, velocity range, note count — real-time)
+54. Velocity scaler (uniform gain trim, scalePattern)
 
 ### UX (5)
-54. Metronome (1kHz click, downbeat 1.5kHz, N shortcut)
-55. Panic button (instant all-voice kill)
-56. Per-role fill (FILL button per role, seeded)
-57. Double/half pattern (×2/÷2, extend or shrink)
-58. Help overlay (? key, all shortcuts + features) + Visualizer (3 modes)
+55. Metronome (1kHz click, downbeat 1.5kHz, N shortcut)
+56. Panic button (instant all-voice kill)
+57. Per-role fill (FILL button per role, seeded)
+58. Double/half pattern (×2/÷2, extend or shrink)
+59. Help overlay (? key, all shortcuts + features) + Visualizer (3 modes)
 
 ## Keyboard Shortcuts (21)
 
@@ -164,9 +165,13 @@ Same inputs → byte-identical audio:
 - Seeded chord progression (same seed + same context → same progression + patterns)
 - Offline render produces byte-identical WAVs
 
+## Live Demo
+
+- **Vercel deployment:** https://temporary-instant-tuba-pn41j4u.vercel.app (temporary — claim within 60 min)
+
 ## Testing
 
-- **634 tests** across 39 files
+- **653 tests** across 40 files
 - **167,165 expects**
 - MIDI round-trip proof (export → import → same pattern)
 - Real audio rendering + spectral analysis
