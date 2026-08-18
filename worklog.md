@@ -2590,3 +2590,29 @@ Stage Summary:
 - Pushed to GitHub. Commit: 431d265
 - GitHub Pages updated: https://dudududi144-source.github.io/psy-sampler/
 - Complete velocity toolkit: 6 operations (quantize, humanize, ramp up/down, scale up/down).
+
+---
+Task ID: PSY-CHASSIS-DESIGN
+Agent: main
+Task: PSY family chassis design — Phase 1 (hardware synth aesthetic)
+
+Work Log:
+- Analyzed PsySynthPro design (607-line CSS) — exact PSY family design tokens
+- Copied psy-design.css verbatim from PsySynthPro
+- Layout: switched to Inter + JetBrains Mono (PSY standard fonts)
+- Created Chassis component: brushed-metal body, wood cheeks, 4 corner screws
+- Wrapped page in Chassis, removed old Tailwind header/footer
+- Body: PSY radial gradient background (purple TL + teal BR over #0d0f14→#08090d)
+- Phase 1 complete: chassis + fonts + body background
+- Verified on GitHub Pages: chassis=true, cheek=2, screws=4, brand renders
+- Init works on production build (GitHub Pages) — chassis appears after init
+
+Phase 2 (next): restyle transport bar as .topbar with .tbtn buttons
+Phase 3: restyle sections with .section/.stitle/.krow classes
+Phase 4: replace sliders with PSY SVG knobs
+
+Stage Summary:
+- 653 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub. Commit: 0a29eb7
+- GitHub Pages updated: https://dudududi144-source.github.io/psy-sampler/
+- The PSY family hardware aesthetic is now live.
