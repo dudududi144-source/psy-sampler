@@ -59,6 +59,7 @@ import { LiveRecorder } from '@/lib/live-recorder'
 import { AutomationBank, type AutomationTarget } from '@/lib/automation'
 import { renderOffline } from '@/lib/offline-render'
 import { exportStems } from '@/lib/stem-export'
+import { downloadMidiFile } from '@/lib/midi-export'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { ErrorBoundary } from '@/components/error-boundary'
@@ -973,6 +974,16 @@ export default function Home() {
   // ─── Stem export (each bus as separate WAV) ─────────────────────────────────
   const [stemExporting, setStemExporting] = React.useState(false)
 
+  /** Export the current pattern as a Standard MIDI File (.mid). */
+  const handleExportMidi = React.useCallback(() => {
+    try {
+      downloadMidiFile(pattern, bpm, stepCount)
+      toast({ title: 'MIDI exported', description: `${stepCount} steps · ${bpm} BPM · 9 channels` })
+    } catch (err) {
+      toast({ title: 'MIDI export failed', description: err instanceof Error ? err.message : String(err), variant: 'destructive' })
+    }
+  }, [pattern, bpm, stepCount])
+
   const handleExportStems = React.useCallback(async () => {
     const ctx = ctxRef.current
     const bundle = bundleRef.current
@@ -1421,6 +1432,15 @@ export default function Home() {
               title="Export stems — drum/music/atmos as separate WAVs"
             >
               {stemExporting ? '● STEMS…' : '⬇ STEMS'}
+            </Button>
+
+            {/* MIDI export — .mid file for DAWs */}
+            <Button
+              onClick={handleExportMidi}
+              className="h-11 gap-2 border border-cyan-400/50 bg-zinc-900 font-mono text-xs font-bold uppercase tracking-[0.15em] text-cyan-300 hover:bg-cyan-500/10"
+              title="Export pattern as Standard MIDI File (.mid) for your DAW"
+            >
+              ⬇ MIDI
             </Button>
 
             {/* Live recording */}
