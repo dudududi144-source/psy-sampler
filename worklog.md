@@ -2431,3 +2431,20 @@ Stage Summary:
 - 558 tests pass (was 539, +19), 0 fail, 0 TS errors, 0 lint errors.
 - Pushed to GitHub. Commit: 0fba8b7
 - Bass + melody octaves are now independently controllable for register matching.
+
+---
+Task ID: HUMANIZE
+Agent: main
+Task: Add velocity humanization — add groove via random variation
+
+Work Log:
+- humanize.ts: humanizePattern(pattern, amount, seed?) pure function. Applies ±(amount*15) variation. Clamps 1-127. Does NOT activate/silence steps. Does NOT touch NoteMap. Seeded for determinism.
+- UI: HUM button (teal) in pattern editor header next to CHORDS.
+- Page: onHumanize applies 50% variation with random seed. Toast confirms.
+- 16 new tests: passthrough, no-activate/no-silence, variation bounds, clamping, determinism, seed variation, no-mutation, all 9 roles, 32-step, active-count preserved, extreme-velocity survival.
+- Browser-verified: kick velocity 100→94 (±6 at 50%). Silent steps preserved. No JS errors.
+
+Stage Summary:
+- 574 tests pass (was 558, +16), 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub. Commit: 57aa654
+- Humanization adds the micro-variation that makes a groove feel alive.
