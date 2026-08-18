@@ -23,6 +23,8 @@ const SHORTCUTS = [
   { key: 'R', desc: 'Toggle live recording' },
   { key: '1-9', desc: 'Trigger performance pads (Shift=accent, Alt=ghost)' },
   { key: 'D', desc: 'Generate chord-aware bass/lead (scale + key from context)' },
+  { key: 'A', desc: 'Cycle arpeggio pattern (up→down→upDown→downUp→random→chordal)' },
+  { key: 'B', desc: 'Cycle bass pattern (root→walking→octave→pedal→arp)' },
   { key: 'X', desc: 'Randomize pattern (seeded — deterministic)' },
   { key: 'N', desc: 'Toggle metronome (click on every beat)' },
 ]

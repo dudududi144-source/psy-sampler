@@ -19,6 +19,8 @@
 //   R              → toggle record (live capture)
 //   1-9            → trigger performance pads (top-left → bottom-right)
 //   D              → generate chord-aware bass/lead (scale + key from context)
+//   A              → cycle arpeggio pattern (up→down→upDown→downUp→random→chordal)
+//   B              → cycle bass pattern (root→walking→octave→pedal→arp)
 
 import * as React from 'react'
 
@@ -39,6 +41,8 @@ export interface KeyboardShortcutsOptions {
   onToggleRecord?: () => void
   onPadTrigger?: (index: number) => void
   onGenerateChords?: () => void
+  onCycleArpeggio?: () => void
+  onCycleBass?: () => void
   onRandomize?: () => void
   onToggleMetronome?: () => void
   enabled?: boolean
@@ -49,7 +53,8 @@ export function useKeyboardShortcuts(opts: KeyboardShortcutsOptions): void {
     onTogglePlay, onStop, onUndo, onRedo, onTapTempo, onToggleHelp,
     onToggleMute, onToggleSolo, onClearPattern, onCycleVisualizer,
     onCycleFilter, onTogglePump, onToggleEvolve, onToggleRecord,
-    onPadTrigger, onGenerateChords, onRandomize, onToggleMetronome, enabled = true,
+    onPadTrigger, onGenerateChords, onCycleArpeggio, onCycleBass,
+    onRandomize, onToggleMetronome, enabled = true,
   } = opts
 
   React.useEffect(() => {
@@ -132,6 +137,12 @@ export function useKeyboardShortcuts(opts: KeyboardShortcutsOptions): void {
         case 'KeyD':
           if (onGenerateChords) { e.preventDefault(); onGenerateChords() }
           break
+        case 'KeyA':
+          if (onCycleArpeggio) { e.preventDefault(); onCycleArpeggio() }
+          break
+        case 'KeyB':
+          if (onCycleBass) { e.preventDefault(); onCycleBass() }
+          break
         case 'KeyX':
           if (onRandomize) { e.preventDefault(); onRandomize() }
           break
@@ -147,6 +158,7 @@ export function useKeyboardShortcuts(opts: KeyboardShortcutsOptions): void {
     onTogglePlay, onStop, onUndo, onRedo, onTapTempo, onToggleHelp,
     onToggleMute, onToggleSolo, onClearPattern, onCycleVisualizer,
     onCycleFilter, onTogglePump, onToggleEvolve, onToggleRecord,
-    onPadTrigger, onGenerateChords, onRandomize, onToggleMetronome, enabled,
+    onPadTrigger, onGenerateChords, onCycleArpeggio, onCycleBass,
+    onRandomize, onToggleMetronome, enabled,
   ])
 }

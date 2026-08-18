@@ -1412,6 +1412,20 @@ export default function Home() {
     onToggleRecord: toggleRecord,
     onPadTrigger,
     onGenerateChords: onGenerateChords,
+    onCycleArpeggio: () => {
+      const patterns: ArpeggioPattern[] = ['up', 'down', 'upDown', 'downUp', 'random', 'chordal']
+      const idx = patterns.indexOf(arpeggio)
+      const next = patterns[(idx + 1) % patterns.length]!
+      setArpeggio(next)
+      toast({ title: `Arpeggio: ${ARPEGGIO_LABELS[next]}`, description: 'A key cycles patterns' })
+    },
+    onCycleBass: () => {
+      const patterns: BassPattern[] = ['root', 'walking', 'octave', 'pedal', 'arp']
+      const idx = patterns.indexOf(bassPattern)
+      const next = patterns[(idx + 1) % patterns.length]!
+      setBassPattern(next)
+      toast({ title: `Bass: ${BASS_LABELS[next]}`, description: 'B key cycles patterns' })
+    },
     onRandomize: onRandomizePattern,
     onToggleMetronome: () => {
       const next = !metronomeEnabled
