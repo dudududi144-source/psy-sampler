@@ -2214,3 +2214,23 @@ Stage Summary:
 - 356 tests pass (was 340, +16), 0 fail, 0 TS errors, 0 lint errors.
 - Pushed to GitHub. Commit: 257b752
 - 43 features total. Server running HTTP 200.
+
+---
+Task ID: CHORD-PROGRESSION
+Agent: main
+Task: Add chord progression generator — scale-aware bass/lead/texture
+
+Work Log:
+- Created chord-progression.ts: 9 scales, diatonic triad builder (stacks thirds, detects maj/min/dim/aug quality), 8 progression templates (i-VI-III-VII etc.), pattern applier.
+- Fixed label bug: chord root name (not scale root) — degree 6 of A minor = "G" not "A".
+- Pattern application: bass on downbeats (steps 0+8), lead on 8th-note grid (~60% density), texture sparse stabs. Non-pitched roles untouched.
+- Added getContext() to DemoDirector (exposes MusicalContext for chord generation).
+- UI: CHORDS button (violet) next to RND in PatternEditor. Toast shows progression label + roman numerals.
+- Keyboard shortcut: D (Diatonic chords). 17 shortcuts total now.
+- 34 new tests: scale intervals, triad building, quality detection, progression determinism, pattern application rules, 32-step support.
+- Browser-verified: clicking CHORDS shows toast "Chords: A - Dm - Faug - Gm" — real diatonic progression from A phrygian dominant (Faug = III+ from augmented 2nd). No JS errors.
+
+Stage Summary:
+- 390 tests pass (was 356, +34), 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub. Commit: c3fcbeb
+- 45 features total. Server running HTTP 200.

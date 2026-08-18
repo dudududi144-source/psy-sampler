@@ -1,6 +1,6 @@
 # PSY Sampler Device
 
-> A canonical realization device in the PSY family. 38 features. 313 tests. 15 shortcuts. PWA. MIDI round-trip.
+> A canonical realization device in the PSY family. 44 features. 390 tests. 17 shortcuts. PWA. MIDI round-trip.
 
 ```
                  PSY4 (Host)
@@ -30,9 +30,9 @@
 
 The PSY Sampler is a **realization device** — it receives `NoteEvent`s from a host and renders them as audio using sample playback. It does NOT compose, schedule, or own transport. It is a pure HOW layer.
 
-**38 features · 313 tests · 15 keyboard shortcuts · PWA installable · MIDI round-trip · 31 samples**
+**44 features · 390 tests · 17 keyboard shortcuts · PWA installable · MIDI round-trip · 31 samples**
 
-## Features (38)
+## Features (44)
 
 ### Pattern Editor (8)
 1. Per-step velocity (0-127 MIDI standard)
@@ -80,11 +80,19 @@ The PSY Sampler is a **realization device** — it receives `NoteEvent`s from a 
 35. Sample import (drag-drop WAV, provenance-enforced)
 36. Multi-output (bus direct MediaStreams)
 
-### UX (2)
-37. Visualizer (3 modes: bars/wave/both + peak/RMS meter)
-38. Help overlay (? key, all shortcuts + features)
+### Performance (2)
+37. Performance pads (3×3 grid, live one-shot triggering, keys 1-9)
+38. Chord progression generator (9 scales, diatonic triads, key + D shortcut)
 
-## Keyboard Shortcuts (15)
+### UX (4)
+39. Metronome (1kHz click, downbeat 1.5kHz, N shortcut)
+40. Panic button (instant all-voice kill)
+41. Per-role fill (FILL button per role, seeded)
+42. Double/half pattern (×2/÷2, extend or shrink)
+43. Visualizer (3 modes: bars/wave/both + peak/RMS meter)
+44. Help overlay (? key, all shortcuts + features)
+
+## Keyboard Shortcuts (17)
 
 | Key | Action |
 |---|---|
@@ -101,8 +109,10 @@ The PSY Sampler is a **realization device** — it receives `NoteEvent`s from a 
 | P | Toggle pump |
 | E | Toggle evolve |
 | R | Toggle recording |
-| 1/2/3 | Pattern length (8/16/32) |
+| 1-9 | Trigger performance pads (Shift=accent, Alt=ghost) |
+| D | Generate chord-aware bass/lead |
 | X | Randomize pattern |
+| N | Toggle metronome |
 
 ## Performance
 
@@ -133,11 +143,12 @@ Same inputs → byte-identical audio:
 - Seeded round-robin (event-order-dependent)
 - Seeded probability (same seed + same bar + same step → same skip)
 - Seeded randomize (same seed → same pattern)
+- Seeded chord progression (same seed + same context → same progression + patterns)
 - Offline render produces byte-identical WAVs
 
 ## Testing
 
-- **313 tests** across 23 files
+- **390 tests** across 27 files
 - **167,165 expects**
 - MIDI round-trip proof (export → import → same pattern)
 - Real audio rendering + spectral analysis
