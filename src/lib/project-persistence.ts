@@ -34,6 +34,8 @@ export interface ProjectState {
   density?: number
   /** Melody octave offset (-2 to +2). Optional — defaults to 0. */
   melodyOctave?: number
+  /** Bass octave offset (-2 to +2). Optional — defaults to 0. */
+  bassOctave?: number
   busState: Record<BusName, BusMixerState>
   filterMode: 'off' | 'lp' | 'hp'
   pumpEnabled: boolean
@@ -81,6 +83,7 @@ export function validateProject(obj: unknown): ProjectState | null {
     bassPattern: typeof raw.bassPattern === 'string' ? raw.bassPattern : 'root',
     density: typeof raw.density === 'number' ? raw.density : 0.6,
     melodyOctave: typeof raw.melodyOctave === 'number' ? raw.melodyOctave : 0,
+    bassOctave: typeof raw.bassOctave === 'number' ? raw.bassOctave : 0,
     busState: raw.busState as Record<BusName, BusMixerState>,
     filterMode: (raw.filterMode === 'lp' || raw.filterMode === 'hp' ? raw.filterMode : 'off'),
     pumpEnabled: typeof raw.pumpEnabled === 'boolean' ? raw.pumpEnabled : false,

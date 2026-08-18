@@ -137,6 +137,8 @@ export default function Home() {
   // Melody octave offset: -2 to +2. Shifts the lead register by whole octaves
   // so the user can match the melody to their sample's optimal register.
   const [melodyOctave, setMelodyOctave] = React.useState(0)
+  // Bass octave offset: -2 to +2. Shifts the bass register independently.
+  const [bassOctave, setBassOctave] = React.useState(0)
   const [currentStep, setCurrentStep] = React.useState(0)
   const { state: pattern, set: setPatternWithHistory, undo, redo, canUndo, canRedo, reset: resetPatternHistory } = useUndoRedo<Pattern>(structuredClone(DEFAULT_PATTERN))
   // NoteMap: per-step pitch overrides (from chord progression). Tracked in
@@ -665,7 +667,7 @@ export default function Home() {
     const ctx = director.getContext()
     const currentPattern = director.getPattern()
     const seed = Math.floor(Math.random() * 1000000)
-    const { pattern: newPattern, noteMap: newNoteMap, progression } = generateChordPattern(currentPattern, ctx, seed, arpeggio, bassPattern, density, melodyOctave)
+    const { pattern: newPattern, noteMap: newNoteMap, progression } = generateChordPattern(currentPattern, ctx, seed, arpeggio, bassPattern, density, melodyOctave, bassOctave)
     director.setPattern(newPattern)
     director.setNoteMap(newNoteMap)
     setNoteMap(newNoteMap)
@@ -676,7 +678,7 @@ export default function Home() {
       title: `Chords: ${progression.label}`,
       description: `${progression.roman} · ${arpeggio} arp · ${bassPattern} bass`,
     })
-  }, [setPatternWithHistory, arpeggio, bassPattern, density, melodyOctave])
+  }, [setPatternWithHistory, arpeggio, bassPattern, density, melodyOctave, bassOctave])
 
   /** Double the pattern (8→16 or 16→32, repeating). */
   const onDoublePattern = React.useCallback(() => {
@@ -1115,12 +1117,12 @@ export default function Home() {
   // ─── Project save/load ─────────────────────────────────────────────────────
   const onSaveProject = React.useCallback(() => {
     const project = createProject(`psy-sampler-${new Date().toISOString().slice(0, 10)}`, {
-      bpm, swing, masterVolume, section, energy, pattern, noteMap, musicalKey, scaleName, arpeggio, bassPattern, density, melodyOctave, busState,
+      bpm, swing, masterVolume, section, energy, pattern, noteMap, musicalKey, scaleName, arpeggio, bassPattern, density, melodyOctave, bassOctave, busState,
       filterMode, pumpEnabled, evolveEnabled, song,
     })
     downloadProject(project)
     toast({ title: 'Project saved', description: `${project.name}.psy.json` })
-  }, [bpm, swing, masterVolume, section, energy, pattern, noteMap, musicalKey, scaleName, arpeggio, bassPattern, density, melodyOctave, busState, filterMode, pumpEnabled, evolveEnabled, song])
+  }, [bpm, swing, masterVolume, section, energy, pattern, noteMap, musicalKey, scaleName, arpeggio, bassPattern, density, melodyOctave, bassOctave, busState, filterMode, pumpEnabled, evolveEnabled, song])
 
   const onLoadProject = React.useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -1140,6 +1142,7 @@ export default function Home() {
       setBassPattern((project.bassPattern ?? 'root') as BassPattern)
       setDensity(project.density ?? 0.6)
       setMelodyOctave(project.melodyOctave ?? 0)
+      setBassOctave(project.bassOctave ?? 0)
       directorRef.current?.setContext({
         key: NOTE_NAMES[project.musicalKey ?? 9],
         rootPc: project.musicalKey ?? 9,
@@ -1741,6 +1744,22 @@ export default function Home() {
                 onChange={(e) => setMelodyOctave(parseInt(e.target.value, 10))}
                 className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-base sm:text-xs text-lime-300"
                 title="Melody octave offset (-2 to +2, shifts lead register)"
+              >
+                {[-2, -1, 0, 1, 2].map((oct) => (
+                  <option key={oct} value={oct}>{oct > 0 ? `+${oct}` : oct}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Bass octave selector — shifts the bass register independently.
+                -2 to +2. Lets the user match the bass to their sample's optimal register. */}
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">B.OCT</span>
+              <select
+                value={bassOctave}
+                onChange={(e) => setBassOctave(parseInt(e.target.value, 10))}
+                className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-base sm:text-xs text-orange-300"
+                title="Bass octave offset (-2 to +2, shifts bass register)"
               >
                 {[-2, -1, 0, 1, 2].map((oct) => (
                   <option key={oct} value={oct}>{oct > 0 ? `+${oct}` : oct}</option>

@@ -325,6 +325,7 @@ export function applyProgression(
   bass: BassPattern = 'root',
   density: number = 0.6,
   melodyOctave: number = 0,
+  bassOctave: number = 0,
 ): { pattern: Pattern; noteMap: NoteMap } {
   // Separate RNGs per role so lead/bass/texture are independent — changing
   // the density (lead RNG consumption) must NOT shift the bass/texture RNG.
@@ -341,6 +342,8 @@ export function applyProgression(
   // Melody octave offset: -2 to +2. Shifts the lead register by whole octaves
   // so the user can match the melody to their sample's optimal register.
   const octaveShift = Math.max(-2, Math.min(2, Math.round(melodyOctave))) * 12
+  // Bass octave offset: -2 to +2. Shifts the bass register independently.
+  const bassOctaveShift = Math.max(-2, Math.min(2, Math.round(bassOctave))) * 12
 
   // Lead: chord-tone arpeggio, 8th notes (every 2 steps).
   // Generated FIRST so the lead is independent of the bass pattern's RNG
@@ -384,10 +387,10 @@ export function applyProgression(
     if (active) {
       // Strong beats (i%4===0) = vel 90-110; off-beats = vel 70-90.
       bassRow[i] = i % 4 === 0 ? bassRng.int(90, 110) : bassRng.int(70, 90)
-      // toneIdx 0=root, 2=5th, 3=root+12 (octave).
-      bassNotes[i] = toneIdx < 3
+      // toneIdx 0=root, 2=5th, 3=root+12 (octave). + bassOctaveShift.
+      bassNotes[i] = (toneIdx < 3
         ? chord.tones[toneIdx]
-        : chord.tones[0] + 12 // octave
+        : chord.tones[0] + 12) + bassOctaveShift
     }
   }
   out.bass = bassRow
@@ -429,8 +432,9 @@ export function generateChordPattern(
   bass: BassPattern = 'root',
   density: number = 0.6,
   melodyOctave: number = 0,
+  bassOctave: number = 0,
 ): { pattern: Pattern; noteMap: NoteMap; progression: Progression } {
   const progression = generateProgression(ctx, seed)
-  const { pattern: newPattern, noteMap } = applyProgression(pattern, progression, seed, arpeggio, bass, density, melodyOctave)
+  const { pattern: newPattern, noteMap } = applyProgression(pattern, progression, seed, arpeggio, bass, density, melodyOctave, bassOctave)
   return { pattern: newPattern, noteMap, progression }
 }
