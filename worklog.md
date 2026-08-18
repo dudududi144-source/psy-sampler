@@ -2150,3 +2150,19 @@ Work Log:
 Stage Summary:
 - Server running HTTP 200.
 - Commit: a05bde6
+
+---
+Task ID: PER-ROLE-FILL
+Agent: main
+Task: Add per-role fill — quick pattern generation for individual roles
+
+Work Log:
+- Added fillRole(role, seed?) to DemoDirector: fills one role's pattern in-place, seeded.
+- Added FILL button (fuchsia) next to ⧉/⤓ per role in PatternEditor.
+- onFillRole handler in page.tsx with toast.
+- 327 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub.
+
+Stage Summary:
+- Server running HTTP 200.
+- Commit: 1595ad7
