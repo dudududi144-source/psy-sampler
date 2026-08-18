@@ -2117,3 +2117,17 @@ Work Log:
 Stage Summary:
 - Server running HTTP 200.
 - Commit: 05b9392
+
+---
+Task ID: MIXER-PRESET-TESTS
+Agent: main
+Task: 14 mixer preset tests
+
+Work Log:
+- Wrote 14 tests: count, unique names, buses, EQ/saturation fields, ranges, filterMode, genre-specific (Psytrance punchy, Dark saturation, Minimal clean, Progressive LP, Dark HP).
+- 327 tests pass (was 313, +14), 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub.
+
+Stage Summary:
+- Server running HTTP 200.
+- Commit: a9c06a1
