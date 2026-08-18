@@ -2498,3 +2498,19 @@ Stage Summary:
 - 614 tests pass (was 596, +18), 0 fail, 0 TS errors, 0 lint errors.
 - Pushed to GitHub. Commit: b6557ce
 - Complete velocity pipeline: generate → quantize → humanize → ramp.
+
+---
+Task ID: PATTERN-STATS
+Agent: main
+Task: Add pattern statistics display — density, velocity range, note count
+
+Work Log:
+- pattern-stats.ts: patternStats(pattern) pure function. Returns activeNotes, density, avgVelocity, minVelocity, maxVelocity, perRole. Read-only.
+- UI: stats bar at bottom of pattern editor: "NOTES X/144 · DENSITY XX% · AVG VEL XX · RANGE XX-XX". Updates in real-time.
+- 20 new tests: active counting, density, avg/min/max, per-role, totalSteps, edge cases (empty, single, 9 roles, determinism, no-mutation, 8/16/32-step).
+- Browser-verified: stats render, update from 30 notes/21% to 31 notes/22% after CHORDS. Real-time. No JS errors.
+
+Stage Summary:
+- 634 tests pass (was 614, +20), 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub. Commit: 51a082b
+- The user can now see pattern density + velocity range at a glance.

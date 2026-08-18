@@ -1,6 +1,6 @@
 # PSY Sampler Device
 
-> A canonical realization device in the PSY family. 57 features. 614 tests. 21 shortcuts. PWA. MIDI round-trip.
+> A canonical realization device in the PSY family. 58 features. 634 tests. 21 shortcuts. PWA. MIDI round-trip.
 
 ```
                  PSY4 (Host)
@@ -30,9 +30,9 @@
 
 The PSY Sampler is a **realization device** — it receives `NoteEvent`s from a host and renders them as audio using sample playback. It does NOT compose, schedule, or own transport. It is a pure HOW layer.
 
-**57 features · 614 tests · 21 keyboard shortcuts · PWA installable · MIDI round-trip (pitch-aware) · 31 samples**
+**58 features · 634 tests · 21 keyboard shortcuts · PWA installable · MIDI round-trip (pitch-aware) · 31 samples**
 
-## Features (57)
+## Features (58)
 
 ### Pattern Editor (8)
 1. Per-step velocity (0-127 MIDI standard)
@@ -97,13 +97,14 @@ The PSY Sampler is a **realization device** — it receives `NoteEvent`s from a 
 50. Velocity humanization (add groove via random variation, HUM button)
 51. Velocity quantization (snap to standard tiers, QUANT button)
 52. Velocity ramp (build-up/breakdown, RAMP↑/RAMP↓ buttons)
+53. Pattern statistics (density, velocity range, note count — real-time)
 
 ### UX (5)
-53. Metronome (1kHz click, downbeat 1.5kHz, N shortcut)
-54. Panic button (instant all-voice kill)
-55. Per-role fill (FILL button per role, seeded)
-56. Double/half pattern (×2/÷2, extend or shrink)
-57. Help overlay (? key, all shortcuts + features) + Visualizer (3 modes)
+54. Metronome (1kHz click, downbeat 1.5kHz, N shortcut)
+55. Panic button (instant all-voice kill)
+56. Per-role fill (FILL button per role, seeded)
+57. Double/half pattern (×2/÷2, extend or shrink)
+58. Help overlay (? key, all shortcuts + features) + Visualizer (3 modes)
 
 ## Keyboard Shortcuts (21)
 
@@ -165,7 +166,7 @@ Same inputs → byte-identical audio:
 
 ## Testing
 
-- **614 tests** across 38 files
+- **634 tests** across 39 files
 - **167,165 expects**
 - MIDI round-trip proof (export → import → same pattern)
 - Real audio rendering + spectral analysis
