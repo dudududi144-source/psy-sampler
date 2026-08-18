@@ -79,8 +79,8 @@ export function Visualizer({ analyser, isPlaying }: { analyser: AnalyserNode | n
       const w = rect.width
       const h = 160
 
-      // Trail-style clear.
-      ctx.fillStyle = 'rgba(9,9,11,0.35)'
+      // Trail-style clear (PSY OLED dark).
+      ctx.fillStyle = 'rgba(2,10,15,0.42)'
       ctx.fillRect(0, 0, w, h)
 
       // ── Frequency bars (BARS or BOTH mode) ──────────────────────────────
@@ -92,12 +92,16 @@ export function Visualizer({ analyser, isPlaying }: { analyser: AnalyserNode | n
           const idx = Math.floor((i / barCount) * freqBufferLength * 0.7)
           const v = (freqData[idx] ?? 0) / 255
           const barH = v * barAreaH * 0.95
-          // Color zones: emerald → fuchsia → violet.
-          const hue = i < barCount / 3 ? 160 : i < (barCount * 2) / 3 ? 325 : 280
-          ctx.fillStyle = `hsla(${hue}, 100%, ${50 + v * 25}%, ${0.35 + v * 0.65})`
+          // PSY hue ramp: cyan (190°) → purple (250°) → pink (300°)
+          const hue = 190 + (i / barCount) * 110
+          const lit = 30 + v * 40
+          ctx.fillStyle = `hsla(${hue}, 95%, ${lit}%, ${0.85 + v * 0.1})`
+          ctx.shadowBlur = 4
+          ctx.shadowColor = `hsl(${hue}, 100%, 60%)`
           ctx.fillRect(i * barWidth + 1, barAreaH - barH, Math.max(1, barWidth - 2), barH)
+          ctx.shadowBlur = 0
           // Reflection.
-          ctx.fillStyle = `hsla(${hue}, 100%, 50%, ${v * 0.2})`
+          ctx.fillStyle = `hsla(${hue}, 95%, 40%, ${v * 0.15})`
           ctx.fillRect(i * barWidth + 1, barAreaH, Math.max(1, barWidth - 2), 2)
         }
       }
@@ -108,9 +112,9 @@ export function Visualizer({ analyser, isPlaying }: { analyser: AnalyserNode | n
         const waveH = mode === 'both' ? h * 0.35 : h * 0.8
         const sliceWidth = w / timeData.length
         ctx.lineWidth = 2
-        ctx.strokeStyle = mode === 'both' ? 'rgba(0,255,200,0.9)' : 'rgba(0,255,200,0.8)'
-        ctx.shadowBlur = 8
-        ctx.shadowColor = 'rgba(0,255,200,0.6)'
+        ctx.strokeStyle = '#86f7ff'
+        ctx.shadowBlur = 7
+        ctx.shadowColor = '#00e5ff'
         ctx.beginPath()
         let x = 0
         for (let i = 0; i < timeData.length; i++) {
@@ -178,7 +182,7 @@ export function Visualizer({ analyser, isPlaying }: { analyser: AnalyserNode | n
             className="absolute left-0 top-0 h-full transition-all"
             style={{
               width: `${Math.max(0, (peakDb + 60) / 60) * 100}%`,
-              backgroundColor: peakDb > -1 ? '#ef4444' : peakDb > -6 ? '#fbbf24' : '#22d3ee',
+              backgroundColor: peakDb > -1 ? '#f85149' : peakDb > -6 ? '#d29922' : '#3fb950',
             }}
           />
         </div>
@@ -191,7 +195,7 @@ export function Visualizer({ analyser, isPlaying }: { analyser: AnalyserNode | n
             className="absolute left-0 top-0 h-full transition-all"
             style={{
               width: `${Math.max(0, (rmsDb + 60) / 60) * 100}%`,
-              backgroundColor: '#a78bfa',
+              backgroundColor: '#7ff3ff',
             }}
           />
         </div>
