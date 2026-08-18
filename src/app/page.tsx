@@ -1589,94 +1589,72 @@ export default function Home() {
               style={{ flex: 1, minWidth: '300px', marginBottom: '4px' }}
             />
 
-            {/* Row 3: Sliders (BPM + Swing + Master + Section + Energy) */}
+            {/* Grouped File/Export buttons */}
+            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+              {/* WAV export */}
+              <Button
+                onClick={handleExportWav}
+                disabled={exporting}
+                className="tbtn h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em] disabled:opacity-50"
+                style={{ boxShadow: exporting ? '0 0 16px rgba(185,103,255,0.6)' : '0 0 8px rgba(185,103,255,0.2)' }}
+              >
+                {exporting ? '● EXPORTING…' : '⬇ EXPORT WAV'}
+              </Button>
+
+              {/* Stem export — each bus as separate WAV */}
+              <Button
+                onClick={handleExportStems}
+                disabled={stemExporting}
+                className="tbtn h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em] disabled:opacity-50"
+                style={{ boxShadow: stemExporting ? '0 0 16px rgba(251,191,36,0.6)' : 'none' }}
+                title="Export stems — drum/music/atmos as separate WAVs"
+              >
+                {stemExporting ? '● STEMS…' : '⬇ STEMS'}
+              </Button>
+
+              {/* MIDI export — .mid file for DAWs */}
+              <Button
+                onClick={handleExportMidi}
+                className="tbtn midi h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em]"
+                title="Export pattern as Standard MIDI File (.mid) for your DAW"
+              >
+                ⬇ MIDI
+              </Button>
+
+              {/* MIDI import — load .mid file */}
+              <Button
+                onClick={() => midiFileInputRef.current?.click()}
+                disabled={midiImporting}
+                className="tbtn midi h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em] disabled:opacity-50"
+                title="Import .mid file — extract pattern from a DAW"
+              >
+                {midiImporting ? '● LOADING…' : '⬆ MIDI'}
+              </Button>
+              <input
+                ref={midiFileInputRef}
+                type="file"
+                accept=".mid,.midi,audio/midi"
+                onChange={handleImportMidi}
+                className="hidden"
+              />
+
+              {/* Project save/load */}
+              <Button
+                onClick={onSaveProject}
+                className="tbtn h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em]"
+                title="Save project (.psy.json)"
+              >
+                💾 SAVE
+              </Button>
+              <Button
+                onClick={() => projectFileInputRef.current?.click()}
+                className="tbtn h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em]"
+                title="Load project (.psy.json)"
+              >
+                📂 LOAD
+              </Button>
+              <input ref={projectFileInputRef} type="file" accept=".json,.psy.json,application/json" onChange={onLoadProject} className="hidden" />
             </div>
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3 border-t border-zinc-800/50 pt-2">
-            {/* BPM knob */}
-            <PsyKnob
-              value={bpm}
-              min={60}
-              max={200}
-              def={145}
-              step={1}
-              color="#fbbf24"
-              label="BPM"
-              fmt={v => `${Math.round(v)}`}
-              onChange={onBpmChange}
-            />
-
-            {/* Swing knob */}
-            <PsyKnob
-              value={swing}
-              min={0}
-              max={100}
-              def={0}
-              step={1}
-              color="#b8e05a"
-              label="SWING"
-              fmt={v => `${Math.round(v)}%`}
-              onChange={onSwingChange}
-            />
-
-            {/* Master volume */}
-            <PsyKnob
-              value={masterVolume}
-              min={0}
-              max={1}
-              def={0.85}
-              step={0.01}
-              color="#4dd6e8"
-              label="MASTER"
-              fmt={v => v.toFixed(2)}
-              onChange={onMasterVolumeChange}
-            />
-
-            {/* WAV export */}
-            <Button
-              onClick={handleExportWav}
-              disabled={exporting}
-              className="tbtn h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em] disabled:opacity-50"
-              style={{ boxShadow: exporting ? '0 0 16px rgba(185,103,255,0.6)' : '0 0 8px rgba(185,103,255,0.2)' }}
-            >
-              {exporting ? '● EXPORTING…' : '⬇ EXPORT WAV'}
-            </Button>
-
-            {/* Stem export — each bus as separate WAV */}
-            <Button
-              onClick={handleExportStems}
-              disabled={stemExporting}
-              className="tbtn h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em] disabled:opacity-50"
-              style={{ boxShadow: stemExporting ? '0 0 16px rgba(251,191,36,0.6)' : 'none' }}
-              title="Export stems — drum/music/atmos as separate WAVs"
-            >
-              {stemExporting ? '● STEMS…' : '⬇ STEMS'}
-            </Button>
-
-            {/* MIDI export — .mid file for DAWs */}
-            <Button
-              onClick={handleExportMidi}
-              className="tbtn midi h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em]"
-              title="Export pattern as Standard MIDI File (.mid) for your DAW"
-            >
-              ⬇ MIDI
-            </Button>
-
-            {/* MIDI import — load .mid file */}
-            <Button
-              onClick={() => midiFileInputRef.current?.click()}
-              disabled={midiImporting}
-              className="tbtn midi h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em] disabled:opacity-50"
-              title="Import .mid file — extract pattern from a DAW"
-            >
-              {midiImporting ? '● LOADING…' : '⬆ MIDI'}
-            </Button>
-            <input
-              ref={midiFileInputRef}
-              type="file"
-              accept=".mid,.midi,audio/midi"
-              onChange={handleImportMidi}
-              className="hidden"
-            />
 
             {/* Metronome + Panic */}
             <Button
@@ -1723,93 +1701,51 @@ export default function Home() {
               {recording ? `● REC ${(recElapsed / 1000).toFixed(1)}s` : '○ REC'}
             </Button>
 
-            {/* Project save/load */}
-            <Button
-              onClick={onSaveProject}
-              className="tbtn h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em]"
-              title="Save project (.psy.json)"
-            >
-              💾 SAVE
-            </Button>
-            <Button
-              onClick={() => projectFileInputRef.current?.click()}
-              className="tbtn h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em]"
-              title="Load project (.psy.json)"
-            >
-              📂 LOAD
-            </Button>
-            <input ref={projectFileInputRef} type="file" accept=".json,.psy.json,application/json" onChange={onLoadProject} className="hidden" />
+            {/* Row 3: Sliders (BPM + Swing + Master + Section + Energy) */}
+            </div>
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 border-t border-zinc-800/50 pt-2">
+            {/* BPM knob */}
+            <PsyKnob
+              value={bpm}
+              min={60}
+              max={200}
+              def={145}
+              step={1}
+              color="#fbbf24"
+              label="BPM"
+              fmt={v => `${Math.round(v)}`}
+              onChange={onBpmChange}
+            />
+
+            {/* Swing knob */}
+            <PsyKnob
+              value={swing}
+              min={0}
+              max={100}
+              def={0}
+              step={1}
+              color="#b8e05a"
+              label="SWING"
+              fmt={v => `${Math.round(v)}%`}
+              onChange={onSwingChange}
+            />
+
+            {/* Master volume */}
+            <PsyKnob
+              value={masterVolume}
+              min={0}
+              max={1}
+              def={0.85}
+              step={0.01}
+              color="#4dd6e8"
+              label="MASTER"
+              fmt={v => v.toFixed(2)}
+              onChange={onMasterVolumeChange}
+            />
 
             {/* Row 2: FX + Toggles + Undo/Redo + Tap + MIDI */}
             </div>
             <div className="flex flex-wrap items-center gap-2 sm:gap-3 border-t border-zinc-800/50 pt-2">
-            {/* PUMP (sidechain) toggle + EVOLVE toggle */}
-            <Button
-              onClick={() => {
-                const newState = !pumpEnabled
-                setPumpEnabled(newState)
-                bundleRef.current?.audioGraph.setSidechainEnabled(newState)
-              }}
-              className="h-11 gap-2 border font-mono text-xs font-bold uppercase tracking-[0.15em]"
-              style={{
-                borderColor: pumpEnabled ? 'rgba(0,255,200,0.6)' : 'rgba(63,63,70,0.8)',
-                color: pumpEnabled ? '#00ffc8' : '#71717a',
-                background: pumpEnabled ? 'rgba(0,255,200,0.1)' : 'rgba(24,24,27,0.8)',
-                boxShadow: pumpEnabled ? '0 0 16px rgba(0,255,200,0.5)' : 'none',
-              }}
-              title="Sidechain ducking — kick ducks music+atmos"
-            >
-              {pumpEnabled ? '● PUMP' : '○ PUMP'}
-            </Button>
-
-            <Button
-              onClick={() => {
-                const newState = !evolveEnabled
-                setEvolveEnabled(newState)
-                directorRef.current?.setEvolveEnabled(newState)
-              }}
-              className="h-11 gap-2 border font-mono text-xs font-bold uppercase tracking-[0.15em]"
-              style={{
-                borderColor: evolveEnabled ? 'rgba(255,46,136,0.6)' : 'rgba(63,63,70,0.8)',
-                color: evolveEnabled ? '#ff2e88' : '#71717a',
-                background: evolveEnabled ? 'rgba(255,46,136,0.1)' : 'rgba(24,24,27,0.8)',
-                boxShadow: evolveEnabled ? '0 0 16px rgba(255,46,136,0.5)' : 'none',
-              }}
-              title="Auto-evolve — pattern mutates every 4 bars (deterministic)"
-            >
-              {evolveEnabled ? '● EVOLVE' : '○ EVOLVE'}
-            </Button>
-
-            <Button
-              onClick={() => {
-                const next = filterMode === 'off' ? 'lp' : filterMode === 'lp' ? 'hp' : 'off'
-                setFilterMode(next)
-                const graph = bundleRef.current?.audioGraph
-                if (!graph) return
-                if (next === 'off') {
-                  graph.setMasterFilter({ type: 'allpass', freq: 20000, Q: 1 })
-                  graph.setFilterEnvelopeEnabled(false)
-                } else if (next === 'lp') {
-                  graph.setMasterFilter({ type: 'lowpass', freq: 8000, Q: 2 })
-                  graph.setFilterEnvelopeEnabled(true) // auto-wah on kick
-                  graph.setFilterEnvelopeParams(0.6, 0.25)
-                } else {
-                  graph.setMasterFilter({ type: 'highpass', freq: 200, Q: 1.5 })
-                  graph.setFilterEnvelopeEnabled(false)
-                }
-              }}
-              className="h-11 gap-2 border font-mono text-xs font-bold uppercase tracking-[0.15em]"
-              style={{
-                borderColor: filterMode !== 'off' ? 'rgba(96,165,250,0.6)' : 'rgba(63,63,70,0.8)',
-                color: filterMode !== 'off' ? '#60a5fa' : '#71717a',
-                background: filterMode !== 'off' ? 'rgba(96,165,250,0.1)' : 'rgba(24,24,27,0.8)',
-                boxShadow: filterMode !== 'off' ? '0 0 16px rgba(96,165,250,0.5)' : 'none',
-              }}
-              title="Master filter — LP=lowpass+auto-wah, HP=highpass, OFF=bypass"
-            >
-              {filterMode === 'off' ? '○ FLT' : filterMode === 'lp' ? '● LP' : '● HP'}
-            </Button>
-
             {/* Undo / Redo */}
             <Button
               onClick={onUndo}
@@ -2034,7 +1970,80 @@ export default function Home() {
 
           {/* ─── Mixer + Presets + Slots ─── */}
           <div className="section mt-4 grid gap-4 lg:grid-cols-3">
-            <Mixer busState={busState} onGain={onBusGain} onEQ={onBusEQ} onSaturation={onBusSaturation} onMute={onBusMute} onSolo={onBusSolo} />
+            <div>
+              {/* FX toggles — audio effects, grouped with the mixer */}
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                {/* PUMP (sidechain) toggle */}
+                <Button
+                  onClick={() => {
+                    const newState = !pumpEnabled
+                    setPumpEnabled(newState)
+                    bundleRef.current?.audioGraph.setSidechainEnabled(newState)
+                  }}
+                  className="h-11 gap-2 border font-mono text-xs font-bold uppercase tracking-[0.15em]"
+                  style={{
+                    borderColor: pumpEnabled ? 'rgba(0,255,200,0.6)' : 'rgba(63,63,70,0.8)',
+                    color: pumpEnabled ? '#00ffc8' : '#71717a',
+                    background: pumpEnabled ? 'rgba(0,255,200,0.1)' : 'rgba(24,24,27,0.8)',
+                    boxShadow: pumpEnabled ? '0 0 16px rgba(0,255,200,0.5)' : 'none',
+                  }}
+                  title="Sidechain ducking — kick ducks music+atmos"
+                >
+                  {pumpEnabled ? '● PUMP' : '○ PUMP'}
+                </Button>
+
+                {/* EVOLVE toggle */}
+                <Button
+                  onClick={() => {
+                    const newState = !evolveEnabled
+                    setEvolveEnabled(newState)
+                    directorRef.current?.setEvolveEnabled(newState)
+                  }}
+                  className="h-11 gap-2 border font-mono text-xs font-bold uppercase tracking-[0.15em]"
+                  style={{
+                    borderColor: evolveEnabled ? 'rgba(255,46,136,0.6)' : 'rgba(63,63,70,0.8)',
+                    color: evolveEnabled ? '#ff2e88' : '#71717a',
+                    background: evolveEnabled ? 'rgba(255,46,136,0.1)' : 'rgba(24,24,27,0.8)',
+                    boxShadow: evolveEnabled ? '0 0 16px rgba(255,46,136,0.5)' : 'none',
+                  }}
+                  title="Auto-evolve — pattern mutates every 4 bars (deterministic)"
+                >
+                  {evolveEnabled ? '● EVOLVE' : '○ EVOLVE'}
+                </Button>
+
+                {/* FLT (master filter) toggle */}
+                <Button
+                  onClick={() => {
+                    const next = filterMode === 'off' ? 'lp' : filterMode === 'lp' ? 'hp' : 'off'
+                    setFilterMode(next)
+                    const graph = bundleRef.current?.audioGraph
+                    if (!graph) return
+                    if (next === 'off') {
+                      graph.setMasterFilter({ type: 'allpass', freq: 20000, Q: 1 })
+                      graph.setFilterEnvelopeEnabled(false)
+                    } else if (next === 'lp') {
+                      graph.setMasterFilter({ type: 'lowpass', freq: 8000, Q: 2 })
+                      graph.setFilterEnvelopeEnabled(true) // auto-wah on kick
+                      graph.setFilterEnvelopeParams(0.6, 0.25)
+                    } else {
+                      graph.setMasterFilter({ type: 'highpass', freq: 200, Q: 1.5 })
+                      graph.setFilterEnvelopeEnabled(false)
+                    }
+                  }}
+                  className="h-11 gap-2 border font-mono text-xs font-bold uppercase tracking-[0.15em]"
+                  style={{
+                    borderColor: filterMode !== 'off' ? 'rgba(96,165,250,0.6)' : 'rgba(63,63,70,0.8)',
+                    color: filterMode !== 'off' ? '#60a5fa' : '#71717a',
+                    background: filterMode !== 'off' ? 'rgba(96,165,250,0.1)' : 'rgba(24,24,27,0.8)',
+                    boxShadow: filterMode !== 'off' ? '0 0 16px rgba(96,165,250,0.5)' : 'none',
+                  }}
+                  title="Master filter — LP=lowpass+auto-wah, HP=highpass, OFF=bypass"
+                >
+                  {filterMode === 'off' ? '○ FLT' : filterMode === 'lp' ? '● LP' : '● HP'}
+                </Button>
+              </div>
+              <Mixer busState={busState} onGain={onBusGain} onEQ={onBusEQ} onSaturation={onBusSaturation} onMute={onBusMute} onSolo={onBusSolo} />
+            </div>
             <PresetsPanel onLoad={loadPreset} onLoadMixer={loadMixerPreset} />
             <PatternSlots
               slotNames={slotNames}
