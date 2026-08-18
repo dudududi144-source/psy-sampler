@@ -1,18 +1,27 @@
 'use client'
 
-// PresetsPanel + PatternSlots — genre preset loader + 4-slot save/load/clear.
+// PresetsPanel + PatternSlots — genre pattern + mixer preset loader + 4-slot save/load/clear.
 
 import { PATTERN_PRESETS, type PatternPreset } from '@/lib/pattern-persistence'
+import { MIXER_PRESETS, type MixerPreset } from '@/lib/mixer-presets'
 
 // ─── Presets Panel ───────────────────────────────────────────────────────────
 
-export function PresetsPanel({ onLoad }: { onLoad: (preset: PatternPreset) => void }) {
+export function PresetsPanel({
+  onLoad,
+  onLoadMixer,
+}: {
+  onLoad: (preset: PatternPreset) => void
+  onLoadMixer?: (preset: MixerPreset) => void
+}) {
   return (
     <div className="rounded-lg border border-zinc-800 bg-zinc-950/80 p-4">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-emerald-300">PRESETS · genre</h2>
-        <span className="font-mono text-[10px] text-zinc-500">load pattern + bpm</span>
+        <span className="font-mono text-[10px] text-zinc-500">pattern + mixer</span>
       </div>
+      {/* Pattern presets */}
+      <div className="mb-2 font-mono text-[9px] uppercase tracking-wider text-zinc-600">PATTERN</div>
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
         {PATTERN_PRESETS.map((preset) => (
           <button
@@ -25,6 +34,24 @@ export function PresetsPanel({ onLoad }: { onLoad: (preset: PatternPreset) => vo
           </button>
         ))}
       </div>
+      {/* Mixer presets */}
+      {onLoadMixer && (
+        <>
+          <div className="mb-2 mt-3 font-mono text-[9px] uppercase tracking-wider text-zinc-600">MIXER (EQ+SAT+FLT)</div>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+            {MIXER_PRESETS.map((preset) => (
+              <button
+                key={preset.name}
+                onClick={() => onLoadMixer(preset)}
+                className="rounded border border-zinc-700 bg-zinc-900/60 px-2 py-2 font-mono text-[10px] font-bold uppercase tracking-wider text-amber-300 transition-all hover:border-amber-400/50 hover:bg-amber-500/10"
+                title={`${preset.name} mixer preset — EQ + saturation + filter`}
+              >
+                {preset.name}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   )
 }

@@ -67,6 +67,7 @@ import { ErrorBoundary } from '@/components/error-boundary'
 import { useKeyboardShortcuts } from '@/lib/use-keyboard-shortcuts'
 import { useUndoRedo } from '@/lib/use-undo-redo'
 import { useMidiInput, roleForNote } from '@/lib/use-midi-input'
+import { MIXER_PRESETS, type MixerPreset } from '@/lib/mixer-presets'
 import { TimelineView } from '@/components/timeline-view'
 import { AutomationEditor } from '@/components/automation-editor'
 import { HelpOverlay } from '@/components/help-overlay'
@@ -852,6 +853,34 @@ export default function Home() {
       // ignore
     }
     toast({ title: `Loaded ${preset.name} · ${preset.bpm} BPM` })
+  }, [])
+
+  /** Load a mixer preset (EQ + saturation + filter per genre). */
+  const loadMixerPreset = React.useCallback((preset: MixerPreset) => {
+    const graph = bundleRef.current?.audioGraph
+    setBusState(preset.busState)
+    setFilterMode(preset.filterMode)
+    if (graph) {
+      for (const busName of ['drum', 'music', 'atmos'] as const) {
+        const bs = preset.busState[busName]
+        graph.setBusGain(busName, bs.gain)
+        graph.setBusMuted(busName, bs.muted)
+        graph.setBusEQ(busName, { low: bs.eqLow, mid: bs.eqMid, high: bs.eqHigh })
+        graph.setBusSaturation(busName, bs.saturation)
+      }
+      if (preset.filterMode === 'off') {
+        graph.setMasterFilter({ type: 'allpass', freq: 20000, Q: 1 })
+        graph.setFilterEnvelopeEnabled(false)
+      } else if (preset.filterMode === 'lp') {
+        graph.setMasterFilter({ type: 'lowpass', freq: 8000, Q: 2 })
+        graph.setFilterEnvelopeEnabled(true)
+        graph.setFilterEnvelopeParams(0.6, 0.25)
+      } else {
+        graph.setMasterFilter({ type: 'highpass', freq: 200, Q: 1.5 })
+        graph.setFilterEnvelopeEnabled(false)
+      }
+    }
+    toast({ title: `Mixer: ${preset.name}`, description: 'EQ + saturation + filter applied' })
   }, [])
 
   // ─── Pattern slots ─────────────────────────────────────────────────────────
@@ -1676,7 +1705,7 @@ export default function Home() {
           {/* ─── Mixer + Presets + Slots ─── */}
           <div className="mt-4 grid gap-4 lg:grid-cols-3">
             <Mixer busState={busState} onGain={onBusGain} onEQ={onBusEQ} onSaturation={onBusSaturation} onMute={onBusMute} onSolo={onBusSolo} />
-            <PresetsPanel onLoad={loadPreset} />
+            <PresetsPanel onLoad={loadPreset} onLoadMixer={loadMixerPreset} />
             <PatternSlots
               slotNames={slotNames}
               onSave={saveToSlotN}
