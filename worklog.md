@@ -2301,3 +2301,21 @@ Stage Summary:
 - 422 tests pass (was 409, +13), 0 fail, 0 TS errors, 0 lint errors.
 - Pushed to GitHub. Commit: d923dab
 - The NoteMap now survives the full DAW workflow: generate → export MIDI → DAW → import MIDI → same melody.
+
+---
+Task ID: KEY-SCALE-SELECTOR
+Agent: main
+Task: Add key + scale selector — 12 keys, 9 scales for chord progression
+
+Work Log:
+- Exported NOTE_NAMES (12 chromatic) + SCALE_LABELS (9 scales) from chord-progression.ts.
+- Page: musicalKey (rootPc 0-11) + scaleName state. onKeyChange + onScaleChange call director.setContext() so CHORDS uses the new key+scale.
+- UI: KEY dropdown (emerald) + SCALE dropdown (violet) in transport bar next to SECTION.
+- Project persistence: musicalKey + scaleName saved in .psy.json. Backward compat: defaults to A phrygian dominant.
+- 23 new tests: NOTE_NAMES (12 entries, correct sharps), SCALE_LABELS (matches SCALES), key transposition (pitch-class shift, same chord shape), scale quality (minor/major/dim/aug), project persistence (all 12 keys + 9 scales survive, backward compat).
+- Browser-verified: KEY=C + SCALE=Major → CHORDS generates C major progression. Pitch labels: C2/A2/E2/B2/F3/C3 (C major chord tones, not A phrygian dominant).
+
+Stage Summary:
+- 445 tests pass (was 422, +23), 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub. Commit: a6bec4f
+- The chord progression generator now works for ANY key + scale — psytrance (A phrygian dominant), techno (C minor), progressive (D dorian), etc.

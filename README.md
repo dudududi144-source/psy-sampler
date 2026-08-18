@@ -1,6 +1,6 @@
 # PSY Sampler Device
 
-> A canonical realization device in the PSY family. 46 features. 422 tests. 17 shortcuts. PWA. MIDI round-trip.
+> A canonical realization device in the PSY family. 47 features. 445 tests. 17 shortcuts. PWA. MIDI round-trip.
 
 ```
                  PSY4 (Host)
@@ -30,9 +30,9 @@
 
 The PSY Sampler is a **realization device** — it receives `NoteEvent`s from a host and renders them as audio using sample playback. It does NOT compose, schedule, or own transport. It is a pure HOW layer.
 
-**46 features · 422 tests · 17 keyboard shortcuts · PWA installable · MIDI round-trip (pitch-aware) · 31 samples**
+**47 features · 445 tests · 17 keyboard shortcuts · PWA installable · MIDI round-trip (pitch-aware) · 31 samples**
 
-## Features (46)
+## Features (47)
 
 ### Pattern Editor (8)
 1. Per-step velocity (0-127 MIDI standard)
@@ -86,13 +86,14 @@ The PSY Sampler is a **realization device** — it receives `NoteEvent`s from a 
 39. Per-step NoteMap (pitch override — piano-roll lite, chord-tone arpeggio)
 40. Pitch-aware MIDI round-trip (export/import preserves melody)
 41. Project persistence with NoteMap (save/load .psy.json preserves pitches)
+42. Key + scale selector (12 keys, 9 scales — any harmonic territory)
 
 ### UX (5)
-42. Metronome (1kHz click, downbeat 1.5kHz, N shortcut)
-43. Panic button (instant all-voice kill)
-44. Per-role fill (FILL button per role, seeded)
-45. Double/half pattern (×2/÷2, extend or shrink)
-46. Help overlay (? key, all shortcuts + features) + Visualizer (3 modes)
+43. Metronome (1kHz click, downbeat 1.5kHz, N shortcut)
+44. Panic button (instant all-voice kill)
+45. Per-role fill (FILL button per role, seeded)
+46. Double/half pattern (×2/÷2, extend or shrink)
+47. Help overlay (? key, all shortcuts + features) + Visualizer (3 modes)
 
 ## Keyboard Shortcuts (17)
 
@@ -150,7 +151,7 @@ Same inputs → byte-identical audio:
 
 ## Testing
 
-- **422 tests** across 29 files
+- **445 tests** across 30 files
 - **167,165 expects**
 - MIDI round-trip proof (export → import → same pattern)
 - Real audio rendering + spectral analysis
