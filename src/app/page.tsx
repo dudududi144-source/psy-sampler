@@ -1710,106 +1710,6 @@ export default function Home() {
               onChange={onMasterVolumeChange}
             />
 
-            {/* Section dropdown */}
-            <PsyCycleButton
-              value={section}
-              options={SECTIONS}
-              display={v => v}
-              color="#f472b6"
-              label="SECTION"
-              onChange={onSectionChange}
-            />
-
-            {/* Key selector — root pitch class (0-11 = C-B). Changes the
-                director's context so CHORDS uses the new key. */}
-            <PsyCycleButton
-              value={String(musicalKey)}
-              options={NOTE_NAMES.map((_, i) => String(i))}
-              display={v => NOTE_NAMES[parseInt(v)]!}
-              color="#00ffc8"
-              label="KEY"
-              onChange={v => onKeyChange(parseInt(v))}
-            />
-
-            {/* Scale selector — determines the diatonic chords CHORDS uses. */}
-            <PsyCycleButton
-              value={scaleName}
-              options={Object.keys(SCALE_LABELS)}
-              display={v => SCALE_LABELS[v]!}
-              color="#b967ff"
-              label="SCALE"
-              onChange={onScaleChange}
-            />
-
-            {/* Arpeggio pattern selector — controls the lead's melodic shape. */}
-            <PsyCycleButton
-              value={arpeggio}
-              options={Object.keys(ARPEGGIO_LABELS) as ArpeggioPattern[]}
-              display={v => ARPEGGIO_LABELS[v]}
-              color="#fbbf24"
-              label="ARP"
-              onChange={setArpeggio}
-            />
-
-            {/* Bass pattern selector — controls the bassline character. */}
-            <PsyCycleButton
-              value={bassPattern}
-              options={Object.keys(BASS_LABELS) as BassPattern[]}
-              display={v => BASS_LABELS[v]}
-              color="#ff2e88"
-              label="BASS"
-              onChange={setBassPattern}
-            />
-
-            {/* Lead density knob — controls how busy the melody is.
-                0.2 = sparse (few notes), 0.6 = default, 1.0 = every 8th note. */}
-            <PsyKnob
-              value={density}
-              min={0.2}
-              max={1}
-              def={0.6}
-              step={0.1}
-              color="#22d3ee"
-              label="DENS"
-              fmt={v => v.toFixed(1)}
-              onChange={setDensity}
-            />
-
-            {/* Melody octave selector — shifts the lead register by whole octaves.
-                -2 to +2. Lets the user match the melody to their sample's optimal register. */}
-            <PsyCycleButton
-              value={String(melodyOctave)}
-              options={['-2', '-1', '0', '1', '2']}
-              display={v => (parseInt(v) > 0 ? `+${v}` : v)}
-              color="#b8e05a"
-              label="OCT"
-              onChange={v => setMelodyOctave(parseInt(v))}
-            />
-
-            {/* Bass octave selector — shifts the bass register independently.
-                -2 to +2. Lets the user match the bass to their sample's optimal register. */}
-            <PsyCycleButton
-              value={String(bassOctave)}
-              options={['-2', '-1', '0', '1', '2']}
-              display={v => (parseInt(v) > 0 ? `+${v}` : v)}
-              color="#fb923c"
-              label="B.OCT"
-              onChange={v => setBassOctave(parseInt(v))}
-            />
-
-            {/* Energy knob */}
-            <PsyKnob
-              value={energy}
-              min={0}
-              max={1}
-              def={0.7}
-              step={0.05}
-              color="#ffb454"
-              label="ENERGY"
-              fmt={v => v.toFixed(2)}
-              onChange={onEnergyChange}
-            />
-
             {/* WAV export */}
             <Button
               onClick={handleExportWav}
@@ -2072,6 +1972,112 @@ export default function Home() {
                 </span>
               </>
             )}
+          </div>
+
+          {/* ─── Harmony Section ─── */}
+          <div className="section" style={{ '--c': '#b967ff' } as React.CSSProperties}>
+            <h2 className="stitle" style={{ '--c': '#b967ff' } as React.CSSProperties}>HARMONY</h2>
+            <div className="krow" style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
+            {/* Section dropdown */}
+            <PsyCycleButton
+              value={section}
+              options={SECTIONS}
+              display={v => v}
+              color="#f472b6"
+              label="SECTION"
+              onChange={onSectionChange}
+            />
+
+            {/* Key selector — root pitch class (0-11 = C-B). Changes the
+                director's context so CHORDS uses the new key. */}
+            <PsyCycleButton
+              value={String(musicalKey)}
+              options={NOTE_NAMES.map((_, i) => String(i))}
+              display={v => NOTE_NAMES[parseInt(v)]!}
+              color="#00ffc8"
+              label="KEY"
+              onChange={v => onKeyChange(parseInt(v))}
+            />
+
+            {/* Scale selector — determines the diatonic chords CHORDS uses. */}
+            <PsyCycleButton
+              value={scaleName}
+              options={Object.keys(SCALE_LABELS)}
+              display={v => SCALE_LABELS[v]!}
+              color="#b967ff"
+              label="SCALE"
+              onChange={onScaleChange}
+            />
+
+            {/* Arpeggio pattern selector — controls the lead's melodic shape. */}
+            <PsyCycleButton
+              value={arpeggio}
+              options={Object.keys(ARPEGGIO_LABELS) as ArpeggioPattern[]}
+              display={v => ARPEGGIO_LABELS[v]}
+              color="#fbbf24"
+              label="ARP"
+              onChange={setArpeggio}
+            />
+
+            {/* Bass pattern selector — controls the bassline character. */}
+            <PsyCycleButton
+              value={bassPattern}
+              options={Object.keys(BASS_LABELS) as BassPattern[]}
+              display={v => BASS_LABELS[v]}
+              color="#ff2e88"
+              label="BASS"
+              onChange={setBassPattern}
+            />
+
+            {/* Lead density knob — controls how busy the melody is.
+                0.2 = sparse (few notes), 0.6 = default, 1.0 = every 8th note. */}
+            <PsyKnob
+              value={density}
+              min={0.2}
+              max={1}
+              def={0.6}
+              step={0.1}
+              color="#22d3ee"
+              label="DENS"
+              fmt={v => v.toFixed(1)}
+              onChange={setDensity}
+            />
+
+            {/* Melody octave selector — shifts the lead register by whole octaves.
+                -2 to +2. Lets the user match the melody to their sample's optimal register. */}
+            <PsyCycleButton
+              value={String(melodyOctave)}
+              options={['-2', '-1', '0', '1', '2']}
+              display={v => (parseInt(v) > 0 ? `+${v}` : v)}
+              color="#b8e05a"
+              label="OCT"
+              onChange={v => setMelodyOctave(parseInt(v))}
+            />
+
+            {/* Bass octave selector — shifts the bass register independently.
+                -2 to +2. Lets the user match the bass to their sample's optimal register. */}
+            <PsyCycleButton
+              value={String(bassOctave)}
+              options={['-2', '-1', '0', '1', '2']}
+              display={v => (parseInt(v) > 0 ? `+${v}` : v)}
+              color="#fb923c"
+              label="B.OCT"
+              onChange={v => setBassOctave(parseInt(v))}
+            />
+
+            {/* Energy knob */}
+            <PsyKnob
+              value={energy}
+              min={0}
+              max={1}
+              def={0.7}
+              step={0.05}
+              color="#ffb454"
+              label="ENERGY"
+              fmt={v => v.toFixed(2)}
+              onChange={onEnergyChange}
+            />
+            </div>
           </div>
 
           {/* ─── Main grid: pattern editor (left) + debug (right) ─── */}

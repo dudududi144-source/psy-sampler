@@ -19,7 +19,6 @@ import * as React from 'react'
 import type { SampleRole } from '@/psy-sampler'
 import type { Pattern, NoteMap } from '@/lib/demo-director'
 import { VEL_ACCENT, VEL_DEFAULT } from '@/lib/demo-director'
-import { patternStats } from '@/lib/pattern-stats'
 import {
   ROLES,
   ROLE_COLORS,
@@ -503,35 +502,6 @@ export function PatternEditor({
         })}
       </div>
 
-      {/* ─── Pattern statistics — density, velocity range, note count ─── */}
-      {(() => {
-        const stats = patternStats(pattern)
-        const densityPct = Math.round(stats.density * 100)
-        return (
-          <div className="oled mt-2 flex flex-wrap items-center gap-3 px-3 py-1.5 font-mono text-[10px]">
-            <span>
-              <span className="text-zinc-600">NOTES</span>{' '}
-              <span className="font-bold text-zinc-300">{stats.activeNotes}</span>
-              <span className="text-zinc-600">/{stats.totalSteps}</span>
-            </span>
-            <span className="text-zinc-700">·</span>
-            <span>
-              <span className="text-zinc-600">DENSITY</span>{' '}
-              <span className="font-bold text-cyan-400">{densityPct}%</span>
-            </span>
-            <span className="text-zinc-700">·</span>
-            <span>
-              <span className="text-zinc-600">AVG VEL</span>{' '}
-              <span className="font-bold text-amber-400">{stats.avgVelocity}</span>
-            </span>
-            <span className="text-zinc-700">·</span>
-            <span>
-              <span className="text-zinc-600">RANGE</span>{' '}
-              <span className="font-bold text-violet-400">{stats.minVelocity}-{stats.maxVelocity}</span>
-            </span>
-          </div>
-        )
-      })()}
     </div>
   )
 }
