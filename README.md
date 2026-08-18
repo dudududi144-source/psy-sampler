@@ -1,6 +1,6 @@
 # PSY Sampler Device
 
-> A canonical realization device in the PSY family. 49 features. 507 tests. 17 shortcuts. PWA. MIDI round-trip.
+> A canonical realization device in the PSY family. 51 features. 507 tests. 19 shortcuts. PWA. MIDI round-trip.
 
 ```
                  PSY4 (Host)
@@ -30,9 +30,9 @@
 
 The PSY Sampler is a **realization device** — it receives `NoteEvent`s from a host and renders them as audio using sample playback. It does NOT compose, schedule, or own transport. It is a pure HOW layer.
 
-**49 features · 507 tests · 17 keyboard shortcuts · PWA installable · MIDI round-trip (pitch-aware) · 31 samples**
+**51 features · 507 tests · 19 keyboard shortcuts · PWA installable · MIDI round-trip (pitch-aware) · 31 samples**
 
-## Features (49)
+## Features (51)
 
 ### Pattern Editor (8)
 1. Per-step velocity (0-127 MIDI standard)
@@ -89,15 +89,17 @@ The PSY Sampler is a **realization device** — it receives `NoteEvent`s from a 
 42. Key + scale selector (12 keys, 9 scales — any harmonic territory)
 43. Arpeggio pattern variations (up/down/upDown/downUp/random/chordal)
 44. Bass pattern variations (root/walking/octave/pedal/arp)
+45. Harmonic status bar (persistent key/scale/arp/bass/progression display)
+46. A/B keyboard shortcuts (cycle arpeggio + bass patterns)
 
 ### UX (5)
-45. Metronome (1kHz click, downbeat 1.5kHz, N shortcut)
-46. Panic button (instant all-voice kill)
-47. Per-role fill (FILL button per role, seeded)
-48. Double/half pattern (×2/÷2, extend or shrink)
-49. Help overlay (? key, all shortcuts + features) + Visualizer (3 modes)
+47. Metronome (1kHz click, downbeat 1.5kHz, N shortcut)
+48. Panic button (instant all-voice kill)
+49. Per-role fill (FILL button per role, seeded)
+50. Double/half pattern (×2/÷2, extend or shrink)
+51. Help overlay (? key, all shortcuts + features) + Visualizer (3 modes)
 
-## Keyboard Shortcuts (17)
+## Keyboard Shortcuts (19)
 
 | Key | Action |
 |---|---|
@@ -116,6 +118,8 @@ The PSY Sampler is a **realization device** — it receives `NoteEvent`s from a 
 | R | Toggle recording |
 | 1-9 | Trigger performance pads (Shift=accent, Alt=ghost) |
 | D | Generate chord-aware bass/lead |
+| A | Cycle arpeggio pattern |
+| B | Cycle bass pattern |
 | X | Randomize pattern |
 | N | Toggle metronome |
 

@@ -2356,3 +2356,22 @@ Stage Summary:
 - 507 tests pass (was 474, +33), 0 fail, 0 TS errors, 0 lint errors.
 - Pushed to GitHub. Commit: 1260989
 - 5 bass patterns × 6 arpeggio patterns × 12 keys × 9 scales = 3240 melodic textures.
+
+---
+Task ID: HARMONY-STATUS + AB-SHORTCUTS
+Agent: main
+Task: Persistent harmonic status bar + A/B keyboard shortcuts
+
+Work Log:
+- Harmonic status bar above pattern editor: shows key+scale (emerald), arpeggio (amber), bass (rose), chord progression label + roman numerals (violet). Updates in real-time. Persists after toast.
+- lastProgression state: tracks generated progression. Cleared on CLR/RND/FILL/preset/load/import.
+- A key: cycle arpeggio pattern (up→down→upDown→downUp→random→chordal). Toast confirms.
+- B key: cycle bass pattern (root→walking→octave→pedal→arp). Toast confirms.
+- Help overlay: A + B shortcut entries. 19 shortcuts total (was 17).
+- Test updated: 19 callbacks (was 17).
+- Browser-verified: A cycles Up→Down→Up-Down, B cycles Root→Walking. Status bar updates instantly. No JS errors.
+
+Stage Summary:
+- 507 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub. Commits: a48068c (status bar), ea441f6 (A/B shortcuts)
+- The harmonic structure is now always visible + quick-cycleable via keyboard.
