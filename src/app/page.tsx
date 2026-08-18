@@ -42,7 +42,7 @@ import {
   type MusicalTransport,
 } from '@/psy-foundation-shim'
 import { DemoTransport } from '@/lib/demo-transport'
-import { DemoDirector, DEFAULT_PATTERN, ROLE_NOTES, type Pattern } from '@/lib/demo-director'
+import { DemoDirector, DEFAULT_PATTERN, ROLE_NOTES, type Pattern, type NoteMap } from '@/lib/demo-director'
 import {
   getSlotNames,
   saveToSlot,
@@ -124,6 +124,9 @@ export default function Home() {
   const [energy, setEnergy] = React.useState(0.7)
   const [currentStep, setCurrentStep] = React.useState(0)
   const { state: pattern, set: setPatternWithHistory, undo, redo, canUndo, canRedo, reset: resetPatternHistory } = useUndoRedo<Pattern>(structuredClone(DEFAULT_PATTERN))
+  // NoteMap: per-step pitch overrides (from chord progression). Tracked in
+  // state so the PatternEditor re-renders and shows pitch labels on cells.
+  const [noteMap, setNoteMap] = React.useState<NoteMap>({})
   const [samples, setSamples] = React.useState<SampleAsset[]>([])
   const [stats, setStats] = React.useState<DeviceStats | null>(null)
   // Performance tracking refs.
@@ -587,6 +590,7 @@ export default function Home() {
     const empty = structuredClone(DEFAULT_PATTERN)
     directorRef.current?.setPattern(empty)
     directorRef.current?.clearNoteMap() // clear pitch overrides too
+    setNoteMap({})
     setPatternWithHistory(empty)
     // Autosave the cleared pattern (best-effort).
     try {
@@ -602,6 +606,7 @@ export default function Home() {
     if (!director) return
     director.randomizePattern()
     director.clearNoteMap() // randomize replaces rhythm — clear old pitches
+    setNoteMap({})
     const result = structuredClone(director.getPattern())
     setPatternWithHistory(result)
     try { autosavePattern(result) } catch { /* */ }
@@ -614,6 +619,7 @@ export default function Home() {
     if (!director) return
     director.fillRole(role)
     director.clearNoteMap() // fill replaces rhythm — clear old pitches
+    setNoteMap({})
     const result = structuredClone(director.getPattern())
     setPatternWithHistory(result)
     try { autosavePattern(result) } catch { /* */ }
@@ -627,9 +633,10 @@ export default function Home() {
     const ctx = director.getContext()
     const currentPattern = director.getPattern()
     const seed = Math.floor(Math.random() * 1000000)
-    const { pattern: newPattern, noteMap, progression } = generateChordPattern(currentPattern, ctx, seed)
+    const { pattern: newPattern, noteMap: newNoteMap, progression } = generateChordPattern(currentPattern, ctx, seed)
     director.setPattern(newPattern)
-    director.setNoteMap(noteMap)
+    director.setNoteMap(newNoteMap)
+    setNoteMap(newNoteMap)
     setPatternWithHistory(structuredClone(newPattern))
     try { autosavePattern(newPattern) } catch { /* */ }
     toast({
@@ -960,6 +967,7 @@ export default function Home() {
     const cloned = structuredClone(preset.pattern)
     director.setPattern(cloned)
     director.clearNoteMap() // preset has its own rhythm — clear chord pitches
+    setNoteMap({})
     resetPatternHistory(structuredClone(cloned))
     try {
       autosavePattern(cloned)
@@ -1846,6 +1854,7 @@ export default function Home() {
               onPasteRole={onPasteRole}
               onRandomize={onRandomizePattern}
               onChords={onGenerateChords}
+              noteMap={noteMap}
               onFillRole={onFillRole}
               onDouble={onDoublePattern}
               onHalf={onHalfPattern}

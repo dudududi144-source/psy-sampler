@@ -17,7 +17,7 @@
 
 import * as React from 'react'
 import type { SampleRole } from '@/psy-sampler'
-import type { Pattern } from '@/lib/demo-director'
+import type { Pattern, NoteMap } from '@/lib/demo-director'
 import { VEL_ACCENT, VEL_DEFAULT } from '@/lib/demo-director'
 import {
   ROLES,
@@ -25,6 +25,14 @@ import {
   ROLE_LABEL,
   NOW_PLAYING_MS,
 } from '@/components/types'
+
+/** Convert a MIDI note number to a human-readable name (e.g. 45 → "A2", 61 → "C#3"). */
+const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+function midiToNoteName(midi: number): string {
+  const pc = midi % 12
+  const octave = Math.floor(midi / 12) - 1
+  return `${NOTE_NAMES[pc]}${octave}`
+}
 
 export function PatternEditor({
   pattern,
@@ -45,12 +53,15 @@ export function PatternEditor({
   nowPlayingRole,
   nowPlayingAt,
   onClearPattern,
+  noteMap,
 }: {
   pattern: Pattern
   currentStep: number
   stepCount: number
   /** Per-step probabilities: {role: {step: 0..1}}. Missing = 1.0 (always). */
   probabilities: Record<string, Record<number, number>>
+  /** Per-step pitch overrides (from chord progression). null/absent = ROLE_NOTES. */
+  noteMap?: NoteMap
   onToggle: (role: SampleRole, step: number) => void
   /** Paint a cell to an explicit velocity (used by drag-paint). */
   onPaint: (role: SampleRole, step: number, velocity: number) => void
@@ -331,6 +342,11 @@ export function PatternEditor({
                   const isAccent = velocity >= VEL_ACCENT
                   const prob = getProb(role, step)
                   const hasProb = prob < 0.999
+                  // Pitch override from the NoteMap (chord progression). When
+                  // present, show the note name at the top of the cell so the
+                  // user can SEE the melody, not just the velocity rhythm.
+                  const pitchOverride = noteMap?.[role]?.[step]
+                  const hasPitch = typeof pitchOverride === 'number'
                   // Opacity scales with velocity: 0=0%, 100=79%, 127=100%.
                   // In probability mode, opacity scales with probability instead.
                   const opacity = editMode === 'probability'
@@ -363,6 +379,17 @@ export function PatternEditor({
                       {isAccent && editMode === 'velocity' && (
                         <span className="pointer-events-none absolute inset-0 flex items-center justify-center font-mono text-[9px] font-bold text-black/70">
                           !
+                        </span>
+                      )}
+                      {/* Pitch override label (from NoteMap / chord progression).
+                          Shows the note name at the top of the cell so the user
+                          can see the melody. Only on active cells with a pitch. */}
+                      {hasPitch && isActive && (
+                        <span
+                          className="pointer-events-none absolute top-0.5 left-1/2 -translate-x-1/2 whitespace-nowrap font-mono text-[7px] font-bold leading-none text-black/80"
+                          title={`Pitch: ${midiToNoteName(pitchOverride)} (override from ROLE_NOTES)`}
+                        >
+                          {midiToNoteName(pitchOverride)}
                         </span>
                       )}
                       {/* Probability percentage (probability mode) */}
