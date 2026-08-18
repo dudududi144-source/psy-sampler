@@ -39,6 +39,8 @@ export function PatternEditor({
   onPasteRole,
   onRandomize,
   onFillRole,
+  onDouble,
+  onHalf,
   nowPlayingRole,
   nowPlayingAt,
   onClearPattern,
@@ -63,6 +65,10 @@ export function PatternEditor({
   onRandomize?: () => void
   /** Fill a single role with a quick pattern. */
   onFillRole?: (role: SampleRole) => void
+  /** Double the pattern (8→16 or 16→32). */
+  onDouble?: () => void
+  /** Half the pattern (32→16 or 16→8). */
+  onHalf?: () => void
   nowPlayingRole: SampleRole | null
   nowPlayingAt: number
   onClearPattern: () => void
@@ -173,6 +179,28 @@ export function PatternEditor({
                 {n}
               </button>
             ))}
+            {onDouble && (
+              <button
+                type="button"
+                onClick={onDouble}
+                disabled={stepCount >= 32}
+                className="touch-manipulation min-h-[28px] rounded border border-cyan-400/40 px-2 py-0.5 font-mono text-[10px] font-bold text-cyan-300 transition-all hover:bg-cyan-500/10 disabled:opacity-30"
+                title="Double pattern (8→16 or 16→32, repeating)"
+              >
+                ×2
+              </button>
+            )}
+            {onHalf && (
+              <button
+                type="button"
+                onClick={onHalf}
+                disabled={stepCount <= 8}
+                className="touch-manipulation min-h-[28px] rounded border border-cyan-400/40 px-2 py-0.5 font-mono text-[10px] font-bold text-cyan-300 transition-all hover:bg-cyan-500/10 disabled:opacity-30"
+                title="Half pattern (32→16 or 16→8, keeping first half)"
+              >
+                ÷2
+              </button>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-2">

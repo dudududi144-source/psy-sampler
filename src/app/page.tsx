@@ -614,6 +614,38 @@ export default function Home() {
     toast({ title: `Filled ${role}`, description: 'Quick pattern generated for this role' })
   }, [setPatternWithHistory])
 
+  /** Double the pattern (8→16 or 16→32, repeating). */
+  const onDoublePattern = React.useCallback(() => {
+    const director = directorRef.current
+    if (!director) return
+    if (director.stepCount >= 32) {
+      toast({ title: 'Already 32 steps', description: 'Cannot double further' })
+      return
+    }
+    director.doublePattern()
+    setStepCount(director.stepCount)
+    const result = structuredClone(director.getPattern())
+    setPatternWithHistory(result)
+    try { autosavePattern(result) } catch { /* */ }
+    toast({ title: `Doubled to ${director.stepCount} steps`, description: 'Pattern repeated' })
+  }, [setPatternWithHistory])
+
+  /** Half the pattern (32→16 or 16→8, keeping first half). */
+  const onHalfPattern = React.useCallback(() => {
+    const director = directorRef.current
+    if (!director) return
+    if (director.stepCount <= 8) {
+      toast({ title: 'Already 8 steps', description: 'Cannot halve further' })
+      return
+    }
+    director.halfPattern()
+    setStepCount(director.stepCount)
+    const result = structuredClone(director.getPattern())
+    setPatternWithHistory(result)
+    try { autosavePattern(result) } catch { /* */ }
+    toast({ title: `Halved to ${director.stepCount} steps`, description: 'Kept first half' })
+  }, [setPatternWithHistory])
+
   const onUndo = React.useCallback(() => {
     undo()
     // Sync the director with the undone pattern after the state updates.
@@ -1757,6 +1789,8 @@ export default function Home() {
               onPasteRole={onPasteRole}
               onRandomize={onRandomizePattern}
               onFillRole={onFillRole}
+              onDouble={onDoublePattern}
+              onHalf={onHalfPattern}
               nowPlayingRole={nowPlaying.role}
               nowPlayingAt={nowPlaying.at}
               onClearPattern={onClearPattern}

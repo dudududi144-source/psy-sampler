@@ -170,6 +170,41 @@ export class DemoDirector {
     this.step = 0
   }
 
+  /**
+   * Double the pattern: 8→16 or 16→32. Repeats the existing pattern.
+   * A 16-step kick [100,0,0,0,100,0,0,0,100,0,0,0,100,0,0,0] becomes
+   * a 32-step pattern that's the same thing twice. This is the standard
+   * "extend my loop to a 2-bar phrase" workflow.
+   */
+  doublePattern(): void {
+    if (STEPS >= 32) return // already 32, can't double
+    const newSteps = STEPS * 2
+    for (const role of Object.keys(this.pattern) as SampleRole[]) {
+      const row = this.pattern[role]
+      if (!row) continue
+      // Repeat: [a,b,c] → [a,b,c,a,b,c]
+      this.pattern[role] = [...row, ...row]
+    }
+    STEPS = newSteps
+    this.step = 0
+  }
+
+  /**
+   * Half the pattern: 32→16 or 16→8. Keeps the first half.
+   * The second half is discarded. This is the reverse of doublePattern.
+   */
+  halfPattern(): void {
+    if (STEPS <= 8) return // already 8, can't halve
+    const newSteps = Math.floor(STEPS / 2)
+    for (const role of Object.keys(this.pattern) as SampleRole[]) {
+      const row = this.pattern[role]
+      if (!row) continue
+      this.pattern[role] = row.slice(0, newSteps)
+    }
+    STEPS = newSteps
+    this.step = 0
+  }
+
   // ─── Per-step probability ──────────────────────────────────────────────────
 
   /** Get the probability for a role:step (0..1). Default 1.0 (always play). */
