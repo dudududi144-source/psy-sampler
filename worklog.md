@@ -2781,3 +2781,42 @@ Stage Summary:
 - Pushed to GitHub. Commits: 855eb77, a85746e
 - GitHub Pages: https://dudududi144-source.github.io/psy-sampler/
 - 20 PSY knobs total (was 5). Gap with Octatrack (90+) reduced.
+
+---
+Task ID: ROAST-FIXES-CONTINUED
+Agent: main
+Task: OLED waveform + continuous self-roast
+
+Roast fixes completed (priority order):
+
+Fix 1 (855eb77): Declutter — 9 harmony controls moved to HARMONY section, stats bar removed
+Fix 2 (a85746e): Mixer 15 PSY knobs — replaced all flat sliders with hardware knobs (48px)
+Fix 3 (807d9d0): OLED waveform — PsyOled connected to analyser, canvas scope in transport bar
+
+Verified on GitHub Pages:
+- knobs=20 (5 transport + 15 mixer)
+- oled=2 (transport OLED + harmonic status)
+- chassis=true
+- All 653 tests pass, 0 lint errors
+
+Remaining roast gaps (by priority):
+4. Track meters — per-bus level visualization (need analyser per bus)
+5. Pattern position — bar/beat indicator (need bar counter in UI)
+6. Layout — single-view dense, not scroll page (need grid layout)
+7. Time-stretching — audio engine gap (need AudioBufferSourceNode.playbackRate)
+8. Sample slicing — workflow gap (need UI + audio slicing)
+9. Real samples — external resource (need CC0 sample library)
+10. Code organization — page.tsx 2200 lines (need refactoring)
+
+Self-roast scorecard:
+- Octatrack has 90+ knobs → we have 20 (22% gap closed, was 5.5%)
+- Octatrack has OLED waveform → we have it now (100% gap closed)
+- Octatrack has single-view layout → we still scroll (0% gap closed)
+- Octatrack has sample slicing → we don't (0% gap closed)
+- Kontakt has time-stretching → we don't (0% gap closed)
+- Overall: ~30% of top-tier gaps addressed, 70% remain
+
+Stage Summary:
+- 653 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub. Commits: 855eb77, a85746e, 807d9d0, 05a4048
+- GitHub Pages live: https://dudududi144-source.github.io/psy-sampler/
