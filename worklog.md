@@ -2166,3 +2166,17 @@ Work Log:
 Stage Summary:
 - Server running HTTP 200.
 - Commit: 1595ad7
+
+---
+Task ID: FILL-METRONOME-TESTS
+Agent: main
+Task: 13 tests for fillRole + metronome + keyboard shortcuts
+
+Work Log:
+- Wrote 13 tests: fillRole (8 — single role, determinism, kick 4-on-floor, clap, velocity range, multiple roles, 32-step), metronome (4 — construct, isEnabled, setEnabled, no-op when disabled), shortcuts (1 — 16 callbacks).
+- 340 tests pass (was 327, +13), 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub.
+
+Stage Summary:
+- Server running HTTP 200.
+- Commit: 68b4300
