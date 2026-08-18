@@ -2412,3 +2412,22 @@ Stage Summary:
 - 539 tests pass (was 521, +18), 0 fail, 0 TS errors, 0 lint errors.
 - Pushed to GitHub. Commit: f948327
 - Octave control lets the user match the melody register to their samples.
+
+---
+Task ID: BASS-OCTAVE
+Agent: main
+Task: Add bass octave control — shift bass register -2 to +2 octaves
+
+Work Log:
+- applyProgression + generateChordPattern accept bassOctave param (default 0, range -2 to +2). bassOctaveShift = round(bassOctave) * 12.
+- Bass pitch = (chord tone or root+12) + bassOctaveShift. Lead/texture unaffected (separate RNGs).
+- Clamped to [-2, +2].
+- UI: B.OCT dropdown (orange, -2/-1/0/+1/+2) after OCT dropdown.
+- Project persistence: bassOctave saved. Backward compat defaults to 0.
+- 19 new tests: bass octave shifts, lead/texture independence, melody+bass octave independence, backward compat, determinism, clamping, valid MIDI, persistence.
+- Browser-verified: B.OCT=+2 → high bass (A4/D5/A5), B.OCT=-2 → low bass (A0/C#1/G1/D2). 4-octave span. No JS errors.
+
+Stage Summary:
+- 558 tests pass (was 539, +19), 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub. Commit: 0fba8b7
+- Bass + melody octaves are now independently controllable for register matching.
