@@ -2677,3 +2677,32 @@ Stage Summary:
 - GitHub Pages live: https://dudududi144-source.github.io/psy-sampler/
 - 4 design phases complete: chassis + transport + pattern editor + all components.
 - PSY family design language fully applied — identical to PsySynthPro.
+
+---
+Task ID: CRITICAL-DESIGN-FIX
+Agent: main
+Task: Critical design fixes — body bg, fonts, InitOverlay, class conflicts
+
+Critical Issues Identified:
+1. Body background was transparent — Tailwind @layer overrode !important
+2. Fonts were still Geist — Tailwind vars referenced --font-geist-*
+3. InitOverlay used emerald/zinc colors — didn't match PSY cyan aesthetic
+4. 45 elements had BOTH Tailwind AND PSY classes — double backgrounds, borders, colors
+
+Fixes Applied:
+1. Body: inline styles on <body> element (overrides Tailwind @layer). PSY gradient confirmed.
+2. Fonts: mapped --font-sans to Inter, --font-mono to JetBrains Mono in globals.css
+3. InitOverlay: replaced bg-zinc-950 with PSY gradient. Replaced emerald with PSY cyan (#86f7ff). Progress bar uses cyan gradient. OLED-style dark bezel for icon.
+4. Cleanup: removed conflicting Tailwind classes (bg-*, border-*, text-color-*, rounded-*) from 45 elements across 11 files. PSY classes now have full control over visual styling.
+
+Verified on GitHub Pages:
+- bodyBg: radial-gradient (PSY purple/teal) ✅
+- font: Inter, system-ui, sans-serif ✅
+- chassis: true, tbtn: 16, seqBtn: 153 ✅
+- No visual conflicts — PSY CSS controls styling, Tailwind controls layout
+
+Stage Summary:
+- 653 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub. Commits: 6f949b8 (fixes), 72d6440 (cleanup)
+- GitHub Pages live: https://dudududi144-source.github.io/psy-sampler/
+- Design is now clean and professional — no more conflicting styles.
