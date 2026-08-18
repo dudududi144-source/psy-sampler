@@ -2706,3 +2706,43 @@ Stage Summary:
 - Pushed to GitHub. Commits: 6f949b8 (fixes), 72d6440 (cleanup)
 - GitHub Pages live: https://dudududi144-source.github.io/psy-sampler/
 - Design is now clean and professional — no more conflicting styles.
+
+---
+Task ID: PSY-KNOBS-CYCLE-OLED
+Agent: main
+Task: Port PSY Knob + CycleButton + OLED components (commercial-grade)
+
+Work Log:
+- Created psy-knob.tsx: full SVG rotary knob port from PsySynthPro
+  - 11 tick marks (every 5th bold), background track arc, value arc (colored + glow)
+  - 3D metallic cap (.kcap radial gradient + multi-layer shadows)
+  - Glowing pointer (.kptr with 0 0 7px glow)
+  - Full interaction: vertical drag, wheel, double-click reset, keyboard
+  - ARIA: role=slider, tabindex=0, aria-label/valuenow/valuetext
+  - Log scale support
+
+- Created psy-cycle-button.tsx: hardware cycle button
+  - Click cycles to next option
+  - Colored text with glow (text-shadow)
+  - .klabel below
+
+- Created psy-oled.tsx: OLED display with canvas scope
+  - Phosphor cyan text (#86f7ff) with glow
+  - Real-time audio waveform canvas (trail persistence)
+  - Glass reflection + scanlines
+
+- Replaced in page.tsx:
+  - 5 Sliders → PsyKnob (BPM, SWING, MASTER, DENS, ENERGY)
+  - 7 Selects → PsyCycleButton (SECTION, KEY, SCALE, ARP, BASS, OCT, B.OCT)
+  - Each knob has unique accent color matching PsySynthPro's palette
+
+Verified on GitHub Pages:
+- knob=5, cycleBtn=7, kcap=5, kptr=5, svg=5, chassis=true
+- All knobs render with SVG, tick marks, value arcs, 3D caps, pointers
+
+Stage Summary:
+- 653 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub. Commit: 4c478bd
+- GitHub Pages live: https://dudududi144-source.github.io/psy-sampler/
+- The app now has REAL hardware knobs — not flat sliders. This is the
+  single most impactful visual change for the PSY aesthetic.
