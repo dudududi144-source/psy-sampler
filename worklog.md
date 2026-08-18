@@ -2249,3 +2249,21 @@ Work Log:
 Stage Summary:
 - All features browser-verified. Server running HTTP 200.
 - Pushed to GitHub. Commit: 20d57ef
+
+---
+Task ID: NOTEMAP
+Agent: main
+Task: Add per-step NoteMap — pitch-aware chord arpeggio (piano-roll lite)
+
+Work Log:
+- Added NoteMap type to demo-director: Partial<Record<SampleRole, (number|null)[]>>. null = ROLE_NOTES fallback.
+- DemoDirector: setNoteMap/getNoteMap/clearNoteMap. scheduleStep uses noteMap[role]?.[step] ?? ROLE_NOTES[role].
+- chord-progression.ts: applyProgression now returns { pattern, noteMap }. Bass = chord root (low octave). Lead = chord-tone arpeggio (root→3rd→5th→octave, +12 melodic register). Texture = chord root+12. Walking bass off-beats use the 5th.
+- Page: onGenerateChords passes noteMap to director. clearNoteMap() on clear/randomize/fill/preset-load to prevent stale pitches.
+- 19 new tests: NoteMap API (get/set/clear, defensive copy, pattern independence), scheduleStep fallback (null/absent/short arrays), chord arpeggio pitch verification (root/3rd/5th/octave per chord, walking 5th, texture root+12).
+- Browser-verified: CHORDS toast "A - Faug - Dm - Edim" (real diatonic progression from A phrygian dominant). Transport starts/stops clean. No JS errors.
+
+Stage Summary:
+- 409 tests pass (was 390, +19), 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub. Commit: f1b0dc4
+- Chord progression is now a TRUE melodic generator (pitch-aware, not just rhythm).
