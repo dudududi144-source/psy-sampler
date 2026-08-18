@@ -2180,3 +2180,19 @@ Work Log:
 Stage Summary:
 - Server running HTTP 200.
 - Commit: 68b4300
+
+---
+Task ID: DOUBLE-HALF-PATTERN
+Agent: main
+Task: Add double/half pattern — extend 16→32 or shrink 32→16
+
+Work Log:
+- Added doublePattern() + halfPattern() to DemoDirector.
+- ×2 (cyan) button: repeats pattern (8→16, 16→32). ÷2 (cyan) button: keeps first half (32→16, 16→8).
+- Wired onDoublePattern/onHalfPattern handlers with toast + autosave.
+- 340 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub.
+
+Stage Summary:
+- Server running HTTP 200.
+- Commit: 628c3e5
