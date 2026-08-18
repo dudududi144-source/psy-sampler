@@ -22,7 +22,7 @@
 // applies the result.
 
 import { type MusicalContext, Rng } from '@/psy-foundation-shim'
-import type { Pattern } from '@/lib/demo-director'
+import type { Pattern, NoteMap } from '@/lib/demo-director'
 
 // ─── Scales ─────────────────────────────────────────────────────────────────
 //
@@ -166,91 +166,118 @@ export function generateProgression(
 /**
  * Apply a chord progression to the bass + lead + texture roles.
  *
+ * Returns a new Pattern + a NoteMap (per-step pitch overrides). The velocity
+ * grid controls WHEN notes fire; the NoteMap controls WHAT PITCH they fire at.
+ * Together they make a full melodic sequencer — the lead plays an actual
+ * chord-tone arpeggio that follows the harmony, not just a rhythmic pattern.
+ *
  * Bass: root note on beats 1 + 3 (steps 0 + 8), with occasional ghost on
  *   step 6 or 14 (the "and" of 2 / 4) for groove. Velocity 90-110.
+ *   Pitch: chord.rootNote (low register, e.g. A2=45).
  *
  * Lead: chord-tone arpeggio across the 16 steps. Cycles root → 3rd → 5th →
  *   octave, one note per 2 steps (8th notes). Velocity 70-100.
+ *   Pitch: chord tones + 12 (one octave up for melodic register).
  *
  * Texture: sustained chord stab on beat 1 (step 0) of each bar, low velocity.
+ *   Pitch: chord.rootNote + 12 (mid register).
  *
  * The progression cycles through its 4 chords if the pattern is 16+ steps
  * (1 chord per 4 steps = 1 per beat). For 32-step patterns, each chord gets
  * 8 steps (2 beats), giving a faster harmonic rhythm.
  *
- * Seeded for determinism. Does NOT mutate the input pattern — returns a copy.
+ * Seeded for determinism. Does NOT mutate the input pattern — returns copies.
  */
 export function applyProgression(
   pattern: Pattern,
   progression: Progression,
   seed: number,
-): Pattern {
+): { pattern: Pattern; noteMap: NoteMap } {
   const rng = new Rng(seed >>> 0)
   const out: Pattern = { ...pattern }
+  const noteMap: NoteMap = {}
   const steps = out.kick.length
   const chordSpan = Math.max(1, Math.floor(steps / progression.chords.length))
 
-  // Bass: root on downbeats.
+  // Bass: root on downbeats. Pitch = chord root (low register).
   const bassRow = new Array<number>(steps).fill(0)
+  const bassNotes: (number | null)[] = new Array(steps).fill(null)
   for (let i = 0; i < steps; i++) {
     const chordIdx = Math.floor(i / chordSpan) % progression.chords.length
     const chord = progression.chords[chordIdx]
+    if (!chord) continue
     // Steps 0, 8 = beats 1, 3 → strong root.
     // Steps 4, 12 = beats 2, 4 → optional root (50% chance).
     if (i % 4 === 0) {
       bassRow[i] = rng.int(90, 110)
+      bassNotes[i] = chord.rootNote
     } else if (i % 4 === 2 && rng.next() < 0.4) {
-      // Off-beat 8th → walking bass feel.
+      // Off-beat 8th → walking bass feel (5th of the chord for movement).
       bassRow[i] = rng.int(70, 90)
+      bassNotes[i] = chord.tones[2] // 5th
     }
   }
   out.bass = bassRow
+  noteMap.bass = bassNotes
 
-  // Lead: chord-aware rhythmic arpeggio, 8th notes (every 2 steps).
-  // The pattern stores velocity (when to play), not pitch — the realized pitch
-  // comes from ROLE_NOTES. So this creates a chord-AWARE RHYTHM: notes fire
-  // following the harmonic rhythm (chord changes on bar boundaries), with
-  // breathing room (~60% density). The arpeggio feel is rhythmic, not melodic,
-  // unless the host maps per-step note numbers (future: piano-roll mode).
+  // Lead: chord-tone arpeggio, 8th notes (every 2 steps).
+  // Cycles through chord tones: root, 3rd, 5th, octave(root+12).
+  // Pitch is one octave above the chord root for a melodic register.
   const leadRow = new Array<number>(steps).fill(0)
+  const leadNotes: (number | null)[] = new Array(steps).fill(null)
+  let arpIdx = 0
   for (let i = 0; i < steps; i += 2) {
-    // Ensure the chord index is used (validates chord progression access).
     const chordIdx = Math.floor(i / chordSpan) % progression.chords.length
     const chord = progression.chords[chordIdx]
     if (!chord) continue
     if (rng.next() < 0.6) {
       leadRow[i] = rng.int(70, 100)
+      // Arpeggio cycle: root, 3rd, 5th, octave — all +12 for melodic register.
+      const toneIdx = arpIdx % 4
+      const baseTone = toneIdx < 3
+        ? chord.tones[toneIdx]
+        : chord.tones[0] + 12 // octave
+      leadNotes[i] = baseTone + 12 // one octave up for melodic register
+      arpIdx++
     }
   }
   out.lead = leadRow
+  noteMap.lead = leadNotes
 
-  // Texture: sparse stab on beat 1 of each chord span.
+  // Texture: sparse stab on beat 1 of each chord span. Pitch = chord root + 12.
   const texRow = new Array<number>(steps).fill(0)
+  const texNotes: (number | null)[] = new Array(steps).fill(null)
   for (let c = 0; c < progression.chords.length; c++) {
     const i = c * chordSpan
     if (i < steps && rng.next() < 0.5) {
-      texRow[i] = rng.int(50, 70)
+      const chord = progression.chords[c]
+      if (chord) {
+        texRow[i] = rng.int(50, 70)
+        texNotes[i] = chord.rootNote + 12 // mid register
+      }
     }
   }
   out.texture = texRow
+  noteMap.texture = texNotes
 
   // Do not touch kick / hats / clap / perc / fx — those are rhythmic roles
   // that the progression shouldn't override. The user can fill them separately.
-  return out
+  return { pattern: out, noteMap }
 }
 
 // ─── Full generation convenience ────────────────────────────────────────────
 
 /**
  * One-shot: generate a progression + apply it to the pattern.
- * Returns { pattern, progression } so the UI can display the chord label.
+ * Returns { pattern, noteMap, progression } so the UI can display the chord
+ * label and pass the noteMap to the director.
  */
 export function generateChordPattern(
   pattern: Pattern,
   ctx: Pick<MusicalContext, 'rootPc' | 'scale'>,
   seed: number,
-): { pattern: Pattern; progression: Progression } {
+): { pattern: Pattern; noteMap: NoteMap; progression: Progression } {
   const progression = generateProgression(ctx, seed)
-  const newPattern = applyProgression(pattern, progression, seed)
-  return { pattern: newPattern, progression }
+  const { pattern: newPattern, noteMap } = applyProgression(pattern, progression, seed)
+  return { pattern: newPattern, noteMap, progression }
 }

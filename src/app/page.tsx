@@ -586,6 +586,7 @@ export default function Home() {
   const onClearPattern = React.useCallback(() => {
     const empty = structuredClone(DEFAULT_PATTERN)
     directorRef.current?.setPattern(empty)
+    directorRef.current?.clearNoteMap() // clear pitch overrides too
     setPatternWithHistory(empty)
     // Autosave the cleared pattern (best-effort).
     try {
@@ -600,6 +601,7 @@ export default function Home() {
     const director = directorRef.current
     if (!director) return
     director.randomizePattern()
+    director.clearNoteMap() // randomize replaces rhythm — clear old pitches
     const result = structuredClone(director.getPattern())
     setPatternWithHistory(result)
     try { autosavePattern(result) } catch { /* */ }
@@ -611,6 +613,7 @@ export default function Home() {
     const director = directorRef.current
     if (!director) return
     director.fillRole(role)
+    director.clearNoteMap() // fill replaces rhythm — clear old pitches
     const result = structuredClone(director.getPattern())
     setPatternWithHistory(result)
     try { autosavePattern(result) } catch { /* */ }
@@ -624,13 +627,14 @@ export default function Home() {
     const ctx = director.getContext()
     const currentPattern = director.getPattern()
     const seed = Math.floor(Math.random() * 1000000)
-    const { pattern: newPattern, progression } = generateChordPattern(currentPattern, ctx, seed)
+    const { pattern: newPattern, noteMap, progression } = generateChordPattern(currentPattern, ctx, seed)
     director.setPattern(newPattern)
+    director.setNoteMap(noteMap)
     setPatternWithHistory(structuredClone(newPattern))
     try { autosavePattern(newPattern) } catch { /* */ }
     toast({
       title: `Chords: ${progression.label}`,
-      description: `${progression.roman} · bass on downbeats, lead 8th arpeggio`,
+      description: `${progression.roman} · melodic arpeggio (pitch-aware)`,
     })
   }, [setPatternWithHistory])
 
@@ -955,6 +959,7 @@ export default function Home() {
     setBpm(preset.bpm)
     const cloned = structuredClone(preset.pattern)
     director.setPattern(cloned)
+    director.clearNoteMap() // preset has its own rhythm — clear chord pitches
     resetPatternHistory(structuredClone(cloned))
     try {
       autosavePattern(cloned)

@@ -27,6 +27,22 @@ export type Pattern = Record<SampleRole, number[]>
 // on/off grid can't express dynamics, which makes a groovebox feel robotic.
 // Per-step velocity is the single biggest UX upgrade for expressiveness.
 
+/**
+ * Per-step MIDI note override. Each cell is either:
+ *   - null  → use ROLE_NOTES[role] (the default pitch for that role)
+ *   - number → play this MIDI note instead (pitch override)
+ *
+ * This is the "piano-roll lite" layer: the velocity grid controls WHEN notes
+ * fire; the note map controls WHAT pitch they fire at. Together they make a
+ * full melodic sequencer without a separate piano-roll UI.
+ *
+ * Example: the chord progression generator fills the lead row with chord-tone
+ * arpeggios (root → 3rd → 5th → octave) so the melody follows the harmony.
+ *
+ * Absent roles or null cells fall back to ROLE_NOTES — backward compatible.
+ */
+export type NoteMap = Partial<Record<SampleRole, (number | null)[]>>
+
 export interface DirectorOptions {
   host: DeviceHost
   transport: DemoTransport
@@ -107,6 +123,11 @@ export class DemoDirector {
   // Uses a SEEDED RNG so it's deterministic (same seed → same skips).
   private probabilities = new Map<string, number>()
   private probabilitySeed = 42
+  // ─── Per-step note map (pitch override) ───────────────────────────────────
+  // See NoteMap type doc. null = use ROLE_NOTES; number = play that MIDI note.
+  // The chord progression generator fills this with chord-tone arpeggios so
+  // the lead/bass melody follows the harmony, not just the rhythm.
+  private noteMap: NoteMap = {}
   // ─── Song mode ────────────────────────────────────────────────────────────
   // When song mode is enabled, the director advances through a sequence of
   // {pattern, bars} segments at bar boundaries. Each segment's pattern
@@ -528,6 +549,20 @@ export class DemoDirector {
     return this.pattern
   }
 
+  /** Replace the per-step note map (pitch overrides). null = use ROLE_NOTES. */
+  setNoteMap(noteMap: NoteMap): void {
+    this.noteMap = structuredClone(noteMap)
+  }
+
+  getNoteMap(): NoteMap {
+    return this.noteMap
+  }
+
+  /** Clear all pitch overrides (revert to ROLE_NOTES for every role). */
+  clearNoteMap(): void {
+    this.noteMap = {}
+  }
+
   /** Current musical context (key + scale + section + energy). */
   getContext(): MusicalContext {
     return this.context
@@ -625,7 +660,7 @@ export class DemoDirector {
         const rng = new Rng(seed)
         if (rng.next() > prob) continue // skip this note
       }
-      const note = ROLE_NOTES[role] ?? 60
+      const note = this.noteMap[role]?.[step] ?? ROLE_NOTES[role] ?? 60
       const event: NoteEvent = {
         type: 'note',
         note,

@@ -183,31 +183,33 @@ describe('generateProgression', () => {
 })
 
 describe('applyProgression', () => {
-  it('returns a new pattern (does not mutate input)', () => {
+  it('returns a new pattern + noteMap (does not mutate input)', () => {
     const prog = generateProgression(CTX, 42)
     const before = JSON.parse(JSON.stringify(EMPTY_PATTERN)) as Pattern
-    const result = applyProgression(EMPTY_PATTERN, prog, 42)
+    const { pattern: result, noteMap } = applyProgression(EMPTY_PATTERN, prog, 42)
     expect(EMPTY_PATTERN).toEqual(before) // input unchanged
     expect(result).not.toEqual(EMPTY_PATTERN) // output changed
+    expect(noteMap).toBeDefined()
+    expect(typeof noteMap).toBe('object')
   })
 
   it('bass plays on beat 1 (step 0) and beat 3 (step 8)', () => {
     const prog = generateProgression(CTX, 42)
-    const result = applyProgression(EMPTY_PATTERN, prog, 42)
+    const { pattern: result } = applyProgression(EMPTY_PATTERN, prog, 42)
     expect(result.bass[0]).toBeGreaterThan(0)
     expect(result.bass[8]).toBeGreaterThan(0)
   })
 
   it('bass downbeat velocity is in 90-110 range', () => {
     const prog = generateProgression(CTX, 42)
-    const result = applyProgression(EMPTY_PATTERN, prog, 42)
+    const { pattern: result } = applyProgression(EMPTY_PATTERN, prog, 42)
     expect(result.bass[0]).toBeGreaterThanOrEqual(90)
     expect(result.bass[0]).toBeLessThanOrEqual(110)
   })
 
   it('lead only places notes on even steps (8th-note grid)', () => {
     const prog = generateProgression(CTX, 42)
-    const result = applyProgression(EMPTY_PATTERN, prog, 42)
+    const { pattern: result } = applyProgression(EMPTY_PATTERN, prog, 42)
     for (let i = 1; i < 16; i += 2) {
       expect(result.lead[i]).toBe(0) // odd steps are silent
     }
@@ -215,7 +217,7 @@ describe('applyProgression', () => {
 
   it('lead velocity is in 70-100 range when active', () => {
     const prog = generateProgression(CTX, 42)
-    const result = applyProgression(EMPTY_PATTERN, prog, 42)
+    const { pattern: result } = applyProgression(EMPTY_PATTERN, prog, 42)
     for (let i = 0; i < 16; i += 2) {
       if (result.lead[i] > 0) {
         expect(result.lead[i]).toBeGreaterThanOrEqual(70)
@@ -227,25 +229,30 @@ describe('applyProgression', () => {
   it('non-pitched roles are NOT modified (kick, hats, clap, perc, fx)', () => {
     const prog = generateProgression(CTX, 42)
     const input = { ...EMPTY_PATTERN, kick: new Array(16).fill(100) }
-    const result = applyProgression(input, prog, 42)
+    const { pattern: result, noteMap } = applyProgression(input, prog, 42)
     expect(result.kick).toEqual(new Array(16).fill(100)) // untouched
     expect(result['hat-closed']).toEqual(EMPTY_PATTERN['hat-closed'])
     expect(result['hat-open']).toEqual(EMPTY_PATTERN['hat-open'])
     expect(result.clap).toEqual(EMPTY_PATTERN.clap)
     expect(result.perc).toEqual(EMPTY_PATTERN.perc)
     expect(result.fx).toEqual(EMPTY_PATTERN.fx)
+    // Non-pitched roles have no note overrides.
+    expect(noteMap.kick).toBeUndefined()
+    expect(noteMap.clap).toBeUndefined()
+    expect(noteMap.perc).toBeUndefined()
+    expect(noteMap.fx).toBeUndefined()
   })
 
   it('texture is sparse (at most 4 hits, one per chord)', () => {
     const prog = generateProgression(CTX, 42)
-    const result = applyProgression(EMPTY_PATTERN, prog, 42)
+    const { pattern: result } = applyProgression(EMPTY_PATTERN, prog, 42)
     const hits = result.texture.filter((v) => v > 0).length
     expect(hits).toBeLessThanOrEqual(4)
   })
 
   it('texture velocity is in 50-70 range (quiet)', () => {
     const prog = generateProgression(CTX, 42)
-    const result = applyProgression(EMPTY_PATTERN, prog, 42)
+    const { pattern: result } = applyProgression(EMPTY_PATTERN, prog, 42)
     for (const v of result.texture) {
       if (v > 0) {
         expect(v).toBeGreaterThanOrEqual(50)
@@ -254,11 +261,12 @@ describe('applyProgression', () => {
     }
   })
 
-  it('is deterministic — same seed → same output', () => {
+  it('is deterministic — same seed → same pattern + noteMap', () => {
     const prog = generateProgression(CTX, 42)
     const r1 = applyProgression(EMPTY_PATTERN, prog, 42)
     const r2 = applyProgression(EMPTY_PATTERN, prog, 42)
-    expect(r1).toEqual(r2)
+    expect(r1.pattern).toEqual(r2.pattern)
+    expect(r1.noteMap).toEqual(r2.noteMap)
   })
 
   it('respects 32-step patterns (chord span = 8 steps)', () => {
@@ -267,25 +275,138 @@ describe('applyProgression', () => {
     for (const role of Object.keys(pattern32) as (keyof Pattern)[]) {
       pattern32[role] = new Array(32).fill(0)
     }
-    const result = applyProgression(pattern32, prog, 42)
+    const { pattern: result, noteMap } = applyProgression(pattern32, prog, 42)
     expect(result.bass.length).toBe(32)
     expect(result.bass[0]).toBeGreaterThan(0)
     expect(result.bass[16]).toBeGreaterThan(0) // beat 3 of bar 1
+    expect(noteMap.bass?.length).toBe(32)
+  })
+})
+
+// ─── NoteMap (per-step pitch override) ───────────────────────────────────────
+
+describe('NoteMap (pitch overrides)', () => {
+  it('bass noteMap has pitch on every active step', () => {
+    const prog = generateProgression(CTX, 42)
+    const { pattern, noteMap } = applyProgression(EMPTY_PATTERN, prog, 42)
+    const bassNotes = noteMap.bass!
+    for (let i = 0; i < 16; i++) {
+      if (pattern.bass[i] > 0) {
+        // Every active bass step has a MIDI note override.
+        expect(bassNotes[i]).not.toBeNull()
+        expect(typeof bassNotes[i]).toBe('number')
+        expect(bassNotes[i] as number).toBeGreaterThan(0)
+      }
+    }
+  })
+
+  it('bass noteMap is null on silent steps', () => {
+    const prog = generateProgression(CTX, 42)
+    const { pattern, noteMap } = applyProgression(EMPTY_PATTERN, prog, 42)
+    const bassNotes = noteMap.bass!
+    for (let i = 0; i < 16; i++) {
+      if (pattern.bass[i] === 0) {
+        expect(bassNotes[i]).toBeNull()
+      }
+    }
+  })
+
+  it('bass note on step 0 = chord 0 root', () => {
+    const prog = generateProgression(CTX, 42)
+    const { noteMap } = applyProgression(EMPTY_PATTERN, prog, 42)
+    expect(noteMap.bass![0]).toBe(prog.chords[0].rootNote)
+  })
+
+  it('lead noteMap pitches are one octave above chord tones', () => {
+    const prog = generateProgression(CTX, 42)
+    const { pattern, noteMap } = applyProgression(EMPTY_PATTERN, prog, 42)
+    const leadNotes = noteMap.lead!
+    for (let i = 0; i < 16; i += 2) {
+      if (pattern.lead[i] > 0 && leadNotes[i] !== null) {
+        const pitch = leadNotes[i] as number
+        // All lead pitches are >= 57 (A3+), since chord root is ~45 + 12.
+        expect(pitch).toBeGreaterThanOrEqual(57)
+      }
+    }
+  })
+
+  it('lead arpeggio cycles root → 3rd → 5th → octave within each chord', () => {
+    // The arpeggio cycles root → 3rd → 5th → octave, one note per active 8th.
+    // The cycle resets per chord (since arpIdx is global but toneIdx = arpIdx % 4).
+    // Verify each active note matches the expected arpeggio position for its chord.
+    const prog = generateProgression(CTX, 42)
+    const { pattern, noteMap } = applyProgression(EMPTY_PATTERN, prog, 42)
+    const chordSpan = Math.floor(16 / prog.chords.length) // 4
+    let arpIdx = 0
+    for (let i = 0; i < 16; i += 2) {
+      if (pattern.lead[i] > 0 && noteMap.lead![i] !== null) {
+        const chordIdx = Math.floor(i / chordSpan) % prog.chords.length
+        const chord = prog.chords[chordIdx]
+        const toneIdx = arpIdx % 4
+        const expected = (toneIdx < 3 ? chord.tones[toneIdx] : chord.tones[0] + 12) + 12
+        expect(noteMap.lead![i]).toBe(expected)
+        arpIdx++
+      }
+    }
+  })
+
+  it('lead first active note is always the chord root (+12)', () => {
+    // The very first active lead note is arpIdx 0 → toneIdx 0 → root.
+    // Step 0 is in chord 0's span, so it should be chord 0's root + 12.
+    const prog = generateProgression(CTX, 42)
+    const { pattern, noteMap } = applyProgression(EMPTY_PATTERN, prog, 42)
+    // Find the first active lead step.
+    for (let i = 0; i < 16; i += 2) {
+      if (pattern.lead[i] > 0 && noteMap.lead![i] !== null) {
+        expect(noteMap.lead![i]).toBe(prog.chords[0].tones[0] + 12)
+        break
+      }
+    }
+  })
+
+  it('texture noteMap has pitch on active stabs', () => {
+    const prog = generateProgression(CTX, 42)
+    const { pattern, noteMap } = applyProgression(EMPTY_PATTERN, prog, 42)
+    const texNotes = noteMap.texture!
+    for (let i = 0; i < 16; i++) {
+      if (pattern.texture[i] > 0) {
+        expect(texNotes[i]).not.toBeNull()
+        // Texture pitch = chord root + 12 (mid register).
+        const chordIdx = Math.floor(i / 4) % prog.chords.length
+        expect(texNotes[i]).toBe(prog.chords[chordIdx].rootNote + 12)
+      }
+    }
+  })
+
+  it('bass walking notes (off-beat) use the 5th, not the root', () => {
+    // Steps 2, 6, 10, 14 (off-beat 8ths) may have walking bass.
+    // If active, the pitch should be the 5th (tones[2]), not the root.
+    const prog = generateProgression(CTX, 42)
+    const { pattern, noteMap } = applyProgression(EMPTY_PATTERN, prog, 42)
+    for (let i = 2; i < 16; i += 4) { // steps 2, 6, 10, 14
+      if (pattern.bass[i] > 0 && noteMap.bass![i] !== null) {
+        const chordIdx = Math.floor(i / 4) % prog.chords.length
+        const chord = prog.chords[chordIdx]
+        expect(noteMap.bass![i]).toBe(chord.tones[2]) // 5th
+      }
+    }
   })
 })
 
 describe('generateChordPattern', () => {
-  it('returns both the pattern and the progression', () => {
-    const { pattern, progression } = generateChordPattern(EMPTY_PATTERN, CTX, 42)
+  it('returns pattern + noteMap + progression', () => {
+    const { pattern, noteMap, progression } = generateChordPattern(EMPTY_PATTERN, CTX, 42)
     expect(pattern).toBeDefined()
+    expect(noteMap).toBeDefined()
     expect(progression.chords.length).toBe(4)
     expect(progression.label).toContain(' - ')
   })
 
-  it('is deterministic', () => {
+  it('is deterministic (pattern + noteMap + progression)', () => {
     const r1 = generateChordPattern(EMPTY_PATTERN, CTX, 42)
     const r2 = generateChordPattern(EMPTY_PATTERN, CTX, 42)
     expect(r1.pattern).toEqual(r2.pattern)
+    expect(r1.noteMap).toEqual(r2.noteMap)
     expect(r1.progression).toEqual(r2.progression)
   })
 
