@@ -1,6 +1,6 @@
 # PSY Sampler Device
 
-> A canonical realization device in the PSY family. 56 features. 596 tests. 21 shortcuts. PWA. MIDI round-trip.
+> A canonical realization device in the PSY family. 57 features. 614 tests. 21 shortcuts. PWA. MIDI round-trip.
 
 ```
                  PSY4 (Host)
@@ -30,9 +30,9 @@
 
 The PSY Sampler is a **realization device** — it receives `NoteEvent`s from a host and renders them as audio using sample playback. It does NOT compose, schedule, or own transport. It is a pure HOW layer.
 
-**56 features · 596 tests · 21 keyboard shortcuts · PWA installable · MIDI round-trip (pitch-aware) · 31 samples**
+**57 features · 614 tests · 21 keyboard shortcuts · PWA installable · MIDI round-trip (pitch-aware) · 31 samples**
 
-## Features (56)
+## Features (57)
 
 ### Pattern Editor (8)
 1. Per-step velocity (0-127 MIDI standard)
@@ -96,13 +96,14 @@ The PSY Sampler is a **realization device** — it receives `NoteEvent`s from a 
 49. Bass octave control (shift bass register -2 to +2 octaves, independent)
 50. Velocity humanization (add groove via random variation, HUM button)
 51. Velocity quantization (snap to standard tiers, QUANT button)
+52. Velocity ramp (build-up/breakdown, RAMP↑/RAMP↓ buttons)
 
 ### UX (5)
-52. Metronome (1kHz click, downbeat 1.5kHz, N shortcut)
-53. Panic button (instant all-voice kill)
-54. Per-role fill (FILL button per role, seeded)
-55. Double/half pattern (×2/÷2, extend or shrink)
-56. Help overlay (? key, all shortcuts + features) + Visualizer (3 modes)
+53. Metronome (1kHz click, downbeat 1.5kHz, N shortcut)
+54. Panic button (instant all-voice kill)
+55. Per-role fill (FILL button per role, seeded)
+56. Double/half pattern (×2/÷2, extend or shrink)
+57. Help overlay (? key, all shortcuts + features) + Visualizer (3 modes)
 
 ## Keyboard Shortcuts (21)
 
@@ -164,7 +165,7 @@ Same inputs → byte-identical audio:
 
 ## Testing
 
-- **596 tests** across 37 files
+- **614 tests** across 38 files
 - **167,165 expects**
 - MIDI round-trip proof (export → import → same pattern)
 - Real audio rendering + spectral analysis

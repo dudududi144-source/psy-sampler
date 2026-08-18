@@ -2481,3 +2481,20 @@ Stage Summary:
 - 596 tests pass (was 574, +22), 0 fail, 0 TS errors, 0 lint errors.
 - Pushed to GitHub. Commit: feb1090
 - Complete velocity workflow: generate → quantize → humanize.
+
+---
+Task ID: VELOCITY-RAMP
+Agent: main
+Task: Add velocity ramp — build-up/breakdown (RAMP↑/RAMP↓ buttons)
+
+Work Log:
+- rampPattern(pattern, direction, minVel, maxVel) in humanize.ts. Linear interpolation across pattern. 'up' = build-up, 'down' = breakdown. Default 40→127. Clamped 1-127.
+- UI: RAMP↑ (green) + RAMP↓ (red) buttons in pattern editor header.
+- Use cases: intro build-ups, risers, breakdowns, fade-outs.
+- 18 new tests: up/down monotonic, exact values, midpoint, no-activate, no-silence, active-count, no-mutation, clamping, defaults, all 9 roles, 32/8-step, up/down inverse.
+- Browser-verified: RAMP↑ changes kick 100,100,100,100 → 40,63,86,110 (linear). Silent preserved. No JS errors.
+
+Stage Summary:
+- 614 tests pass (was 596, +18), 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub. Commit: b6557ce
+- Complete velocity pipeline: generate → quantize → humanize → ramp.
