@@ -2338,3 +2338,21 @@ Stage Summary:
 - 474 tests pass (was 445, +29), 0 fail, 0 TS errors, 0 lint errors.
 - Pushed to GitHub. Commit: 6f64c59
 - 6 arpeggio patterns give different melodic textures from the same chords.
+
+---
+Task ID: BASS-PATTERNS
+Agent: main
+Task: Add bass pattern variations — root/walking/octave/pedal/arp
+
+Work Log:
+- BassPattern type: 5 patterns. getBassToneAt(pattern, step, rng) returns {active, toneIdx} for rhythm+pitch per step.
+- Reordered generation: lead FIRST, then bass. Lead is now independent of bass pattern's RNG consumption.
+- applyProgression + generateChordPattern accept optional bass param (default 'root').
+- UI: BASS dropdown (rose) in transport bar. 5 options. Toast shows both patterns.
+- 33 new tests: BASS_LABELS, rhythm+pitch per pattern, pattern differences, determinism, all 5 valid, generateChordPattern pass-through, backward compat, lead independence.
+- Browser-verified: BASS=pedal → 16 active steps (every step), all root notes. No JS errors.
+
+Stage Summary:
+- 507 tests pass (was 474, +33), 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub. Commit: 1260989
+- 5 bass patterns × 6 arpeggio patterns × 12 keys × 9 scales = 3240 melodic textures.
