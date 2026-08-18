@@ -2070,3 +2070,20 @@ Work Log:
 Stage Summary:
 - Server running HTTP 200.
 - Commit: d27627e
+
+---
+Task ID: MIDI-IMPORT
+Agent: main
+Task: Add MIDI import — load .mid files from DAWs into the pattern
+
+Work Log:
+- Created midi-import.ts: importMidiFile() parses SMF format 0+1, variable-length delta, running status, tempo meta, Note On/Off → Pattern conversion. Channel → role mapping. Auto-detect step count.
+- Added ⬆ MIDI button (cyan) next to ⬇ MIDI.
+- handleImportMidi: reads file, applies pattern + BPM + step count, toast.
+- Full round-trip: DAW → .mid → PSY Sampler → edit → WAV/stems/MIDI back.
+- 301 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub.
+
+Stage Summary:
+- Server running HTTP 200.
+- Commit: 2e1ffea
