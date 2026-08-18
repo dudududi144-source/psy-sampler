@@ -48,7 +48,16 @@ export default function RootLayout({
         <link href="https://cdn.jsdelivr.net/npm/@fontsource/inter@5.0.8/index.css" rel="stylesheet" />
         <link href="https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@5.0.8/index.css" rel="stylesheet" />
       </head>
-      <body>
+      <body style={{
+        background: 'radial-gradient(1100px 500px at 15% -10%, rgba(96, 60, 180, 0.16) 0%, transparent 60%), radial-gradient(900px 500px at 85% 110%, rgba(20, 120, 130, 0.12) 0%, transparent 60%), linear-gradient(180deg, #0d0f14 0%, #08090d 100%)',
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '36px 16px',
+        color: '#d4d9e2',
+        fontFamily: "'Inter', system-ui, sans-serif",
+      }}>
         {children}
         <Toaster />
         <script

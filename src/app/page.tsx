@@ -1647,16 +1647,6 @@ export default function Home() {
         <div className="relative z-10 flex w-full flex-1 flex-col">
           {/* ─── Transport Bar (topbar) ─── */}
 
-          {/* Floating help button */}
-          <button
-            onClick={() => setHelpOpen(true)}
-            className="tbtn"
-            style={{ position: 'absolute', top: '14px', right: '14px', zIndex: 100, padding: '6px 10px' }}
-            title="Help & shortcuts (?)"
-          >
-            ?
-          </button>
-
           {/* Help overlay */}
           <HelpOverlay open={helpOpen} onClose={() => setHelpOpen(false)} />
 
@@ -2187,9 +2177,9 @@ export default function Home() {
             <Visualizer analyser={analyser} isPlaying={isPlaying} />
           </div>
 
-          {/* ─── Footer info ─── */}
+          {/* ─── Footer ─── */}
           <footer style={{ marginTop: 'auto', paddingTop: '14px', borderTop: '1px solid #232932', fontFamily: "'JetBrains Mono', monospace", fontSize: '9px', color: '#5b6470', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '8px' }}>
-            <span>PSY Sampler Device — canonical family member · {loadResult ? `${loadResult.loaded} samples` : 'loading…'}</span>
+            <span>{loadResult ? `${loadResult.loaded} samples loaded` : 'loading…'}</span>
             <span>59 features · 653 tests · 21 shortcuts</span>
           </footer>
         </div>
