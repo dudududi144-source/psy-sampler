@@ -52,6 +52,8 @@ export function PatternEditor({
   onQuantize,
   onRampUp,
   onRampDown,
+  onScaleUp,
+  onScaleDown,
   onFillRole,
   onDouble,
   onHalf,
@@ -90,6 +92,10 @@ export function PatternEditor({
   onRampUp?: () => void
   /** Ramp velocities down (breakdown: high→low across pattern). */
   onRampDown?: () => void
+  /** Scale velocities up (louder: ×1.25). */
+  onScaleUp?: () => void
+  /** Scale velocities down (softer: ×0.75). */
+  onScaleDown?: () => void
   /** Fill a single role with a quick pattern. */
   onFillRole?: (role: SampleRole) => void
   /** Double the pattern (8→16 or 16→32). */
@@ -235,6 +241,26 @@ export function PatternEditor({
               className="touch-manipulation min-h-[28px] rounded border border-red-400/40 bg-red-500/10 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-red-300 transition-all hover:bg-red-500/20"
             >
               RAMP↓
+            </button>
+          )}
+          {onScaleUp && (
+            <button
+              type="button"
+              onClick={onScaleUp}
+              title="Scale up — all velocities ×1.25 (louder)"
+              className="touch-manipulation min-h-[28px] rounded border border-green-400/40 bg-green-500/10 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-green-300 transition-all hover:bg-green-500/20"
+            >
+              SCALE+
+            </button>
+          )}
+          {onScaleDown && (
+            <button
+              type="button"
+              onClick={onScaleDown}
+              title="Scale down — all velocities ×0.75 (softer)"
+              className="touch-manipulation min-h-[28px] rounded border border-yellow-400/40 bg-yellow-500/10 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-yellow-300 transition-all hover:bg-yellow-500/20"
+            >
+              SCALE-
             </button>
           )}
           {/* Pattern length selector */}

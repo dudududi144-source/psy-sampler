@@ -67,3 +67,4 @@ server.log
 mobile-check.png
 upload/
 *.env
+.vercel

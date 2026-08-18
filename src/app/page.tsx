@@ -732,6 +732,28 @@ export default function Home() {
     toast({ title: 'Ramp down', description: 'Velocity breakdown: 127→40 across pattern' })
   }, [pattern, setPatternWithHistory])
 
+  /** Scale up — all velocities ×1.25 (louder). Clamps to 127. */
+  const onScaleUp = React.useCallback(() => {
+    const director = directorRef.current
+    if (!director) return
+    const scaled = scalePattern(pattern, 1.25)
+    director.setPattern(scaled)
+    setPatternWithHistory(structuredClone(scaled))
+    try { autosavePattern(scaled) } catch { /* */ }
+    toast({ title: 'Scale up', description: 'All velocities ×1.25 (louder)' })
+  }, [pattern, setPatternWithHistory])
+
+  /** Scale down — all velocities ×0.75 (softer). Clamps to 1. */
+  const onScaleDown = React.useCallback(() => {
+    const director = directorRef.current
+    if (!director) return
+    const scaled = scalePattern(pattern, 0.75)
+    director.setPattern(scaled)
+    setPatternWithHistory(structuredClone(scaled))
+    try { autosavePattern(scaled) } catch { /* */ }
+    toast({ title: 'Scale down', description: 'All velocities ×0.75 (softer)' })
+  }, [pattern, setPatternWithHistory])
+
   /** Double the pattern (8→16 or 16→32, repeating). */
   const onDoublePattern = React.useCallback(() => {
     const director = directorRef.current
@@ -2111,6 +2133,8 @@ export default function Home() {
               onQuantize={onQuantize}
               onRampUp={onRampUp}
               onRampDown={onRampDown}
+              onScaleUp={onScaleUp}
+              onScaleDown={onScaleDown}
               noteMap={noteMap}
               onFillRole={onFillRole}
               onDouble={onDoublePattern}
