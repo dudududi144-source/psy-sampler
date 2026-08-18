@@ -68,6 +68,7 @@ import { useKeyboardShortcuts } from '@/lib/use-keyboard-shortcuts'
 import { useUndoRedo } from '@/lib/use-undo-redo'
 import { useMidiInput, roleForNote } from '@/lib/use-midi-input'
 import { MIXER_PRESETS, type MixerPreset } from '@/lib/mixer-presets'
+import { Metronome } from '@/lib/metronome'
 import { TimelineView } from '@/components/timeline-view'
 import { AutomationEditor } from '@/components/automation-editor'
 import { HelpOverlay } from '@/components/help-overlay'
@@ -152,6 +153,9 @@ export default function Home() {
   const [stepCount, setStepCount] = React.useState(16)
   // ─── Help overlay ───────────────────────────────────────────────────────────
   const [helpOpen, setHelpOpen] = React.useState(false)
+  // ─── Metronome ──────────────────────────────────────────────────────────────
+  const [metronomeEnabled, setMetronomeEnabled] = React.useState(false)
+  const metronomeRef = React.useRef<Metronome | null>(null)
   // ─── Per-step probabilities ─────────────────────────────────────────────────
   const [probabilities, setProbabilities] = React.useState<Record<string, Record<number, number>>>({})
 
@@ -302,6 +306,10 @@ export default function Home() {
       }
 
       // Director
+      // Create metronome (click track) before director so onStep can use it.
+      const metronome = new Metronome(ctx, bundle!.audioGraph.master)
+      metronomeRef.current = metronome
+
       const director = new DemoDirector(
         {
           host,
@@ -309,7 +317,14 @@ export default function Home() {
           audioContext: ctx,
           initialPattern,
         },
-        (step) => setCurrentStep(step)
+        (step) => {
+          setCurrentStep(step)
+          // Metronome: click on beat boundaries (every 4 steps = quarter note).
+          if (step % 4 === 0) {
+            const isDownbeat = step === 0
+            metronome.click(ctx?.currentTime ?? 0, isDownbeat)
+          }
+        }
       )
       // eslint-disable-next-line react-hooks/immutability
       directorRef.current = director
@@ -1248,6 +1263,11 @@ export default function Home() {
     onToggleRecord: toggleRecord,
     onSetStepCount: (n) => onStepCountChange(n),
     onRandomize: onRandomizePattern,
+    onToggleMetronome: () => {
+      const next = !metronomeEnabled
+      setMetronomeEnabled(next)
+      metronomeRef.current?.setEnabled(next)
+    },
     enabled: initialized,
   })
 
@@ -1522,6 +1542,36 @@ export default function Home() {
               onChange={handleImportMidi}
               className="hidden"
             />
+
+            {/* Metronome + Panic */}
+            <Button
+              onClick={() => {
+                const next = !metronomeEnabled
+                setMetronomeEnabled(next)
+                metronomeRef.current?.setEnabled(next)
+              }}
+              className="h-11 gap-2 border font-mono text-xs font-bold uppercase tracking-[0.15em]"
+              style={{
+                borderColor: metronomeEnabled ? 'rgba(251,191,36,0.6)' : 'rgba(63,63,70,0.8)',
+                color: metronomeEnabled ? '#fbbf24' : '#71717a',
+                backgroundColor: metronomeEnabled ? 'rgba(251,191,36,0.1)' : 'rgba(24,24,27,0.8)',
+                boxShadow: metronomeEnabled ? '0 0 12px rgba(251,191,36,0.4)' : 'none',
+              }}
+              title="Metronome (N key) — click on every beat"
+            >
+              {metronomeEnabled ? '● MET' : '○ MET'}
+            </Button>
+            <Button
+              onClick={() => {
+                bundleRef.current?.voicePool.panic()
+                bundleRef.current?.scheduler.stop()
+                toast({ title: 'PANIC', description: 'All voices stopped' })
+              }}
+              className="h-11 gap-2 border border-red-500/50 bg-red-500/10 font-mono text-xs font-bold uppercase tracking-[0.15em] text-red-400 hover:bg-red-500/20"
+              title="Panic — kill all audio immediately"
+            >
+              ⛔ PANIC
+            </Button>
 
             {/* Live recording */}
             <Button

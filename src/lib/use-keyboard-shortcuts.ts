@@ -38,6 +38,7 @@ export interface KeyboardShortcutsOptions {
   onToggleRecord?: () => void
   onSetStepCount?: (steps: number) => void
   onRandomize?: () => void
+  onToggleMetronome?: () => void
   enabled?: boolean
 }
 
@@ -46,7 +47,7 @@ export function useKeyboardShortcuts(opts: KeyboardShortcutsOptions): void {
     onTogglePlay, onStop, onUndo, onRedo, onTapTempo, onToggleHelp,
     onToggleMute, onToggleSolo, onClearPattern, onCycleVisualizer,
     onCycleFilter, onTogglePump, onToggleEvolve, onToggleRecord,
-    onSetStepCount, onRandomize, enabled = true,
+    onSetStepCount, onRandomize, onToggleMetronome, enabled = true,
   } = opts
 
   React.useEffect(() => {
@@ -124,6 +125,9 @@ export function useKeyboardShortcuts(opts: KeyboardShortcutsOptions): void {
         case 'KeyX':
           if (onRandomize) { e.preventDefault(); onRandomize() }
           break
+        case 'KeyN':
+          if (onToggleMetronome) { e.preventDefault(); onToggleMetronome() }
+          break
       }
     }
 
@@ -133,6 +137,6 @@ export function useKeyboardShortcuts(opts: KeyboardShortcutsOptions): void {
     onTogglePlay, onStop, onUndo, onRedo, onTapTempo, onToggleHelp,
     onToggleMute, onToggleSolo, onClearPattern, onCycleVisualizer,
     onCycleFilter, onTogglePump, onToggleEvolve, onToggleRecord,
-    onSetStepCount, onRandomize, enabled,
+    onSetStepCount, onRandomize, onToggleMetronome, enabled,
   ])
 }
