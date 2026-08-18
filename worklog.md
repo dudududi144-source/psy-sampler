@@ -2131,3 +2131,22 @@ Work Log:
 Stage Summary:
 - Server running HTTP 200.
 - Commit: a9c06a1
+
+---
+Task ID: METRONOME + PANIC
+Agent: main
+Task: Add metronome + panic button
+
+Work Log:
+- Created Metronome class: synthesized 1kHz click (sine burst, 5ms exp decay). Downbeat = 1.5kHz, louder. Routed to master output.
+- Wired into director onStep: fires on beat boundaries (step % 4 === 0).
+- ○ MET / ● MET toggle button (amber) + N keyboard shortcut.
+- ⛔ PANIC button (red): kills all voices + stops scheduler.
+- 16 keyboard shortcuts total (added N).
+- Help overlay updated.
+- 327 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub.
+
+Stage Summary:
+- Server running HTTP 200.
+- Commit: a05bde6
