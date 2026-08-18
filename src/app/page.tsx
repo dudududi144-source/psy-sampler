@@ -83,7 +83,9 @@ import { SongEditor } from '@/components/song-editor'
 import { Visualizer } from '@/components/visualizer'
 import { Mixer } from '@/components/mixer'
 import { PresetsPanel, PatternSlots } from '@/components/presets-panel'
+import { PerformancePads } from '@/components/performance-pads'
 import {
+  ROLES,
   BUS_NAMES,
   SECTIONS,
   EVENT_LOG_MAX,
@@ -779,6 +781,37 @@ export default function Home() {
     }
   }, [])
 
+  // ─── Performance pads (live one-shot triggering) ──────────────────────────
+  //
+  // Pads publish a NoteEvent to the host — the SAME path the sequencer and
+  // MIDI input use. This means pads go through the full realization chain:
+  // velocity layers, round-robin, choke groups, per-bus EQ + saturation,
+  // master filter, and the limiter. The device is the single source of truth.
+  //
+  // Velocity: 100 default, 127 accent (Shift), 50 ghost (Alt). These map to
+  // the selector's velocity layers so high velocity pulls the harder sample.
+  const triggerPad = React.useCallback((role: SampleRole, velocity = 100) => {
+    const host = hostRef.current
+    const ctx = ctxRef.current
+    if (!host || !ctx) return
+    const event = {
+      type: 'note' as const,
+      note: ROLE_NOTES[role] ?? 60,
+      velocity: velocity / 127, // normalize 0..127 → 0..1 for the device
+      duration: 0.4,
+      channel: role,
+      at: ctx.currentTime + 0.005, // 5ms lookahead for scheduling
+    }
+    host.publish(event)
+    setNowPlaying({ role, sampleId: null, at: Date.now() })
+  }, [])
+
+  // Keyboard-shortcut entry: pad index 0-8 → role.
+  const onPadTrigger = React.useCallback((index: number) => {
+    const role = ROLES[index]
+    if (role) triggerPad(role, 100)
+  }, [triggerPad])
+
   // ─── Sample import (C2) ────────────────────────────────────────────────────
 
   const onImportSample = React.useCallback((asset: SampleAsset) => {
@@ -1304,7 +1337,7 @@ export default function Home() {
       directorRef.current?.setEvolveEnabled(newState)
     },
     onToggleRecord: toggleRecord,
-    onSetStepCount: (n) => onStepCountChange(n),
+    onPadTrigger,
     onRandomize: onRandomizePattern,
     onToggleMetronome: () => {
       const next = !metronomeEnabled
@@ -1807,6 +1840,16 @@ export default function Home() {
               onSave={saveToSlotN}
               onLoad={loadFromSlotN}
               onClear={clearSlotN}
+            />
+          </div>
+
+          {/* ─── Performance Pads (live one-shot triggering) ─── */}
+          <div className="mt-4">
+            <PerformancePads
+              onTrigger={triggerPad}
+              nowPlayingRole={nowPlaying.role}
+              nowPlayingAt={nowPlaying.at}
+              disabled={!initialized}
             />
           </div>
 

@@ -178,7 +178,7 @@ describe('Keyboard shortcuts', () => {
       onTapTempo: () => {}, onToggleHelp: () => {}, onToggleMute: () => {},
       onToggleSolo: () => {}, onClearPattern: () => {}, onCycleFilter: () => {},
       onTogglePump: () => {}, onToggleEvolve: () => {}, onToggleRecord: () => {},
-      onSetStepCount: (_n: number) => {}, onRandomize: () => {},
+      onPadTrigger: (_n: number) => {}, onRandomize: () => {},
       onToggleMetronome: () => {},
     }
     expect(Object.keys(opts).length).toBe(16)

@@ -21,7 +21,7 @@ const SHORTCUTS = [
   { key: 'P', desc: 'Toggle sidechain pump' },
   { key: 'E', desc: 'Toggle auto-evolve' },
   { key: 'R', desc: 'Toggle live recording' },
-  { key: '1/2/3', desc: 'Set pattern length (8/16/32 steps)' },
+  { key: '1-9', desc: 'Trigger performance pads (Shift=accent, Alt=ghost)' },
   { key: 'X', desc: 'Randomize pattern (seeded — deterministic)' },
   { key: 'N', desc: 'Toggle metronome (click on every beat)' },
 ]
@@ -43,6 +43,7 @@ const FEATURES = [
   { icon: '🎹', title: 'MIDI', desc: 'Play from MIDI keyboard (Web MIDI API)' },
   { icon: '⧉', title: 'COPY', desc: 'Copy role pattern to clipboard' },
   { icon: '⤓', title: 'PASTE', desc: 'Paste clipboard into another role' },
+  { icon: '▣', title: 'PADS', desc: 'Live one-shot triggering (MPC-style, keys 1-9)' },
 ]
 
 const EDITOR_FEATURES = [

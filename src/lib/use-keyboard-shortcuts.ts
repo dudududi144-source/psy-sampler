@@ -17,7 +17,7 @@
 //   P              → toggle sidechain pump
 //   E              → toggle evolve
 //   R              → toggle record (live capture)
-//   1/2/3          → set pattern length (8/16/32)
+//   1-9            → trigger performance pads (top-left → bottom-right)
 
 import * as React from 'react'
 
@@ -36,7 +36,7 @@ export interface KeyboardShortcutsOptions {
   onTogglePump?: () => void
   onToggleEvolve?: () => void
   onToggleRecord?: () => void
-  onSetStepCount?: (steps: number) => void
+  onPadTrigger?: (index: number) => void
   onRandomize?: () => void
   onToggleMetronome?: () => void
   enabled?: boolean
@@ -47,7 +47,7 @@ export function useKeyboardShortcuts(opts: KeyboardShortcutsOptions): void {
     onTogglePlay, onStop, onUndo, onRedo, onTapTempo, onToggleHelp,
     onToggleMute, onToggleSolo, onClearPattern, onCycleVisualizer,
     onCycleFilter, onTogglePump, onToggleEvolve, onToggleRecord,
-    onSetStepCount, onRandomize, onToggleMetronome, enabled = true,
+    onPadTrigger, onRandomize, onToggleMetronome, enabled = true,
   } = opts
 
   React.useEffect(() => {
@@ -114,13 +114,18 @@ export function useKeyboardShortcuts(opts: KeyboardShortcutsOptions): void {
           if (onToggleRecord) { e.preventDefault(); onToggleRecord() }
           break
         case 'Digit1':
-          if (onSetStepCount) { e.preventDefault(); onSetStepCount(8) }
-          break
         case 'Digit2':
-          if (onSetStepCount) { e.preventDefault(); onSetStepCount(16) }
-          break
         case 'Digit3':
-          if (onSetStepCount) { e.preventDefault(); onSetStepCount(32) }
+        case 'Digit4':
+        case 'Digit5':
+        case 'Digit6':
+        case 'Digit7':
+        case 'Digit8':
+        case 'Digit9':
+          if (onPadTrigger) {
+            e.preventDefault()
+            onPadTrigger(parseInt(e.code.replace('Digit', ''), 10) - 1)
+          }
           break
         case 'KeyX':
           if (onRandomize) { e.preventDefault(); onRandomize() }
@@ -137,6 +142,6 @@ export function useKeyboardShortcuts(opts: KeyboardShortcutsOptions): void {
     onTogglePlay, onStop, onUndo, onRedo, onTapTempo, onToggleHelp,
     onToggleMute, onToggleSolo, onClearPattern, onCycleVisualizer,
     onCycleFilter, onTogglePump, onToggleEvolve, onToggleRecord,
-    onSetStepCount, onRandomize, onToggleMetronome, enabled,
+    onPadTrigger, onRandomize, onToggleMetronome, enabled,
   ])
 }
