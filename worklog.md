@@ -2820,3 +2820,41 @@ Stage Summary:
 - 653 tests pass, 0 fail, 0 TS errors, 0 lint errors.
 - Pushed to GitHub. Commits: 855eb77, a85746e, 807d9d0, 05a4048
 - GitHub Pages live: https://dudududi144-source.github.io/psy-sampler/
+
+---
+Task ID: ROAST-CLEANUP
+Agent: main
+Task: Remove all unprofessional front-end elements
+
+Comprehensive cleanup — removed everything a commercial product would NEVER show:
+
+Removed from front-end:
+1. Debug Panel — eventsReceived, notesSkipped, activeVoices, event log (entire component)
+2. StubDevice class — 'coexistence proof' 2nd device
+3. Device count stat — '2 DEVICES' display
+4. Performance tracking refs — notesPerSec, peakVoices, playStartTime
+5. Technical toasts — 'Seeded RNG', 'deterministic', '±7.5 per note', etc.
+   → User-friendly: 'Pattern randomized', 'Groove added', 'Quantized',
+     'Build-up applied', 'Louder', 'Softer'
+6. Test count in footer — '59 features · 653 tests' → '© 2026 PSY Family'
+7. Engineering text in InitOverlay — 'creates AudioContext, InMemoryChannel...'
+   → 'Professional web-audio sampler with chord progression generator...'
+8. 'canonical realization device' → 'web-audio sampler' (chassis brand)
+9. Error messages — 'Failed to initialize audio: ...manifest.json...'
+   → 'Could not start the audio engine. Please refresh and try again.'
+10. InitOverlay shortcuts text — removed entirely
+11. 'loading samples…' → 'Loading sounds…'
+12. 'click to initialize audio' → 'Click to start'
+13. 'initializing…' → 'Loading…'
+14. 'retry initialization' → 'Retry'
+15. Error styling → PSY red (#f85149) instead of Tailwind red/zinc
+
+All functionality preserved: audio, transport, MIDI, recording, export,
+mixer, automation, song mode, pattern editor, performance pads.
+
+Stage Summary:
+- 653 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub. Commits: 00da3d1, c2c7c5b, a82998d
+- GitHub Pages live: https://dudududi144-source.github.io/psy-sampler/
+- No debug panels, no technical jargon, no engineering text.
+- The app now looks like a product, not a developer demo.
