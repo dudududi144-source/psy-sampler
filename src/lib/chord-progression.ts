@@ -197,6 +197,81 @@ function getArpeggioToneIndex(pattern: ArpeggioPattern, pos: number, rng: Rng): 
   return seq[pos % seq.length]!
 }
 
+// ─── Bass patterns ───────────────────────────────────────────────────────────
+//
+// Controls the bassline character — the foundation of electronic music.
+// Different genres use different bass patterns:
+//   root    = root on downbeats (psytrance staple, current default)
+//   walking = root + 5th alternation (jazz/blues feel)
+//   octave  = root + octave jumps (energetic, techno)
+//   pedal   = root every step (dronal, hypnotic, darkpsy)
+//   arp     = root → 5th → octave → 5th rolling (progressive)
+
+export type BassPattern = 'root' | 'walking' | 'octave' | 'pedal' | 'arp'
+
+/** Human-readable labels for the UI. */
+export const BASS_LABELS: Record<BassPattern, string> = {
+  root: 'Root (downbeats)',
+  walking: 'Walking (root-5th)',
+  octave: 'Octave jumps',
+  pedal: 'Pedal (every step)',
+  arp: 'Arpeggio (rolling)',
+}
+
+/**
+ * Determine if a bass note fires at step `i` and which chord tone it uses.
+ * Returns { active, toneIdx } where toneIdx is 0=root, 2=5th, 3=octave.
+ * -1 means "no note at this step".
+ *
+ * The bass pattern controls BOTH the rhythm (when) and pitch (what):
+ *   root    → beats 1+3 (steps 0,8) strong root, optional walking 5th
+ *   walking → every beat (steps 0,4,8,12) alternating root/5th
+ *   octave  → every beat, root then root+12 (octave jump)
+ *   pedal   → every step (16ths) all root (dronal)
+ *   arp     → every 8th (steps 0,2,4,...) rolling root/5th/octave/5th
+ */
+function getBassToneAt(
+  pattern: BassPattern,
+  step: number,
+  rng: Rng,
+): { active: boolean; toneIdx: number } {
+  switch (pattern) {
+    case 'root':
+      // Beats 1+3 (steps 0,8 mod 16 → i%8===0): strong root.
+      // Off-beat 8ths (i%4===2): 40% chance of 5th (walking feel).
+      if (step % 8 === 0) return { active: true, toneIdx: 0 }
+      if (step % 4 === 2 && rng.next() < 0.4) return { active: true, toneIdx: 2 }
+      return { active: false, toneIdx: -1 }
+    case 'walking':
+      // Every beat (steps 0,4,8,12 → step%4===0), alternating root/5th.
+      if (step % 4 === 0) {
+        const beat = Math.floor(step / 4)
+        return { active: true, toneIdx: beat % 2 === 0 ? 0 : 2 }
+      }
+      return { active: false, toneIdx: -1 }
+    case 'octave':
+      // Every beat, root then root+12 (octave). toneIdx 3 = root+12.
+      if (step % 4 === 0) {
+        const beat = Math.floor(step / 4)
+        return { active: true, toneIdx: beat % 2 === 0 ? 0 : 3 }
+      }
+      return { active: false, toneIdx: -1 }
+    case 'pedal':
+      // Every step (16ths), always root. Dronal/hypnotic.
+      return { active: true, toneIdx: 0 }
+    case 'arp':
+      // Every 8th (steps 0,2,4,...), rolling root/5th/octave/5th.
+      if (step % 2 === 0) {
+        const arpPos = Math.floor(step / 2)
+        const seq = [0, 2, 3, 2] // root, 5th, octave, 5th
+        return { active: true, toneIdx: seq[arpPos % seq.length]! }
+      }
+      return { active: false, toneIdx: -1 }
+    default:
+      return { active: false, toneIdx: -1 }
+  }
+}
+
 /**
  * Generate a 4-bar chord progression from the context's key + scale.
  * Seeded: same (ctx, seed) → same progression.
@@ -247,6 +322,7 @@ export function applyProgression(
   progression: Progression,
   seed: number,
   arpeggio: ArpeggioPattern = 'up',
+  bass: BassPattern = 'root',
 ): { pattern: Pattern; noteMap: NoteMap } {
   const rng = new Rng(seed >>> 0)
   const out: Pattern = { ...pattern }
@@ -254,28 +330,9 @@ export function applyProgression(
   const steps = out.kick.length
   const chordSpan = Math.max(1, Math.floor(steps / progression.chords.length))
 
-  // Bass: root on downbeats. Pitch = chord root (low register).
-  const bassRow = new Array<number>(steps).fill(0)
-  const bassNotes: (number | null)[] = new Array(steps).fill(null)
-  for (let i = 0; i < steps; i++) {
-    const chordIdx = Math.floor(i / chordSpan) % progression.chords.length
-    const chord = progression.chords[chordIdx]
-    if (!chord) continue
-    // Steps 0, 8 = beats 1, 3 → strong root.
-    // Steps 4, 12 = beats 2, 4 → optional root (50% chance).
-    if (i % 4 === 0) {
-      bassRow[i] = rng.int(90, 110)
-      bassNotes[i] = chord.rootNote
-    } else if (i % 4 === 2 && rng.next() < 0.4) {
-      // Off-beat 8th → walking bass feel (5th of the chord for movement).
-      bassRow[i] = rng.int(70, 90)
-      bassNotes[i] = chord.tones[2] // 5th
-    }
-  }
-  out.bass = bassRow
-  noteMap.bass = bassNotes
-
   // Lead: chord-tone arpeggio, 8th notes (every 2 steps).
+  // Generated FIRST so the lead is independent of the bass pattern's RNG
+  // consumption (changing the bass pattern should NOT change the lead).
   // The arpeggio pattern controls the SEQUENCE of chord tones:
   //   'up' = root→3rd→5th→octave, 'down' = octave→5th→3rd→root, etc.
   // Pitch is one octave above the chord root for a melodic register.
@@ -300,6 +357,29 @@ export function applyProgression(
   }
   out.lead = leadRow
   noteMap.lead = leadNotes
+
+  // Bass: pattern-controlled rhythm + pitch. The bass pattern defines both
+  // WHEN notes fire (downbeats / every beat / every 16th / every 8th) and
+  // WHAT pitch (root / 5th / octave). Generated AFTER the lead so the lead
+  // is independent of the bass pattern choice.
+  const bassRow = new Array<number>(steps).fill(0)
+  const bassNotes: (number | null)[] = new Array(steps).fill(null)
+  for (let i = 0; i < steps; i++) {
+    const chordIdx = Math.floor(i / chordSpan) % progression.chords.length
+    const chord = progression.chords[chordIdx]
+    if (!chord) continue
+    const { active, toneIdx } = getBassToneAt(bass, i, rng)
+    if (active) {
+      // Strong beats (i%4===0) = vel 90-110; off-beats = vel 70-90.
+      bassRow[i] = i % 4 === 0 ? rng.int(90, 110) : rng.int(70, 90)
+      // toneIdx 0=root, 2=5th, 3=root+12 (octave).
+      bassNotes[i] = toneIdx < 3
+        ? chord.tones[toneIdx]
+        : chord.tones[0] + 12 // octave
+    }
+  }
+  out.bass = bassRow
+  noteMap.bass = bassNotes
 
   // Texture: sparse stab on beat 1 of each chord span. Pitch = chord root + 12.
   const texRow = new Array<number>(steps).fill(0)
@@ -334,8 +414,9 @@ export function generateChordPattern(
   ctx: Pick<MusicalContext, 'rootPc' | 'scale'>,
   seed: number,
   arpeggio: ArpeggioPattern = 'up',
+  bass: BassPattern = 'root',
 ): { pattern: Pattern; noteMap: NoteMap; progression: Progression } {
   const progression = generateProgression(ctx, seed)
-  const { pattern: newPattern, noteMap } = applyProgression(pattern, progression, seed, arpeggio)
+  const { pattern: newPattern, noteMap } = applyProgression(pattern, progression, seed, arpeggio, bass)
   return { pattern: newPattern, noteMap, progression }
 }

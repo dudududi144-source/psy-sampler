@@ -69,7 +69,7 @@ import { useUndoRedo } from '@/lib/use-undo-redo'
 import { useMidiInput, roleForNote } from '@/lib/use-midi-input'
 import { MIXER_PRESETS, type MixerPreset } from '@/lib/mixer-presets'
 import { Metronome } from '@/lib/metronome'
-import { generateChordPattern, NOTE_NAMES, SCALE_LABELS, ARPEGGIO_LABELS, type ArpeggioPattern } from '@/lib/chord-progression'
+import { generateChordPattern, NOTE_NAMES, SCALE_LABELS, ARPEGGIO_LABELS, BASS_LABELS, type ArpeggioPattern, type BassPattern } from '@/lib/chord-progression'
 import { TimelineView } from '@/components/timeline-view'
 import { AutomationEditor } from '@/components/automation-editor'
 import { HelpOverlay } from '@/components/help-overlay'
@@ -129,6 +129,8 @@ export default function Home() {
   const [scaleName, setScaleName] = React.useState('phrygianDominant')
   // Arpeggio pattern for the chord progression lead. Default 'up' (root→3rd→5th→octave).
   const [arpeggio, setArpeggio] = React.useState<ArpeggioPattern>('up')
+  // Bass pattern for the chord progression bass. Default 'root' (downbeats).
+  const [bassPattern, setBassPattern] = React.useState<BassPattern>('root')
   const [currentStep, setCurrentStep] = React.useState(0)
   const { state: pattern, set: setPatternWithHistory, undo, redo, canUndo, canRedo, reset: resetPatternHistory } = useUndoRedo<Pattern>(structuredClone(DEFAULT_PATTERN))
   // NoteMap: per-step pitch overrides (from chord progression). Tracked in
@@ -654,7 +656,7 @@ export default function Home() {
     const ctx = director.getContext()
     const currentPattern = director.getPattern()
     const seed = Math.floor(Math.random() * 1000000)
-    const { pattern: newPattern, noteMap: newNoteMap, progression } = generateChordPattern(currentPattern, ctx, seed, arpeggio)
+    const { pattern: newPattern, noteMap: newNoteMap, progression } = generateChordPattern(currentPattern, ctx, seed, arpeggio, bassPattern)
     director.setPattern(newPattern)
     director.setNoteMap(newNoteMap)
     setNoteMap(newNoteMap)
@@ -662,9 +664,9 @@ export default function Home() {
     try { autosavePattern(newPattern) } catch { /* */ }
     toast({
       title: `Chords: ${progression.label}`,
-      description: `${progression.roman} · ${arpeggio} arpeggio`,
+      description: `${progression.roman} · ${arpeggio} arp · ${bassPattern} bass`,
     })
-  }, [setPatternWithHistory, arpeggio])
+  }, [setPatternWithHistory, arpeggio, bassPattern])
 
   /** Double the pattern (8→16 or 16→32, repeating). */
   const onDoublePattern = React.useCallback(() => {
@@ -1674,6 +1676,21 @@ export default function Home() {
                 title="Arpeggio pattern for lead (up/down/up-down/random/chordal)"
               >
                 {Object.entries(ARPEGGIO_LABELS).map(([key, label]) => (
+                  <option key={key} value={key}>{label}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Bass pattern selector — controls the bassline character. */}
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">BASS</span>
+              <select
+                value={bassPattern}
+                onChange={(e) => setBassPattern(e.target.value as BassPattern)}
+                className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-base sm:text-xs text-rose-300"
+                title="Bass pattern (root/walking/octave/pedal/arp)"
+              >
+                {Object.entries(BASS_LABELS).map(([key, label]) => (
                   <option key={key} value={key}>{label}</option>
                 ))}
               </select>
