@@ -1743,14 +1743,14 @@ export default function Home() {
               onChange={onMasterVolumeChange}
             />
 
-            {/* Row 2: FX + Toggles + Undo/Redo + Tap + MIDI */}
+            {/* Row 2: Edit + Tap + MIDI + Help */}
             </div>
             <div className="flex flex-wrap items-center gap-2 sm:gap-3 border-t border-zinc-800/50 pt-2">
             {/* Undo / Redo */}
             <Button
               onClick={onUndo}
               disabled={!canUndo}
-              className="h-11 gap-2 border border-zinc-700 bg-zinc-900 font-mono text-xs font-bold uppercase tracking-[0.15em] text-zinc-300 disabled:opacity-30"
+              className="tbtn h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em] disabled:opacity-30"
               title="Undo (Ctrl+Z)"
             >
               UNDO
@@ -1758,7 +1758,7 @@ export default function Home() {
             <Button
               onClick={onRedo}
               disabled={!canRedo}
-              className="h-11 gap-2 border border-zinc-700 bg-zinc-900 font-mono text-xs font-bold uppercase tracking-[0.15em] text-zinc-300 disabled:opacity-30"
+              className="tbtn h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em] disabled:opacity-30"
               title="Redo (Ctrl+Shift+Z)"
             >
               REDO
@@ -1767,10 +1767,20 @@ export default function Home() {
             {/* Tap tempo */}
             <Button
               onClick={onTapTempo}
-              className="h-11 gap-2 border border-zinc-700 bg-zinc-900 font-mono text-xs font-bold uppercase tracking-[0.15em] text-amber-300 hover:bg-amber-500/10"
+              className="tbtn h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em]"
               title="Tap tempo (T key) — tap repeatedly to detect BPM"
             >
               TAP
+            </Button>
+
+            {/* Help button — visible so features are discoverable */}
+            <Button
+              onClick={() => setHelpOpen(true)}
+              className="tbtn h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em]"
+              title="Help & keyboard shortcuts (Shift+/)"
+              style={{ marginLeft: 'auto', color: '#86f7ff' }}
+            >
+              HELP
             </Button>
 
             {/* MIDI input selector */}
