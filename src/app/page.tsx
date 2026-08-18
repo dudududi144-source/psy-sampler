@@ -60,6 +60,7 @@ import { AutomationBank, type AutomationTarget } from '@/lib/automation'
 import { renderOffline } from '@/lib/offline-render'
 import { exportStems } from '@/lib/stem-export'
 import { downloadMidiFile } from '@/lib/midi-export'
+import { readMidiFile } from '@/lib/midi-import'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { ErrorBoundary } from '@/components/error-boundary'
@@ -984,6 +985,39 @@ export default function Home() {
     }
   }, [pattern, bpm, stepCount])
 
+  /** Import a .mid file into the pattern. */
+  const midiFileInputRef = React.useRef<HTMLInputElement>(null)
+  const [midiImporting, setMidiImporting] = React.useState(false)
+
+  const handleImportMidi = React.useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    e.target.value = ''
+    setMidiImporting(true)
+    try {
+      const result = await readMidiFile(file)
+      if (!result) {
+        toast({ title: 'MIDI import failed', description: 'Invalid .mid file', variant: 'destructive' })
+        return
+      }
+      // Apply the imported pattern + BPM + step count.
+      directorRef.current?.setStepCount(result.stepCount)
+      setStepCount(result.stepCount)
+      directorRef.current?.setPattern(structuredClone(result.pattern))
+      resetPatternHistory(structuredClone(result.pattern))
+      setBpm(result.bpm)
+      directorRef.current?.setBpm(result.bpm)
+      toast({
+        title: `Imported ${result.notesImported} notes`,
+        description: `${result.stepCount} steps · ${result.bpm} BPM · ${file.name}`,
+      })
+    } catch (err) {
+      toast({ title: 'MIDI import failed', description: err instanceof Error ? err.message : String(err), variant: 'destructive' })
+    } finally {
+      setMidiImporting(false)
+    }
+  }, [resetPatternHistory])
+
   const handleExportStems = React.useCallback(async () => {
     const ctx = ctxRef.current
     const bundle = bundleRef.current
@@ -1442,6 +1476,23 @@ export default function Home() {
             >
               ⬇ MIDI
             </Button>
+
+            {/* MIDI import — load .mid file */}
+            <Button
+              onClick={() => midiFileInputRef.current?.click()}
+              disabled={midiImporting}
+              className="h-11 gap-2 border border-cyan-400/50 bg-zinc-900 font-mono text-xs font-bold uppercase tracking-[0.15em] text-cyan-300 hover:bg-cyan-500/10 disabled:opacity-50"
+              title="Import .mid file — extract pattern from a DAW"
+            >
+              {midiImporting ? '● LOADING…' : '⬆ MIDI'}
+            </Button>
+            <input
+              ref={midiFileInputRef}
+              type="file"
+              accept=".mid,.midi,audio/midi"
+              onChange={handleImportMidi}
+              className="hidden"
+            />
 
             {/* Live recording */}
             <Button
