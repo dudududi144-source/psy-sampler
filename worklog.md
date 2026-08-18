@@ -2616,3 +2616,37 @@ Stage Summary:
 - Pushed to GitHub. Commit: 0a29eb7
 - GitHub Pages updated: https://dudududi144-source.github.io/psy-sampler/
 - The PSY family hardware aesthetic is now live.
+
+---
+Task ID: PSY-DESIGN-PHASES-2-3
+Agent: main
+Task: PSY transport bar + pattern editor design (Phases 2-3)
+
+Work Log:
+Phase 2 — Transport bar:
+- .topbar class on transport bar container
+- .tbtn class on 11 transport buttons (PLAY/STOP, EXPORT, STEMS, MIDI, MET, PANIC, REC, SAVE, LOAD)
+- .tbtn.power (PLAY), .tbtn.panic (PANIC), .tbtn.rec (REC), .tbtn.midi (MIDI)
+- .oled class on harmonic status bar (dark with scanlines, cyan text)
+- .section class on 5 content sections
+
+Phase 3 — Pattern editor:
+- .seq-grid class on pattern grid container
+- .seq-btn class on 144 step cells (9 roles × 16 steps)
+  - .seq-btn.on (active — blue glow)
+  - .seq-btn.on.accent (accent — bright blue)
+  - .seq-btn.playing (current step — cyan outline)
+- .stitle class on section title (with amber accent dot --c: #fbbf24)
+- .preset class on 9 header buttons (CLR, RND, CHORDS, HUM, QUANT, RAMP↑↓, SCALE±)
+- .oled class on pattern statistics bar
+
+Verified on GitHub Pages (hard reload to clear cache):
+- chassis=true, cheeks=2, screws=4, brand=true
+- topbar=true, tbtn=11, oled=2
+- seqGrid=true, seqBtn=144, stitle=1, preset=9, section=5
+
+Stage Summary:
+- 653 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub. Commits: e4b08a2 (Phase 2), 87754b1 (Phase 3)
+- GitHub Pages live: https://dudududi144-source.github.io/psy-sampler/
+- 3 phases complete: chassis + transport + pattern editor.
