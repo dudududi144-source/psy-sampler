@@ -2055,3 +2055,18 @@ Work Log:
 Stage Summary:
 - Server running HTTP 200.
 - Commit: 8a5b61f
+
+---
+Task ID: PWA
+Agent: main
+Task: Make the app a PWA — installable + offline-first
+
+Work Log:
+- Created manifest.json (name, icons, theme color, standalone display).
+- Created sw.js service worker: app shell caching, sample WAV cache-first, network-first with fallback.
+- Updated layout.tsx: manifest link, appleWebApp config, themeColor, service worker registration, favicon.
+- 301 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+
+Stage Summary:
+- Server running HTTP 200.
+- Commit: d27627e
