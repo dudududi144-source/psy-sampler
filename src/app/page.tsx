@@ -70,6 +70,7 @@ import { useMidiInput, roleForNote } from '@/lib/use-midi-input'
 import { MIXER_PRESETS, type MixerPreset } from '@/lib/mixer-presets'
 import { Metronome } from '@/lib/metronome'
 import { generateChordPattern, NOTE_NAMES, SCALE_LABELS, ARPEGGIO_LABELS, BASS_LABELS, type ArpeggioPattern, type BassPattern } from '@/lib/chord-progression'
+import { humanizePattern } from '@/lib/humanize'
 import { TimelineView } from '@/components/timeline-view'
 import { AutomationEditor } from '@/components/automation-editor'
 import { HelpOverlay } from '@/components/help-overlay'
@@ -679,6 +680,20 @@ export default function Home() {
       description: `${progression.roman} · ${arpeggio} arp · ${bassPattern} bass`,
     })
   }, [setPatternWithHistory, arpeggio, bassPattern, density, melodyOctave, bassOctave])
+
+  /** Humanize velocities — add groove via random variation. Works on any
+   *  pattern (generated or hand-edited). Does NOT change which steps are
+   *  active or the NoteMap pitches — only applies ±15 velocity variation. */
+  const onHumanize = React.useCallback(() => {
+    const director = directorRef.current
+    if (!director) return
+    const seed = Math.floor(Math.random() * 1000000)
+    const humanized = humanizePattern(pattern, 0.5, seed) // 50% = ±7.5 variation
+    director.setPattern(humanized)
+    setPatternWithHistory(structuredClone(humanized))
+    try { autosavePattern(humanized) } catch { /* */ }
+    toast({ title: 'Humanized', description: 'Velocity variation added (±7.5 per note)' })
+  }, [pattern, setPatternWithHistory])
 
   /** Double the pattern (8→16 or 16→32, repeating). */
   const onDoublePattern = React.useCallback(() => {
@@ -2053,6 +2068,7 @@ export default function Home() {
               onPasteRole={onPasteRole}
               onRandomize={onRandomizePattern}
               onChords={onGenerateChords}
+              onHumanize={onHumanize}
               noteMap={noteMap}
               onFillRole={onFillRole}
               onDouble={onDoublePattern}

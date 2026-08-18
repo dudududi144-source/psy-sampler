@@ -47,6 +47,7 @@ export function PatternEditor({
   onPasteRole,
   onRandomize,
   onChords,
+  onHumanize,
   onFillRole,
   onDouble,
   onHalf,
@@ -77,6 +78,8 @@ export function PatternEditor({
   onRandomize?: () => void
   /** Generate a chord-aware bass/lead/texture pattern (seeded). */
   onChords?: () => void
+  /** Humanize velocities (add groove via random variation). */
+  onHumanize?: () => void
   /** Fill a single role with a quick pattern. */
   onFillRole?: (role: SampleRole) => void
   /** Double the pattern (8→16 or 16→32). */
@@ -182,6 +185,16 @@ export function PatternEditor({
               className="touch-manipulation min-h-[28px] rounded border border-violet-400/40 bg-violet-500/10 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-violet-300 transition-all hover:bg-violet-500/20"
             >
               CHORDS
+            </button>
+          )}
+          {onHumanize && (
+            <button
+              type="button"
+              onClick={onHumanize}
+              title="Humanize velocities — add groove via random variation"
+              className="touch-manipulation min-h-[28px] rounded border border-teal-400/40 bg-teal-500/10 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-teal-300 transition-all hover:bg-teal-500/20"
+            >
+              HUM
             </button>
           )}
           {/* Pattern length selector */}
