@@ -304,7 +304,7 @@ export default function Home() {
       // Sampler device (standalone — outputNode null → connects to ctx.destination)
       bundle = createSamplerDevice({
         audioContext: ctx,
-        manifestUrl: '/samples/manifest.json',
+        manifestUrl: 'samples/manifest.json',
         onLoaded: (result) => setLoadResult(result),
         onProgress: (loaded, total) => setLoadProgress({ loaded, total }),
       })
@@ -451,7 +451,7 @@ export default function Home() {
     } catch (err) {
       console.error('[psy-sampler] initializeAudio failed:', err)
       const message = err instanceof Error ? err.message : String(err)
-      setInitError(`Failed to initialize audio: ${message}. Check that /samples/manifest.json is reachable and the AudioContext can start.`)
+      setInitError(`Failed to initialize audio: ${message}. Check that samples/manifest.json is reachable and the AudioContext can start.`)
       // Clean up partial state on failure.
       if (bundle) bundle.dispose()
       if (host) host.dispose()
