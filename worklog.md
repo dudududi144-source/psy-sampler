@@ -2267,3 +2267,19 @@ Stage Summary:
 - 409 tests pass (was 390, +19), 0 fail, 0 TS errors, 0 lint errors.
 - Pushed to GitHub. Commit: f1b0dc4
 - Chord progression is now a TRUE melodic generator (pitch-aware, not just rhythm).
+
+---
+Task ID: NOTEMAP-UI
+Agent: main
+Task: Make NoteMap visible — pitch labels on pattern cells
+
+Work Log:
+- PatternEditor: added noteMap prop + midiToNoteName helper (45→"A2", 61→"C#3").
+- Cells with a pitch override show the note name at the top (text-[7px], black/80 on the colored cell) + title tooltip.
+- Page: noteMap tracked in state so the grid re-renders when chords are generated. setNoteMap({}) on clear/randomize/fill/preset-load.
+- Browser-verified: CHORDS generates "A - Dm - Faug - Gm". Pitch labels appear on cells: A2 (bass root), E3/D3/A3 (lead arpeggio), F3/C#4/G3 (chord tones). The melody is now VISIBLE on the grid, not just audible. No JS errors.
+
+Stage Summary:
+- 409 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub. Commit: 0f3af02
+- 45 features total. The chord progression is now a full melodic sequencer with visible pitches.
