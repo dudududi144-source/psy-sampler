@@ -62,7 +62,8 @@ import { exportStems } from '@/lib/stem-export'
 import { downloadMidiFile } from '@/lib/midi-export'
 import { readMidiFile } from '@/lib/midi-import'
 import { Button } from '@/components/ui/button'
-import { Slider } from '@/components/ui/slider'
+import { PsyKnob } from '@/components/psy-knob'
+import { PsyCycleButton } from '@/components/psy-cycle-button'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { useKeyboardShortcuts } from '@/lib/use-keyboard-shortcuts'
 import { useUndoRedo } from '@/lib/use-undo-redo'
@@ -1670,148 +1671,144 @@ export default function Home() {
             {/* Row 3: Sliders (BPM + Swing + Master + Section + Energy) */}
             </div>
             <div className="flex flex-wrap items-center gap-2 sm:gap-3 border-t border-zinc-800/50 pt-2">
-            {/* BPM slider */}
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">BPM</span>
-              <Slider value={[bpm]} onValueChange={(v) => onBpmChange(v[0]!)} min={100} max={180} step={1} className="w-28" />
-              <span className="w-8 font-mono text-xs tabular-nums text-emerald-300">{bpm}</span>
-            </div>
+            {/* BPM knob */}
+            <PsyKnob
+              value={bpm}
+              min={60}
+              max={200}
+              def={145}
+              step={1}
+              color="#fbbf24"
+              label="BPM"
+              fmt={v => `${Math.round(v)}`}
+              onChange={onBpmChange}
+            />
 
-            {/* Swing slider */}
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">SWING</span>
-              <Slider value={[swing]} onValueChange={(v) => onSwingChange(v[0]!)} min={0} max={70} step={1} className="w-24" />
-              <span className="w-8 font-mono text-xs tabular-nums text-fuchsia-300">{swing}%</span>
-            </div>
+            {/* Swing knob */}
+            <PsyKnob
+              value={swing}
+              min={0}
+              max={100}
+              def={0}
+              step={1}
+              color="#b8e05a"
+              label="SWING"
+              fmt={v => `${Math.round(v)}%`}
+              onChange={onSwingChange}
+            />
 
             {/* Master volume */}
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">MASTER</span>
-              <Slider value={[masterVolume]} onValueChange={(v) => onMasterVolumeChange(v[0]!)} min={0} max={1} step={0.01} className="w-24" />
-              <span className="w-8 font-mono text-xs tabular-nums text-violet-300">{masterVolume.toFixed(2)}</span>
-            </div>
+            <PsyKnob
+              value={masterVolume}
+              min={0}
+              max={1}
+              def={0.85}
+              step={0.01}
+              color="#4dd6e8"
+              label="MASTER"
+              fmt={v => v.toFixed(2)}
+              onChange={onMasterVolumeChange}
+            />
 
             {/* Section dropdown */}
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">SECTION</span>
-              <select
-                value={section}
-                onChange={(e) => onSectionChange(e.target.value)}
-                className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-base sm:text-xs text-fuchsia-300"
-              >
-                {SECTIONS.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-            </div>
+            <PsyCycleButton
+              value={section}
+              options={SECTIONS}
+              display={v => v}
+              color="#f472b6"
+              label="SECTION"
+              onChange={onSectionChange}
+            />
 
             {/* Key selector — root pitch class (0-11 = C-B). Changes the
                 director's context so CHORDS uses the new key. */}
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">KEY</span>
-              <select
-                value={musicalKey}
-                onChange={(e) => onKeyChange(parseInt(e.target.value, 10))}
-                className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-base sm:text-xs text-emerald-300"
-                title="Root key for chord progression (D = generate chords)"
-              >
-                {NOTE_NAMES.map((n, i) => (
-                  <option key={n} value={i}>{n}</option>
-                ))}
-              </select>
-            </div>
+            <PsyCycleButton
+              value={String(musicalKey)}
+              options={NOTE_NAMES.map((_, i) => String(i))}
+              display={v => NOTE_NAMES[parseInt(v)]!}
+              color="#00ffc8"
+              label="KEY"
+              onChange={v => onKeyChange(parseInt(v))}
+            />
 
             {/* Scale selector — determines the diatonic chords CHORDS uses. */}
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">SCALE</span>
-              <select
-                value={scaleName}
-                onChange={(e) => onScaleChange(e.target.value)}
-                className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-base sm:text-xs text-violet-300"
-                title="Scale for chord progression (9 diatonic scales)"
-              >
-                {Object.entries(SCALE_LABELS).map(([key, label]) => (
-                  <option key={key} value={key}>{label}</option>
-                ))}
-              </select>
-            </div>
+            <PsyCycleButton
+              value={scaleName}
+              options={Object.keys(SCALE_LABELS)}
+              display={v => SCALE_LABELS[v]!}
+              color="#b967ff"
+              label="SCALE"
+              onChange={onScaleChange}
+            />
 
             {/* Arpeggio pattern selector — controls the lead's melodic shape. */}
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">ARP</span>
-              <select
-                value={arpeggio}
-                onChange={(e) => setArpeggio(e.target.value as ArpeggioPattern)}
-                className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-base sm:text-xs text-amber-300"
-                title="Arpeggio pattern for lead (up/down/up-down/random/chordal)"
-              >
-                {Object.entries(ARPEGGIO_LABELS).map(([key, label]) => (
-                  <option key={key} value={key}>{label}</option>
-                ))}
-              </select>
-            </div>
+            <PsyCycleButton
+              value={arpeggio}
+              options={Object.keys(ARPEGGIO_LABELS) as ArpeggioPattern[]}
+              display={v => ARPEGGIO_LABELS[v]}
+              color="#fbbf24"
+              label="ARP"
+              onChange={setArpeggio}
+            />
 
             {/* Bass pattern selector — controls the bassline character. */}
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">BASS</span>
-              <select
-                value={bassPattern}
-                onChange={(e) => setBassPattern(e.target.value as BassPattern)}
-                className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-base sm:text-xs text-rose-300"
-                title="Bass pattern (root/walking/octave/pedal/arp)"
-              >
-                {Object.entries(BASS_LABELS).map(([key, label]) => (
-                  <option key={key} value={key}>{label}</option>
-                ))}
-              </select>
-            </div>
+            <PsyCycleButton
+              value={bassPattern}
+              options={Object.keys(BASS_LABELS) as BassPattern[]}
+              display={v => BASS_LABELS[v]}
+              color="#ff2e88"
+              label="BASS"
+              onChange={setBassPattern}
+            />
 
-            {/* Lead density slider — controls how busy the melody is.
+            {/* Lead density knob — controls how busy the melody is.
                 0.2 = sparse (few notes), 0.6 = default, 1.0 = every 8th note. */}
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">DENS</span>
-              <Slider value={[density]} onValueChange={(v) => setDensity(v[0]!)} min={0.2} max={1} step={0.1} className="w-20" />
-              <span className="w-8 font-mono text-xs tabular-nums text-cyan-300">{density.toFixed(1)}</span>
-            </div>
+            <PsyKnob
+              value={density}
+              min={0.2}
+              max={1}
+              def={0.6}
+              step={0.1}
+              color="#22d3ee"
+              label="DENS"
+              fmt={v => v.toFixed(1)}
+              onChange={setDensity}
+            />
 
             {/* Melody octave selector — shifts the lead register by whole octaves.
                 -2 to +2. Lets the user match the melody to their sample's optimal register. */}
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">OCT</span>
-              <select
-                value={melodyOctave}
-                onChange={(e) => setMelodyOctave(parseInt(e.target.value, 10))}
-                className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-base sm:text-xs text-lime-300"
-                title="Melody octave offset (-2 to +2, shifts lead register)"
-              >
-                {[-2, -1, 0, 1, 2].map((oct) => (
-                  <option key={oct} value={oct}>{oct > 0 ? `+${oct}` : oct}</option>
-                ))}
-              </select>
-            </div>
+            <PsyCycleButton
+              value={String(melodyOctave)}
+              options={['-2', '-1', '0', '1', '2']}
+              display={v => (parseInt(v) > 0 ? `+${v}` : v)}
+              color="#b8e05a"
+              label="OCT"
+              onChange={v => setMelodyOctave(parseInt(v))}
+            />
 
             {/* Bass octave selector — shifts the bass register independently.
                 -2 to +2. Lets the user match the bass to their sample's optimal register. */}
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">B.OCT</span>
-              <select
-                value={bassOctave}
-                onChange={(e) => setBassOctave(parseInt(e.target.value, 10))}
-                className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-base sm:text-xs text-orange-300"
-                title="Bass octave offset (-2 to +2, shifts bass register)"
-              >
-                {[-2, -1, 0, 1, 2].map((oct) => (
-                  <option key={oct} value={oct}>{oct > 0 ? `+${oct}` : oct}</option>
-                ))}
-              </select>
-            </div>
+            <PsyCycleButton
+              value={String(bassOctave)}
+              options={['-2', '-1', '0', '1', '2']}
+              display={v => (parseInt(v) > 0 ? `+${v}` : v)}
+              color="#fb923c"
+              label="B.OCT"
+              onChange={v => setBassOctave(parseInt(v))}
+            />
 
-            {/* Energy slider */}
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">ENERGY</span>
-              <Slider value={[energy]} onValueChange={(v) => onEnergyChange(v[0]!)} min={0} max={1} step={0.05} className="w-24" />
-              <span className="w-8 font-mono text-xs tabular-nums text-amber-300">{energy.toFixed(2)}</span>
-            </div>
+            {/* Energy knob */}
+            <PsyKnob
+              value={energy}
+              min={0}
+              max={1}
+              def={0.7}
+              step={0.05}
+              color="#ffb454"
+              label="ENERGY"
+              fmt={v => v.toFixed(2)}
+              onChange={onEnergyChange}
+            />
 
             {/* WAV export */}
             <Button
