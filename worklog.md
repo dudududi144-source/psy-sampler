@@ -2087,3 +2087,18 @@ Work Log:
 Stage Summary:
 - Server running HTTP 200.
 - Commit: 2e1ffea
+
+---
+Task ID: MIDI-ROUNDTRIP-TESTS
+Agent: main
+Task: 12 MIDI round-trip tests + help overlay update
+
+Work Log:
+- Wrote 12 tests: export Blob/MThd/format/tracks/tempo/size, import invalid/non-MIDI, round-trip (pattern/kick/velocity/BMP/randomized).
+- Updated help overlay with STEMS, MIDI export, MIDI import features.
+- 313 tests pass (was 301, +12), 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub.
+
+Stage Summary:
+- Server running HTTP 200.
+- Commit: 5a3e31a
