@@ -22,6 +22,10 @@ export interface ProjectState {
   pattern: Pattern
   /** Per-step pitch overrides (from chord progression). Optional for backward compat. */
   noteMap?: NoteMap
+  /** Root pitch class (0-11). Optional — defaults to 9 (A). */
+  musicalKey?: number
+  /** Scale name (e.g. 'phrygianDominant'). Optional — defaults to 'phrygianDominant'. */
+  scaleName?: string
   busState: Record<BusName, BusMixerState>
   filterMode: 'off' | 'lp' | 'hp'
   pumpEnabled: boolean
@@ -63,6 +67,8 @@ export function validateProject(obj: unknown): ProjectState | null {
     energy: typeof raw.energy === 'number' ? raw.energy : 0.7,
     pattern: raw.pattern as Pattern,
     noteMap: (typeof raw.noteMap === 'object' && raw.noteMap !== null ? raw.noteMap : {}) as NoteMap,
+    musicalKey: typeof raw.musicalKey === 'number' ? raw.musicalKey : 9,
+    scaleName: typeof raw.scaleName === 'string' ? raw.scaleName : 'phrygianDominant',
     busState: raw.busState as Record<BusName, BusMixerState>,
     filterMode: (raw.filterMode === 'lp' || raw.filterMode === 'hp' ? raw.filterMode : 'off'),
     pumpEnabled: typeof raw.pumpEnabled === 'boolean' ? raw.pumpEnabled : false,

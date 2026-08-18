@@ -61,7 +61,20 @@ export interface Chord {
   label: string
 }
 
-const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+export const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
+
+/** Human-readable scale names for the UI. */
+export const SCALE_LABELS: Record<string, string> = {
+  phrygianDominant: 'Phrygian Dominant',
+  minor: 'Natural Minor',
+  harmonicMinor: 'Harmonic Minor',
+  major: 'Major',
+  dorian: 'Dorian',
+  phrygian: 'Phrygian',
+  mixolydian: 'Mixolydian',
+  lydian: 'Lydian',
+  locrian: 'Locrian',
+}
 
 const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII']
 

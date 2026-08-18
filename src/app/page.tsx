@@ -69,7 +69,7 @@ import { useUndoRedo } from '@/lib/use-undo-redo'
 import { useMidiInput, roleForNote } from '@/lib/use-midi-input'
 import { MIXER_PRESETS, type MixerPreset } from '@/lib/mixer-presets'
 import { Metronome } from '@/lib/metronome'
-import { generateChordPattern } from '@/lib/chord-progression'
+import { generateChordPattern, NOTE_NAMES, SCALE_LABELS } from '@/lib/chord-progression'
 import { TimelineView } from '@/components/timeline-view'
 import { AutomationEditor } from '@/components/automation-editor'
 import { HelpOverlay } from '@/components/help-overlay'
@@ -122,6 +122,11 @@ export default function Home() {
   const [masterVolume, setMasterVolume] = React.useState(0.85)
   const [section, setSection] = React.useState('DROP')
   const [energy, setEnergy] = React.useState(0.7)
+  // Musical key + scale for the chord progression generator. Default: A phrygian
+  // dominant (the canonical psytrance key). Changing these updates the director's
+  // context so the next CHORDS generation uses the new harmonic territory.
+  const [musicalKey, setMusicalKey] = React.useState(9) // 9 = A (rootPc)
+  const [scaleName, setScaleName] = React.useState('phrygianDominant')
   const [currentStep, setCurrentStep] = React.useState(0)
   const { state: pattern, set: setPatternWithHistory, undo, redo, canUndo, canRedo, reset: resetPatternHistory } = useUndoRedo<Pattern>(structuredClone(DEFAULT_PATTERN))
   // NoteMap: per-step pitch overrides (from chord progression). Tracked in
@@ -542,6 +547,20 @@ export default function Home() {
   const onEnergyChange = React.useCallback((value: number) => {
     setEnergy(value)
     directorRef.current?.setContext({ energy: value })
+  }, [])
+
+  /** Change the musical key (root pitch class 0-11). Updates the director's
+   * context so the next CHORDS generation uses the new key. */
+  const onKeyChange = React.useCallback((rootPc: number) => {
+    setMusicalKey(rootPc)
+    directorRef.current?.setContext({ key: NOTE_NAMES[rootPc], rootPc })
+  }, [])
+
+  /** Change the scale (e.g. phrygianDominant → minor). Updates the director's
+   * context so the next CHORDS generation uses the new scale's diatonic chords. */
+  const onScaleChange = React.useCallback((scale: string) => {
+    setScaleName(scale)
+    directorRef.current?.setContext({ scale })
   }, [])
 
   const onToggleStep = React.useCallback((role: SampleRole, step: number) => {
@@ -1082,12 +1101,12 @@ export default function Home() {
   // ─── Project save/load ─────────────────────────────────────────────────────
   const onSaveProject = React.useCallback(() => {
     const project = createProject(`psy-sampler-${new Date().toISOString().slice(0, 10)}`, {
-      bpm, swing, masterVolume, section, energy, pattern, noteMap, busState,
+      bpm, swing, masterVolume, section, energy, pattern, noteMap, musicalKey, scaleName, busState,
       filterMode, pumpEnabled, evolveEnabled, song,
     })
     downloadProject(project)
     toast({ title: 'Project saved', description: `${project.name}.psy.json` })
-  }, [bpm, swing, masterVolume, section, energy, pattern, noteMap, busState, filterMode, pumpEnabled, evolveEnabled, song])
+  }, [bpm, swing, masterVolume, section, energy, pattern, noteMap, musicalKey, scaleName, busState, filterMode, pumpEnabled, evolveEnabled, song])
 
   const onLoadProject = React.useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -1100,6 +1119,14 @@ export default function Home() {
       setSwing(project.swing); directorRef.current?.setSwing(project.swing / 100)
       setMasterVolume(project.masterVolume); bundleRef.current?.audioGraph.setMasterGain(project.masterVolume)
       setSection(project.section); setEnergy(project.energy)
+      // Restore musical key + scale (for chord progression).
+      setMusicalKey(project.musicalKey ?? 9)
+      setScaleName(project.scaleName ?? 'phrygianDominant')
+      directorRef.current?.setContext({
+        key: NOTE_NAMES[project.musicalKey ?? 9],
+        rootPc: project.musicalKey ?? 9,
+        scale: project.scaleName ?? 'phrygianDominant',
+      })
       resetPatternHistory(structuredClone(project.pattern))
       directorRef.current?.setPattern(structuredClone(project.pattern))
       // Restore pitch overrides (chord progression melody).
@@ -1600,6 +1627,37 @@ export default function Home() {
               >
                 {SECTIONS.map((s) => (
                   <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Key selector — root pitch class (0-11 = C-B). Changes the
+                director's context so CHORDS uses the new key. */}
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">KEY</span>
+              <select
+                value={musicalKey}
+                onChange={(e) => onKeyChange(parseInt(e.target.value, 10))}
+                className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-base sm:text-xs text-emerald-300"
+                title="Root key for chord progression (D = generate chords)"
+              >
+                {NOTE_NAMES.map((n, i) => (
+                  <option key={n} value={i}>{n}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Scale selector — determines the diatonic chords CHORDS uses. */}
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">SCALE</span>
+              <select
+                value={scaleName}
+                onChange={(e) => onScaleChange(e.target.value)}
+                className="rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-base sm:text-xs text-violet-300"
+                title="Scale for chord progression (9 diatonic scales)"
+              >
+                {Object.entries(SCALE_LABELS).map(([key, label]) => (
+                  <option key={key} value={key}>{label}</option>
                 ))}
               </select>
             </div>
