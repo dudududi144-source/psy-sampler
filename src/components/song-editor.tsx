@@ -65,9 +65,14 @@ export function SongEditor({
   }
 
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-950/80 p-4">
+    <div className="section rounded-lg border border-zinc-800 bg-zinc-950/80 p-4">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">SONG · arrangement</h2>
+        <h2
+          className="stitle font-mono text-xs font-bold uppercase tracking-[0.2em] text-cyan-300"
+          style={{ '--c': '#c084fc' } as React.CSSProperties}
+        >
+          SONG · arrangement
+        </h2>
         <button
           onClick={onToggleSongMode}
           disabled={song.segments.length === 0}

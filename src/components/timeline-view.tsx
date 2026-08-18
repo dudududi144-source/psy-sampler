@@ -23,9 +23,14 @@ export function TimelineView({
 
   if (song.segments.length === 0) {
     return (
-      <div className="rounded-lg border border-zinc-800 bg-zinc-950/80 p-4">
+      <div className="section rounded-lg border border-zinc-800 bg-zinc-950/80 p-4">
         <div className="mb-2 flex items-center justify-between">
-          <h2 className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">TIMELINE</h2>
+          <h2
+            className="stitle font-mono text-xs font-bold uppercase tracking-[0.2em] text-cyan-300"
+            style={{ '--c': '#f07dc2' } as React.CSSProperties}
+          >
+            TIMELINE
+          </h2>
           <span className="font-mono text-[10px] text-zinc-600">no segments</span>
         </div>
         <div className="flex h-16 items-center justify-center font-mono text-[11px] text-zinc-600">
@@ -36,9 +41,14 @@ export function TimelineView({
   }
 
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-950/80 p-4">
+    <div className="section rounded-lg border border-zinc-800 bg-zinc-950/80 p-4">
       <div className="mb-2 flex items-center justify-between">
-        <h2 className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">TIMELINE · {totalBars} bars · {totalSec.toFixed(1)}s</h2>
+        <h2
+          className="stitle font-mono text-xs font-bold uppercase tracking-[0.2em] text-cyan-300"
+          style={{ '--c': '#f07dc2' } as React.CSSProperties}
+        >
+          TIMELINE · {totalBars} bars · {totalSec.toFixed(1)}s
+        </h2>
         <span className="font-mono text-[10px] text-zinc-500">
           {songMode ? `▶ bar ${currentGlobalBar}/${totalBars}` : '○ stopped'}
         </span>

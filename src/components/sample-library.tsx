@@ -76,9 +76,12 @@ export function SampleLibrary({
   const fresh = nowPlayingSampleId !== null && (now - nowPlayingAt) < NOW_PLAYING_MS
 
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-950/80 p-4">
+    <div className="section rounded-lg border border-zinc-800 bg-zinc-950/80 p-4">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-violet-300">
+        <h2
+          className="stitle font-mono text-xs font-bold uppercase tracking-[0.2em] text-violet-300"
+          style={{ '--c': '#b8e05a' } as React.CSSProperties}
+        >
           LIBRARY · {samples.length} samples
         </h2>
         <span className="font-mono text-[10px] text-zinc-500">click to audition</span>
@@ -103,7 +106,7 @@ export function SampleLibrary({
               >
                 <button
                   onClick={() => onAudition(s)}
-                  className="flex flex-1 items-center gap-2 text-left"
+                  className="preset flex flex-1 items-center gap-2 text-left"
                 >
                   <span
                     className="w-10 shrink-0 font-mono text-[11px] font-bold uppercase"

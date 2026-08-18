@@ -26,10 +26,15 @@ export function DebugPanel({ stats, eventLog }: { stats: DeviceStats; eventLog: 
   }, [eventLog])
 
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-950/80 p-4">
+    <div className="oled rounded-lg border border-zinc-800 bg-zinc-950/80 p-4">
       <div className="mb-3 flex items-center gap-2">
         <div className="size-2 animate-pulse rounded-full bg-emerald-400" style={{ boxShadow: '0 0 8px rgba(0,255,200,0.8)' }} />
-        <h2 className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-emerald-300">DEBUG · event flow</h2>
+        <h2
+          className="stitle font-mono text-xs font-bold uppercase tracking-[0.2em] text-emerald-300"
+          style={{ '--c': '#60a5fa' } as React.CSSProperties}
+        >
+          DEBUG · event flow
+        </h2>
       </div>
 
       {/* Device stats grid */}

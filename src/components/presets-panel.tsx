@@ -27,7 +27,7 @@ export function PresetsPanel({
           <button
             key={preset.name}
             onClick={() => onLoad(preset)}
-            className="rounded border border-zinc-700 bg-zinc-900/60 px-2 py-2 font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-300 transition-all hover:border-emerald-400/50 hover:bg-emerald-500/10 hover:text-emerald-300"
+            className="preset rounded border border-zinc-700 bg-zinc-900/60 px-2 py-2 font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-300 transition-all hover:border-emerald-400/50 hover:bg-emerald-500/10 hover:text-emerald-300"
           >
             <div>{preset.name}</div>
             <div className="mt-0.5 text-[10px] font-normal text-zinc-500">{preset.bpm} BPM</div>
@@ -43,7 +43,7 @@ export function PresetsPanel({
               <button
                 key={preset.name}
                 onClick={() => onLoadMixer(preset)}
-                className="rounded border border-zinc-700 bg-zinc-900/60 px-2 py-2 font-mono text-[10px] font-bold uppercase tracking-wider text-amber-300 transition-all hover:border-amber-400/50 hover:bg-amber-500/10"
+                className="preset rounded border border-zinc-700 bg-zinc-900/60 px-2 py-2 font-mono text-[10px] font-bold uppercase tracking-wider text-amber-300 transition-all hover:border-amber-400/50 hover:bg-amber-500/10"
                 title={`${preset.name} mixer preset — EQ + saturation + filter`}
               >
                 {preset.name}

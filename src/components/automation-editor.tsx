@@ -40,9 +40,14 @@ export function AutomationEditor({
   }
 
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-950/80 p-4">
+    <div className="section rounded-lg border border-zinc-800 bg-zinc-950/80 p-4">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-fuchsia-300">AUTOMATION · {TIMELINE_DURATION}s</h2>
+        <h2
+          className="stitle font-mono text-xs font-bold uppercase tracking-[0.2em] text-fuchsia-300"
+          style={{ '--c': '#fbbf24' } as React.CSSProperties}
+        >
+          AUTOMATION · {TIMELINE_DURATION}s
+        </h2>
         <div className="flex items-center gap-2">
           <span className="font-mono text-[10px] text-zinc-500">
             {bank.activeTracks.length} active · {bank.activeTracks.reduce((s, t) => s + t.points.length, 0)} pts
