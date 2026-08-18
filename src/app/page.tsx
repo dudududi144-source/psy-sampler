@@ -70,7 +70,7 @@ import { useMidiInput, roleForNote } from '@/lib/use-midi-input'
 import { MIXER_PRESETS, type MixerPreset } from '@/lib/mixer-presets'
 import { Metronome } from '@/lib/metronome'
 import { generateChordPattern, NOTE_NAMES, SCALE_LABELS, ARPEGGIO_LABELS, BASS_LABELS, type ArpeggioPattern, type BassPattern } from '@/lib/chord-progression'
-import { humanizePattern, quantizePattern } from '@/lib/humanize'
+import { humanizePattern, quantizePattern, rampPattern } from '@/lib/humanize'
 import { TimelineView } from '@/components/timeline-view'
 import { AutomationEditor } from '@/components/automation-editor'
 import { HelpOverlay } from '@/components/help-overlay'
@@ -706,6 +706,30 @@ export default function Home() {
     setPatternWithHistory(structuredClone(quantized))
     try { autosavePattern(quantized) } catch { /* */ }
     toast({ title: 'Quantized', description: 'Velocities snapped to off/normal/accent' })
+  }, [pattern, setPatternWithHistory])
+
+  /** Ramp up — velocity build-up (low→high across pattern).
+   *  Step 0 = quiet, last step = loud. For intros and risers. */
+  const onRampUp = React.useCallback(() => {
+    const director = directorRef.current
+    if (!director) return
+    const ramped = rampPattern(pattern, 'up', 40, 127)
+    director.setPattern(ramped)
+    setPatternWithHistory(structuredClone(ramped))
+    try { autosavePattern(ramped) } catch { /* */ }
+    toast({ title: 'Ramp up', description: 'Velocity build-up: 40→127 across pattern' })
+  }, [pattern, setPatternWithHistory])
+
+  /** Ramp down — velocity breakdown (high→low across pattern).
+   *  Step 0 = loud, last step = quiet. For breakdowns and fade-outs. */
+  const onRampDown = React.useCallback(() => {
+    const director = directorRef.current
+    if (!director) return
+    const ramped = rampPattern(pattern, 'down', 40, 127)
+    director.setPattern(ramped)
+    setPatternWithHistory(structuredClone(ramped))
+    try { autosavePattern(ramped) } catch { /* */ }
+    toast({ title: 'Ramp down', description: 'Velocity breakdown: 127→40 across pattern' })
   }, [pattern, setPatternWithHistory])
 
   /** Double the pattern (8→16 or 16→32, repeating). */
@@ -2085,6 +2109,8 @@ export default function Home() {
               onChords={onGenerateChords}
               onHumanize={onHumanize}
               onQuantize={onQuantize}
+              onRampUp={onRampUp}
+              onRampDown={onRampDown}
               noteMap={noteMap}
               onFillRole={onFillRole}
               onDouble={onDoublePattern}

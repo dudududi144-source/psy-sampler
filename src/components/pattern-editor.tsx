@@ -49,6 +49,8 @@ export function PatternEditor({
   onChords,
   onHumanize,
   onQuantize,
+  onRampUp,
+  onRampDown,
   onFillRole,
   onDouble,
   onHalf,
@@ -83,6 +85,10 @@ export function PatternEditor({
   onHumanize?: () => void
   /** Quantize velocities (snap to standard tiers). */
   onQuantize?: () => void
+  /** Ramp velocities up (build-up: low→high across pattern). */
+  onRampUp?: () => void
+  /** Ramp velocities down (breakdown: high→low across pattern). */
+  onRampDown?: () => void
   /** Fill a single role with a quick pattern. */
   onFillRole?: (role: SampleRole) => void
   /** Double the pattern (8→16 or 16→32). */
@@ -208,6 +214,26 @@ export function PatternEditor({
               className="touch-manipulation min-h-[28px] rounded border border-zinc-500/40 bg-zinc-700/20 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-300 transition-all hover:bg-zinc-700/40"
             >
               QUANT
+            </button>
+          )}
+          {onRampUp && (
+            <button
+              type="button"
+              onClick={onRampUp}
+              title="Ramp up — velocity build-up (low→high across pattern)"
+              className="touch-manipulation min-h-[28px] rounded border border-green-400/40 bg-green-500/10 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-green-300 transition-all hover:bg-green-500/20"
+            >
+              RAMP↑
+            </button>
+          )}
+          {onRampDown && (
+            <button
+              type="button"
+              onClick={onRampDown}
+              title="Ramp down — velocity breakdown (high→low across pattern)"
+              className="touch-manipulation min-h-[28px] rounded border border-red-400/40 bg-red-500/10 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-red-300 transition-all hover:bg-red-500/20"
+            >
+              RAMP↓
             </button>
           )}
           {/* Pattern length selector */}

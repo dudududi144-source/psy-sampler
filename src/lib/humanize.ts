@@ -110,3 +110,57 @@ export function quantizePattern(pattern: Pattern, tiers: number = 3): Pattern {
   }
   return out
 }
+
+// ─── Velocity ramp (build-up / breakdown) ──────────────────────────────────
+
+/**
+ * Scale velocities linearly across the pattern — a build-up (up) or
+ * breakdown (down). Step 0 gets minVel, the last step gets maxVel (for 'up'),
+ * with linear interpolation in between. Silent steps stay silent.
+ *
+ * @param pattern The input pattern.
+ * @param direction 'up' (low→high) or 'down' (high→low).
+ * @param minVel Minimum velocity (default 40). Active notes at step 0.
+ * @param maxVel Maximum velocity (default 127). Active notes at the last step.
+ * @returns A new pattern with ramped velocities (input is NOT mutated).
+ *
+ * Use cases:
+ *   - 'up': intro build-up (sparse → full), riser into a drop
+ *   - 'down': breakdown/fade-out (full → sparse)
+ *
+ * Does NOT change which steps are active. Does NOT touch the NoteMap.
+ */
+export function rampPattern(
+  pattern: Pattern,
+  direction: 'up' | 'down' = 'up',
+  minVel: number = 40,
+  maxVel: number = 127,
+): Pattern {
+  const lo = Math.max(1, Math.min(127, Math.round(minVel)))
+  const hi = Math.max(1, Math.min(127, Math.round(maxVel)))
+  const out: Pattern = { ...pattern }
+  // Find the total step count from the first role.
+  const steps = out.kick?.length ?? 16
+  for (const role of Object.keys(out) as SampleRole[]) {
+    const row = out[role]
+    if (!row) continue
+    const newRow = new Array<number>(row.length)
+    for (let i = 0; i < row.length; i++) {
+      const vel = row[i]!
+      if (vel <= 0) {
+        newRow[i] = 0 // silent stays silent
+        continue
+      }
+      // Linear interpolation: position 0..1 across the pattern.
+      const pos = row.length > 1 ? i / (row.length - 1) : 0
+      const scaledVel = direction === 'up'
+        ? lo + (hi - lo) * pos       // low → high
+        : hi - (hi - lo) * pos       // high → low
+      newRow[i] = Math.max(1, Math.min(127, Math.round(scaledVel)))
+    }
+    out[role] = newRow
+  }
+  // steps is used for documentation; suppress unused warning.
+  void steps
+  return out
+}
