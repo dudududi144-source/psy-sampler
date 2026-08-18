@@ -136,6 +136,9 @@ export default function Home() {
   // NoteMap: per-step pitch overrides (from chord progression). Tracked in
   // state so the PatternEditor re-renders and shows pitch labels on cells.
   const [noteMap, setNoteMap] = React.useState<NoteMap>({})
+  // Last generated chord progression — persisted in the UI so the user can
+  // always see the current harmonic structure (not just a fleeting toast).
+  const [lastProgression, setLastProgression] = React.useState<{ label: string; roman: string } | null>(null)
   const [samples, setSamples] = React.useState<SampleAsset[]>([])
   const [stats, setStats] = React.useState<DeviceStats | null>(null)
   // Performance tracking refs.
@@ -613,7 +616,7 @@ export default function Home() {
     const empty = structuredClone(DEFAULT_PATTERN)
     directorRef.current?.setPattern(empty)
     directorRef.current?.clearNoteMap() // clear pitch overrides too
-    setNoteMap({})
+    setNoteMap({}); setLastProgression(null)
     setPatternWithHistory(empty)
     // Autosave the cleared pattern (best-effort).
     try {
@@ -629,7 +632,7 @@ export default function Home() {
     if (!director) return
     director.randomizePattern()
     director.clearNoteMap() // randomize replaces rhythm — clear old pitches
-    setNoteMap({})
+    setNoteMap({}); setLastProgression(null)
     const result = structuredClone(director.getPattern())
     setPatternWithHistory(result)
     try { autosavePattern(result) } catch { /* */ }
@@ -642,7 +645,7 @@ export default function Home() {
     if (!director) return
     director.fillRole(role)
     director.clearNoteMap() // fill replaces rhythm — clear old pitches
-    setNoteMap({})
+    setNoteMap({}); setLastProgression(null)
     const result = structuredClone(director.getPattern())
     setPatternWithHistory(result)
     try { autosavePattern(result) } catch { /* */ }
@@ -660,6 +663,7 @@ export default function Home() {
     director.setPattern(newPattern)
     director.setNoteMap(newNoteMap)
     setNoteMap(newNoteMap)
+    setLastProgression({ label: progression.label, roman: progression.roman })
     setPatternWithHistory(structuredClone(newPattern))
     try { autosavePattern(newPattern) } catch { /* */ }
     toast({
@@ -990,7 +994,7 @@ export default function Home() {
     const cloned = structuredClone(preset.pattern)
     director.setPattern(cloned)
     director.clearNoteMap() // preset has its own rhythm — clear chord pitches
-    setNoteMap({})
+    setNoteMap({}); setLastProgression(null)
     resetPatternHistory(structuredClone(cloned))
     try {
       autosavePattern(cloned)
@@ -1136,7 +1140,7 @@ export default function Home() {
       // Restore pitch overrides (chord progression melody).
       const loadedNoteMap = project.noteMap ?? {}
       directorRef.current?.setNoteMap(loadedNoteMap)
-      setNoteMap(loadedNoteMap)
+      setNoteMap(loadedNoteMap); setLastProgression(null)
       setBusState(project.busState)
       const graph = bundleRef.current?.audioGraph
       if (graph) {
@@ -1193,7 +1197,7 @@ export default function Home() {
       resetPatternHistory(structuredClone(result.pattern))
       // Apply imported pitch overrides (melody from the DAW).
       directorRef.current?.setNoteMap(result.noteMap)
-      setNoteMap(result.noteMap)
+      setNoteMap(result.noteMap); setLastProgression(null)
       setBpm(result.bpm)
       directorRef.current?.setBpm(result.bpm)
       toast({
@@ -1936,6 +1940,35 @@ export default function Home() {
               </span>
             )}
             </div>{/* end Row 2 */}
+          </div>
+
+          {/* ─── Harmonic status bar — shows the current harmonic structure ─── */}
+          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900/50 px-4 py-2">
+            <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+              ▌HARMONY
+            </span>
+            <span className="font-mono text-xs font-bold text-emerald-300">
+              {NOTE_NAMES[musicalKey]} {SCALE_LABELS[scaleName]}
+            </span>
+            <span className="text-zinc-700">·</span>
+            <span className="font-mono text-xs text-amber-300">
+              {ARPEGGIO_LABELS[arpeggio]}
+            </span>
+            <span className="text-zinc-700">·</span>
+            <span className="font-mono text-xs text-rose-300">
+              {BASS_LABELS[bassPattern]}
+            </span>
+            {lastProgression && (
+              <>
+                <span className="text-zinc-700">·</span>
+                <span className="font-mono text-xs font-bold text-violet-300" title="Current chord progression">
+                  {lastProgression.label}
+                </span>
+                <span className="font-mono text-[10px] text-zinc-500" title="Roman numeral analysis">
+                  ({lastProgression.roman})
+                </span>
+              </>
+            )}
           </div>
 
           {/* ─── Main grid: pattern editor (left) + debug (right) ─── */}
