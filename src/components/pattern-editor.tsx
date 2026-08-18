@@ -445,22 +445,16 @@ export function PatternEditor({
                       onPointerLeave={editMode === 'velocity' ? endDrag : undefined}
                       aria-label={`${role} step ${step + 1} ${isActive ? `velocity ${velocity}` : 'off'}${hasProb ? ` prob ${Math.round(prob * 100)}%` : ''}`}
                       className={[
-                        'relative aspect-square flex-1 min-h-[44px] min-w-[44px] items-center justify-center transition-all hover:brightness-125 touch-manipulation select-none',
+                        'relative flex-1 items-center justify-center transition-all hover:brightness-125 touch-manipulation select-none',
                         'seq-btn',
                         isAccent ? 'seq-btn on accent' : isActive ? 'seq-btn on' : '',
                         isCurrent ? 'seq-btn playing' : '',
                       ].filter(Boolean).join(' ')}
                       style={{
-                        backgroundColor: editMode === 'probability'
-                          ? (isActive ? color : isBeat ? 'rgba(39,39,42,0.9)' : 'rgba(24,24,27,0.8)')
-                          : (isActive ? color : isBeat ? 'rgba(39,39,42,0.9)' : 'rgba(24,24,27,0.8)'),
-                        borderColor: isCurrent ? '#00ffc8' : isActive ? color : isBeat ? '#3f3f46' : '#27272a',
-                        boxShadow: isActive
-                          ? `0 0 ${4 + velocity / 127 * 8}px ${color}80`
-                          : isCurrent
-                            ? '0 0 8px rgba(0,255,200,0.5)'
-                            : 'none',
                         opacity,
+                        ...(editMode === 'probability' ? {
+                          backgroundColor: isActive ? color : isBeat ? 'rgba(39,39,42,0.9)' : 'rgba(24,24,27,0.8)',
+                        } : {}),
                       }}
                     >
                       {/* Accent marker (velocity mode) */}
