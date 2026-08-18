@@ -2102,3 +2102,18 @@ Work Log:
 Stage Summary:
 - Server running HTTP 200.
 - Commit: 5a3e31a
+
+---
+Task ID: FINAL-README
+Agent: main
+Task: Final README rewrite — 38 features, 313 tests, 15 shortcuts, PWA, MIDI
+
+Work Log:
+- Complete README rewrite: 38 features, 15 shortcuts, PWA section, performance, determinism, testing, samples.
+- Foundation is a Next.js app (not npm package) — shim stays.
+- 313 tests pass, 0 fail, 0 TS errors, 0 lint errors.
+- Pushed to GitHub.
+
+Stage Summary:
+- Server running HTTP 200.
+- Commit: 05b9392
