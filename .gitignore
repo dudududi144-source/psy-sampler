@@ -65,3 +65,5 @@ server.log
 /db/.zscripts/
 /examples/
 mobile-check.png
+upload/
+*.env
