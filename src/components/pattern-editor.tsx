@@ -8,7 +8,7 @@
 //   - Border glow proportional to velocity
 //
 // Interaction:
-//   - Click cycles: 0 (off) → 100 (default) → 127 (accent) → 0 (off).
+//   - Click cycles: 0 (off) to 100 (default) to 127 (accent) to 0 (off).
 //   - Drag-paint: mousedown on a cell + drag across cells paints them with
 //     the same velocity (the velocity of the first cell). This is the standard
 //     DAW pattern-editor UX — much faster than clicking each cell individually.
@@ -26,7 +26,7 @@ import {
   NOW_PLAYING_MS,
 } from '@/components/types'
 
-/** Convert a MIDI note number to a human-readable name (e.g. 45 → "A2", 61 → "C#3"). */
+/** Convert a MIDI note number to a human-readable name (e.g. 45 to "A2", 61 to "C#3"). */
 const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 function midiToNoteName(midi: number): string {
   const pc = midi % 12
@@ -87,9 +87,9 @@ export function PatternEditor({
   onHumanize?: () => void
   /** Quantize velocities (snap to standard tiers). */
   onQuantize?: () => void
-  /** Ramp velocities up (build-up: low→high across pattern). */
+  /** Ramp velocities up (build-up: lowtohigh across pattern). */
   onRampUp?: () => void
-  /** Ramp velocities down (breakdown: high→low across pattern). */
+  /** Ramp velocities down (breakdown: hightolow across pattern). */
   onRampDown?: () => void
   /** Scale velocities up (louder: x1.25). */
   onScaleUp?: () => void
@@ -97,9 +97,9 @@ export function PatternEditor({
   onScaleDown?: () => void
   /** Fill a single role with a quick pattern. */
   onFillRole?: (role: SampleRole) => void
-  /** Double the pattern (8→16 or 16→32). */
+  /** Double the pattern (8to16 or 16to32). */
   onDouble?: () => void
-  /** Half the pattern (32→16 or 16→8). */
+  /** Half the pattern (32to16 or 16to8). */
   onHalf?: () => void
   nowPlayingRole: SampleRole | null
   nowPlayingAt: number
@@ -109,7 +109,7 @@ export function PatternEditor({
   const fresh = nowPlayingRole !== null && (now - nowPlayingAt) < NOW_PLAYING_MS
 
   // Edit mode: 'velocity' (default) or 'probability'. In probability mode,
-  // clicking a cell cycles its probability: 100% → 75% → 50% → 25% → 100%.
+  // clicking a cell cycles its probability: 100% to 75% to 50% to 25% to 100%.
   const [editMode, setEditMode] = React.useState<'velocity' | 'probability'>('velocity')
   // Clipboard for copy/paste between roles. Stores the copied row + which role it came from.
   const [clipboard, setClipboard] = React.useState<{ row: number[]; fromRole: SampleRole } | null>(null)
@@ -120,7 +120,7 @@ export function PatternEditor({
 
   const handleCellClick = React.useCallback((role: SampleRole, step: number) => {
     if (editMode === 'probability' && onSetProbability) {
-      // Cycle: 100% → 75% → 50% → 25% → 100%
+      // Cycle: 100% to 75% to 50% to 25% to 100%
       const current = probabilities[role]?.[step] ?? 1.0
       let next: number
       if (current >= 0.999) next = 0.75
@@ -295,7 +295,7 @@ export function PatternEditor({
                 onClick={onDouble}
                 disabled={stepCount >= 32}
                 className="touch-manipulation min-h-[28px] rounded border  px-2 py-0.5 font-mono text-[10px] font-bold  transition-all hover:brightness-125 disabled:opacity-30"
-                title="Double pattern (8→16 or 16→32, repeating)"
+                title="Double pattern (8to16 or 16to32, repeating)"
               >
                 x2
               </button>
@@ -306,7 +306,7 @@ export function PatternEditor({
                 onClick={onHalf}
                 disabled={stepCount <= 8}
                 className="touch-manipulation min-h-[28px] rounded border  px-2 py-0.5 font-mono text-[10px] font-bold  transition-all hover:brightness-125 disabled:opacity-30"
-                title="Half pattern (32→16 or 16→8, keeping first half)"
+                title="Half pattern (32to16 or 16to8, keeping first half)"
               >
                 /2
               </button>
@@ -329,7 +329,7 @@ export function PatternEditor({
             PROB
           </button>
           <span className="font-mono text-[10px]" style={{ color: "#5b6470" }}>
-            {editMode === 'probability' ? 'click: 100→75→50→25→100%' : 'click: off → vel → accent → off'}
+            {editMode === 'probability' ? 'click: 100to75to50to25to100%' : 'click: off to vel to accent to off'}
           </span>
         </div>
       </div>

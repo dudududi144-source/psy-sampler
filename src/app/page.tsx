@@ -110,7 +110,7 @@ export default function Home() {
   // context so the next CHORDS generation uses the new harmonic territory.
   const [musicalKey, setMusicalKey] = React.useState(9) // 9 = A (rootPc)
   const [scaleName, setScaleName] = React.useState('phrygianDominant')
-  // Arpeggio pattern for the chord progression lead. Default 'up' (root→3rd→5th→octave).
+  // Arpeggio pattern for the chord progression lead. Default 'up' (rootto3rdto5thtooctave).
   const [arpeggio, setArpeggio] = React.useState<ArpeggioPattern>('up')
   // Bass pattern for the chord progression bass. Default 'root' (downbeats).
   const [bassPattern, setBassPattern] = React.useState<BassPattern>('root')
@@ -272,7 +272,7 @@ export default function Home() {
       const transport = new DemoTransport({ initialBpm: bpm, audioContext: ctx })
       transportRef.current = transport
 
-      // Sampler device (standalone — outputNode null → connects to ctx.destination)
+      // Sampler device (standalone — outputNode null to connects to ctx.destination)
       bundle = createSamplerDevice({
         audioContext: ctx,
         manifestUrl: 'samples/manifest.json',
@@ -431,7 +431,7 @@ export default function Home() {
 
   // ─── Tap tempo (UX3) ───────────────────────────────────────────────────────
   // Tap the T key (or tap button) repeatedly. We track the timestamps of the
-  // last few taps and compute the average interval → BPM. Requires at least 2
+  // last few taps and compute the average interval to BPM. Requires at least 2
   // taps. Stale taps (>2s gap) reset the buffer.
 
   const tapTimesRef = React.useRef<number[]>([])
@@ -459,7 +459,7 @@ export default function Home() {
   }, [])
 
   const onSwingChange = React.useCallback((value: number) => {
-    // Slider is 0..70 (%) → director takes 0..0.7.
+    // Slider is 0..70 (%) to director takes 0..0.7.
     setSwing(value)
     directorRef.current?.setSwing(value / 100)
   }, [])
@@ -486,7 +486,7 @@ export default function Home() {
     directorRef.current?.setContext({ key: NOTE_NAMES[rootPc], rootPc })
   }, [])
 
-  /** Change the scale (e.g. phrygianDominant → minor). Updates the director's
+  /** Change the scale (e.g. phrygianDominant to minor). Updates the director's
    * context so the next CHORDS generation uses the new scale's diatonic chords. */
   const onScaleChange = React.useCallback((scale: string) => {
     setScaleName(scale)
@@ -611,7 +611,7 @@ export default function Home() {
 
   /** Quantize velocities — snap to standard tiers (off/normal/accent).
    *  The complement to humanize: removes variation for clean, punchy hits.
-   *  Standard workflow: quantize → humanize (clean but groovy). */
+   *  Standard workflow: quantize to humanize (clean but groovy). */
   const onQuantize = React.useCallback(() => {
     const director = directorRef.current
     if (!director) return
@@ -622,7 +622,7 @@ export default function Home() {
     toast({ title: 'Quantized' })
   }, [pattern, setPatternWithHistory])
 
-  /** Ramp up — velocity build-up (low→high across pattern).
+  /** Ramp up — velocity build-up (lowtohigh across pattern).
    *  Step 0 = quiet, last step = loud. For intros and risers. */
   const onRampUp = React.useCallback(() => {
     const director = directorRef.current
@@ -634,7 +634,7 @@ export default function Home() {
     toast({ title: 'Build-up applied' })
   }, [pattern, setPatternWithHistory])
 
-  /** Ramp down — velocity breakdown (high→low across pattern).
+  /** Ramp down — velocity breakdown (hightolow across pattern).
    *  Step 0 = loud, last step = quiet. For breakdowns and fade-outs. */
   const onRampDown = React.useCallback(() => {
     const director = directorRef.current
@@ -668,7 +668,7 @@ export default function Home() {
     toast({ title: 'Softer' })
   }, [pattern, setPatternWithHistory])
 
-  /** Double the pattern (8→16 or 16→32, repeating). */
+  /** Double the pattern (8to16 or 16to32, repeating). */
   const onDoublePattern = React.useCallback(() => {
     const director = directorRef.current
     if (!director) return
@@ -684,7 +684,7 @@ export default function Home() {
     toast({ title: `Doubled to ${director.stepCount} steps`, description: 'Pattern repeated' })
   }, [setPatternWithHistory])
 
-  /** Half the pattern (32→16 or 16→8, keeping first half). */
+  /** Half the pattern (32to16 or 16to8, keeping first half). */
   const onHalfPattern = React.useCallback(() => {
     const director = directorRef.current
     if (!director) return
@@ -849,7 +849,7 @@ export default function Home() {
     const event = {
       type: 'note' as const,
       note: ROLE_NOTES[role] ?? 60,
-      velocity: velocity / 127, // normalize 0..127 → 0..1 for the device
+      velocity: velocity / 127, // normalize 0..127 to 0..1 for the device
       duration: 0.4,
       channel: role,
       at: ctx.currentTime + 0.005, // 5ms lookahead for scheduling
@@ -858,7 +858,7 @@ export default function Home() {
     setNowPlaying({ role, sampleId: null, at: Date.now() })
   }, [])
 
-  // Keyboard-shortcut entry: pad index 0-8 → role.
+  // Keyboard-shortcut entry: pad index 0-8 to role.
   const onPadTrigger = React.useCallback((index: number) => {
     const role = ROLES[index]
     if (role) triggerPad(role, 100)
@@ -1461,18 +1461,18 @@ export default function Home() {
       setNowPlaying({ role, sampleId: null, at: Date.now() })
     },
     onCC: (controller, value) => {
-      // Map CC 1 (mod wheel) → master filter cutoff.
-      // Map CC 7 (volume) → master gain.
+      // Map CC 1 (mod wheel) to master filter cutoff.
+      // Map CC 7 (volume) to master gain.
       // This is a starting point — a real product would have MIDI learn.
       const graph = bundleRef.current?.audioGraph
       if (!graph) return
       if (controller === 1) {
-        // Mod wheel → filter cutoff (200Hz..20000Hz, exponential).
+        // Mod wheel to filter cutoff (200Hz..20000Hz, exponential).
         const freq = 200 * Math.pow(100, value / 127)
         graph.setMasterFilter({ type: value > 0 ? 'lowpass' : 'allpass', freq, Q: 2 })
         setFilterMode(value > 0 ? 'lp' : 'off')
       } else if (controller === 7) {
-        // Volume CC → master gain (0..1.2).
+        // Volume CC to master gain (0..1.2).
         const gain = (value / 127) * 1.2
         graph.setMasterGain(gain)
         setMasterVolume(gain)

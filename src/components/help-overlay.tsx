@@ -17,14 +17,14 @@ const SHORTCUTS = [
   { key: 'M', desc: 'Mute drum bus (toggle)' },
   { key: 'S', desc: 'Solo drum bus (toggle)' },
   { key: 'C', desc: 'Clear pattern (all steps off)' },
-  { key: 'F', desc: 'Cycle master filter (off→lp→hp)' },
+  { key: 'F', desc: 'Cycle master filter (offtolptohp)' },
   { key: 'P', desc: 'Toggle sidechain pump' },
   { key: 'E', desc: 'Toggle auto-evolve' },
   { key: 'R', desc: 'Toggle live recording' },
   { key: '1-9', desc: 'Trigger performance pads (Shift=accent, Alt=ghost)' },
   { key: 'D', desc: 'Generate chord-aware bass/lead (scale + key from context)' },
-  { key: 'A', desc: 'Cycle arpeggio pattern (up→down→upDown→downUp→random→chordal)' },
-  { key: 'B', desc: 'Cycle bass pattern (root→walking→octave→pedal→arp)' },
+  { key: 'A', desc: 'Cycle arpeggio pattern (uptodowntoupDowntodownUptorandomtochordal)' },
+  { key: 'B', desc: 'Cycle bass pattern (roottowalkingtooctavetopedaltoarp)' },
   { key: 'H', desc: 'Humanize velocities (add groove via random variation)' },
   { key: 'Q', desc: 'Quantize velocities (snap to off/normal/accent tiers)' },
   { key: 'X', desc: 'Randomize pattern (seeded — deterministic)' },
@@ -53,7 +53,7 @@ const FEATURES = [
 ]
 
 const EDITOR_FEATURES = [
-  { title: 'Velocity mode', desc: 'Click cycles: off → 100 → 127 → off' },
+  { title: 'Velocity mode', desc: 'Click cycles: off to 100 to 127 to off' },
   { title: 'Probability mode', desc: 'PROB: click cycles 100, 75, 50, 25, 100%' },
   { title: 'Drag-paint', desc: 'Mousedown + drag paints velocity' },
   { title: 'Shift+drag', desc: 'Paint at accent velocity (127)' },
@@ -168,7 +168,7 @@ export function HelpOverlay({ open, onClose }: { open: boolean; onClose: () => v
           </h3>
           <div className="space-y-1 font-mono text-[11px]" style={{ color: '#9aa3af' }}>
             <div><span style={{ color: '#86f7ff' }}>MIXER</span> — per-bus gain + 3-band EQ + saturation + mute/solo</div>
-            <div><span style={{ color: '#f07dc2' }}>SONG</span> — chain saved slots into A→B→A→C arrangement</div>
+            <div><span style={{ color: '#f07dc2' }}>SONG</span> — chain saved slots into AtoBtoAtoC arrangement</div>
             <div><span className="">TIMELINE</span> — visual song arrangement with playhead</div>
             <div><span style={{ color: '#f07dc2' }}>AUTOMATION</span> — draw parameter breakpoints (filter sweeps, volume rides)</div>
             <div><span className="">IMPORT</span> — drag-drop WAV with mandatory provenance assertion</div>
