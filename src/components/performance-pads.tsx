@@ -135,7 +135,7 @@ export function PerformancePads({
         >
           PERFORMANCE PADS
         </h2>
-        <span className="font-mono text-[10px] text-zinc-600" title="Keys 1-9 trigger pads. Shift = accent (127), Alt = ghost (50).">
+        <span className="font-mono text-[10px] 'color:#5b6470'" title="Keys 1-9 trigger pads. Shift = accent (127), Alt = ghost (50).">
           KEYS 1-9 · SHIFT=ACC · ALT=GHOST
         </span>
       </div>

@@ -37,15 +37,15 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     if (this.state.hasError) {
       if (this.props.fallback) return this.props.fallback
       return (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-zinc-950 p-6">
-          <div className="max-w-md rounded-lg border border-red-500/30 bg-zinc-900 p-6 text-center">
+        <div className="fixed inset-0 z-50 grid place-items-center 'background:#0b0d11' p-6">
+          <div className="max-w-md rounded-lg border 'borderColor:rgba(248,81,73,0.3)' 'background:#14161c' p-6 text-center">
             <h2 className="mb-2 font-mono text-lg font-bold text-red-300">ERROR</h2>
-            <p className="mb-4 font-mono text-xs text-zinc-400">
+            <p className="mb-4 font-mono text-xs 'color:#9aa3af'">
               {this.state.error?.message ?? 'Unknown error'}
             </p>
             <button
               onClick={this.handleReset}
-              className="rounded border border-emerald-400/40 bg-zinc-800 px-4 py-2 font-mono text-xs uppercase tracking-wider text-emerald-300 hover:bg-emerald-500/10"
+              className="rounded border 'borderColor:rgba(0,229,255,0.3)' 'background:#191c22' px-4 py-2 font-mono text-xs uppercase tracking-wider 'color:#86f7ff' hover:brightness-125"
             >
               Try Again
             </button>

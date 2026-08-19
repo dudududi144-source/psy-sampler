@@ -328,7 +328,7 @@ export function PatternEditor({
           >
             PROB
           </button>
-          <span className="font-mono text-[10px] text-zinc-500">
+          <span className="font-mono text-[10px] 'color:#5b6470'">
             {editMode === 'probability' ? 'click: 100→75→50→25→100%' : 'click: off → vel → accent → off'}
           </span>
         </div>
@@ -386,7 +386,7 @@ export function PatternEditor({
                         onCopyRole?.(role)
                       }
                     }}
-                    className="touch-manipulation rounded border border-zinc-700 px-1 font-mono text-[8px] text-zinc-400 hover:bg-zinc-800"
+                    className="touch-manipulation rounded border border-[3a4150] px-1 font-mono text-[8px] 'color:#9aa3af' hover:brightness-125"
                     title={`Copy ${role} pattern`}
                   >
                     COPY
@@ -400,7 +400,7 @@ export function PatternEditor({
                       }
                     }}
                     disabled={!clipboard}
-                    className="touch-manipulation rounded border border-zinc-700 px-1 font-mono text-[8px] text-zinc-400 hover:bg-zinc-800 disabled:opacity-30"
+                    className="touch-manipulation rounded border border-[3a4150] px-1 font-mono text-[8px] 'color:#9aa3af' hover:brightness-125 disabled:opacity-30"
                     title={clipboard ? `Paste from ${clipboard.fromRole}` : 'Nothing copied yet'}
                   >
                     PASTE
@@ -410,7 +410,7 @@ export function PatternEditor({
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); onFillRole(role) }}
-                    className="touch-manipulation rounded border border-zinc-700 px-1 font-mono text-[8px] text-fuchsia-400 hover:bg-fuchsia-500/10"
+                    className="touch-manipulation rounded border border-[3a4150] px-1 font-mono text-[8px] 'color:#f07dc2' hover:brightness-125"
                     title={`Fill ${role} with a quick pattern`}
                   >
                     FILL
