@@ -328,7 +328,7 @@ export function PatternEditor({
           >
             PROB
           </button>
-          <span className="font-mono text-[10px] 'color:#5b6470'">
+          <span className="font-mono text-[10px]" style={{ color: "#5b6470" }}>
             {editMode === 'probability' ? 'click: 100→75→50→25→100%' : 'click: off → vel → accent → off'}
           </span>
         </div>
@@ -386,7 +386,8 @@ export function PatternEditor({
                         onCopyRole?.(role)
                       }
                     }}
-                    className="touch-manipulation rounded border border-[3a4150] px-1 font-mono text-[8px] 'color:#9aa3af' hover:brightness-125"
+                    className="touch-manipulation rounded px-1 font-mono text-[8px]"
+                    style={{ border: '1px solid #3a4150', color: '#9aa3af' }}
                     title={`Copy ${role} pattern`}
                   >
                     COPY
@@ -400,7 +401,8 @@ export function PatternEditor({
                       }
                     }}
                     disabled={!clipboard}
-                    className="touch-manipulation rounded border border-[3a4150] px-1 font-mono text-[8px] 'color:#9aa3af' hover:brightness-125 disabled:opacity-30"
+                    className="touch-manipulation rounded px-1 font-mono text-[8px]"
+                    style={{ border: '1px solid #3a4150', color: '#9aa3af' }}
                     title={clipboard ? `Paste from ${clipboard.fromRole}` : 'Nothing copied yet'}
                   >
                     PASTE
@@ -410,7 +412,8 @@ export function PatternEditor({
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); onFillRole(role) }}
-                    className="touch-manipulation rounded border border-[3a4150] px-1 font-mono text-[8px] 'color:#f07dc2' hover:brightness-125"
+                    className="touch-manipulation rounded px-1 font-mono text-[8px]"
+                    style={{ border: "1px solid #3a4150", color: "#f07dc2" }}
                     title={`Fill ${role} with a quick pattern`}
                   >
                     FILL

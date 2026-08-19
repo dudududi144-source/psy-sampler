@@ -26,7 +26,7 @@ export function InitOverlay({
         background: 'radial-gradient(60% 50% at 20% 20%, rgba(96,60,180,0.15), transparent 60%), radial-gradient(55% 45% at 80% 30%, rgba(20,120,130,0.12), transparent 60%)',
       }} />
       <div className="relative flex max-w-md flex-col items-center gap-6 px-6 text-center">
-        <div className="grid size-20 place-items-center rounded-2xl border border-[#0b2836] bg-[#03131a] shadow-[0_0_40px_rgba(0,229,255,0.35)]">
+        <div className="grid size-20 place-items-center rounded-2xl" style={{ border: "1px solid #0b2836", background: "#03131a", boxShadow: "0 0 40px rgba(0,229,255,0.35)" }}>
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="size-10" style={{ color: '#86f7ff' }}>
             <path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
             <path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1" />
@@ -47,7 +47,7 @@ export function InitOverlay({
               <span className="uppercase tracking-wider" style={{ color: '#86f7ff' }}>Loading sounds…</span>
               <span className="tabular-nums">{loadProgress.loaded}/{loadProgress.total}</span>
             </div>
-            <div className="h-2 overflow-hidden rounded-full border border-[#0b2836] bg-[#020a0f]">
+            <div className="h-2 overflow-hidden rounded-full" style={{ border: "1px solid #0b2836", background: "#020a0f" }}>
               <div
                 className="h-full rounded-full transition-all duration-150"
                 style={{
@@ -79,8 +79,8 @@ export function InitOverlay({
           <Button
             onClick={onInit}
             disabled={initializing}
-            className="h-12 min-w-[220px] gap-2 border border-[#0b2836] bg-[#03131a] font-mono text-sm font-semibold uppercase tracking-[0.2em] hover:brightness-125 disabled:opacity-50"
-            style={{ color: '#86f7ff', boxShadow: '0 0 28px rgba(0,229,255,0.5)' }}
+            className="h-12 min-w-[220px] gap-2 font-mono text-sm font-semibold uppercase tracking-[0.2em] hover:brightness-125 disabled:opacity-50"
+            style={{ border: '1px solid #0b2836', background: '#03131a', color: '#86f7ff', boxShadow: '0 0 28px rgba(0,229,255,0.5)' }}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M12 2v10" /><path d="M18.4 6.6a9 9 0 1 1-12.77.04" />
@@ -94,8 +94,8 @@ export function InitOverlay({
           <Button
             onClick={onInit}
             disabled={initializing}
-            className="h-10 gap-2 border border-[#0b2836] bg-[#03131a] font-mono text-xs font-semibold uppercase tracking-[0.2em] hover:brightness-125"
-            style={{ color: '#f85149' }}
+            className="h-10 gap-2 font-mono text-xs font-semibold uppercase tracking-[0.2em] hover:brightness-125"
+            style={{ border: '1px solid #0b2836', background: '#03131a', color: '#f85149' }}
           >
             Retry
           </Button>

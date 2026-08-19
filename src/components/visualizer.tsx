@@ -147,7 +147,7 @@ export function Visualizer({ analyser, isPlaying }: { analyser: AnalyserNode | n
   return (
     <div ref={containerRef} className="viz3d-bezel p-4">
       <div className="mb-2 flex items-center justify-between">
-        <h2 className="font-mono text-xs font-bold uppercase tracking-[0.2em] 'color:#fbbf24'">ANALYSER</h2>
+        <h2 className="font-mono text-xs font-bold uppercase tracking-[0.2em]" style={{ color: "#fbbf24" }}>ANALYSER</h2>
         <div className="flex items-center gap-2">
           {/* Mode toggle */}
           <div className="flex gap-0.5">
@@ -168,7 +168,7 @@ export function Visualizer({ analyser, isPlaying }: { analyser: AnalyserNode | n
               </button>
             ))}
           </div>
-          <span className="font-mono text-[11px] 'color:#5b6470'">
+          <span className="font-mono text-[11px]" style={{ color: "#5b6470" }}>
             {isPlaying ? 'LIVE' : 'IDLE'}
           </span>
         </div>
@@ -176,8 +176,8 @@ export function Visualizer({ analyser, isPlaying }: { analyser: AnalyserNode | n
       <canvas ref={canvasRef} className="w-full" style={{ height: 160 }} />
       {/* Peak/RMS meter */}
       <div className="mt-2 flex items-center gap-2">
-        <span className="font-mono text-[9px] uppercase tracking-wider 'color:#5b6470'">PK</span>
-        <div className="relative h-3 flex-1 overflow-hidden rounded-sm border border-[232932] bg-[0b0d11]">
+        <span className="font-mono text-[9px] uppercase tracking-wider" style={{ color: "#5b6470" }}>PK</span>
+        <div className="relative h-3 flex-1 overflow-hidden rounded-sm border  ">
           <div
             className="absolute left-0 top-0 h-full transition-all"
             style={{
@@ -186,11 +186,11 @@ export function Visualizer({ analyser, isPlaying }: { analyser: AnalyserNode | n
             }}
           />
         </div>
-        <span className="w-12 text-right font-mono text-[10px] tabular-nums 'color:#9aa3af'">
+        <span className="w-12 text-right font-mono text-[10px] tabular-nums" style={{ color: "#9aa3af" }}>
           {peakDb > -59 ? `${peakDb.toFixed(1)}dB` : '—'}
         </span>
-        <span className="font-mono text-[9px] uppercase tracking-wider 'color:#5b6470'">RMS</span>
-        <div className="relative h-3 flex-1 overflow-hidden rounded-sm border border-[232932] bg-[0b0d11]">
+        <span className="font-mono text-[9px] uppercase tracking-wider" style={{ color: "#5b6470" }}>RMS</span>
+        <div className="relative h-3 flex-1 overflow-hidden rounded-sm border  ">
           <div
             className="absolute left-0 top-0 h-full transition-all"
             style={{
@@ -199,7 +199,7 @@ export function Visualizer({ analyser, isPlaying }: { analyser: AnalyserNode | n
             }}
           />
         </div>
-        <span className="w-12 text-right font-mono text-[10px] tabular-nums 'color:#9aa3af'">
+        <span className="w-12 text-right font-mono text-[10px] tabular-nums" style={{ color: "#9aa3af" }}>
           {rmsDb > -59 ? `${rmsDb.toFixed(1)}dB` : '—'}
         </span>
       </div>
