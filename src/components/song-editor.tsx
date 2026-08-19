@@ -91,7 +91,7 @@ export function SongEditor({
 
       {/* Segment list */}
       {song.segments.length === 0 ? (
-        <div className="py-4 text-center font-mono text-[11px] text-zinc-600">
+        <div className="py-4 text-center font-mono text-[11px]" style={{ color: '#5b6470' }}>
           no segments — add one below to build an arrangement
         </div>
       ) : (
@@ -110,7 +110,7 @@ export function SongEditor({
                 }}
               >
                 {/* Segment index */}
-                <span className="w-6 shrink-0 font-mono text-[10px] tabular-nums text-zinc-500">
+                <span className="w-6 shrink-0 font-mono text-[10px] tabular-nums" style={{ color: '#5b6470' }}>
                   {String.fromCharCode(65 + (i % 26))}
                 </span>
 
@@ -119,7 +119,8 @@ export function SongEditor({
                   value={seg.slot}
                   onChange={(e) => updateSegment(i, { slot: parseInt(e.target.value) })}
                   disabled={songMode}
-                  className="min-h-[36px] touch-manipulation rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-[11px] text-zinc-200 disabled:opacity-50"
+                  className="min-h-[36px] touch-manipulation rounded border px-2 py-1 font-mono text-[11px] disabled:opacity-50"
+                  style={{ borderColor: '#282e38', background: '#14161c', color: '#cfd6df' }}
                 >
                   {slotNames.map((name, idx) => (
                     <option key={idx} value={idx}>
@@ -133,17 +134,19 @@ export function SongEditor({
                   <button
                     onClick={() => updateSegment(i, { bars: Math.max(1, seg.bars - 1) })}
                     disabled={songMode}
-                    className="min-h-[36px] w-[36px] touch-manipulation rounded border border-zinc-700 bg-zinc-900 font-mono text-xs text-zinc-400 disabled:opacity-50"
+                    className="min-h-[36px] w-[36px] touch-manipulation rounded border font-mono text-xs disabled:opacity-50"
+                    style={{ borderColor: '#282e38', background: '#14161c', color: '#9aa3af' }}
                   >
                     -
                   </button>
-                  <span className="w-12 text-center font-mono text-[11px] tabular-nums text-zinc-300">
+                  <span className="w-12 text-center font-mono text-[11px] tabular-nums" style={{ color: '#cfd6df' }}>
                     {seg.bars} bar{seg.bars !== 1 ? 's' : ''}
                   </span>
                   <button
                     onClick={() => updateSegment(i, { bars: Math.min(64, seg.bars + 1) })}
                     disabled={songMode}
-                    className="min-h-[36px] w-[36px] touch-manipulation rounded border border-zinc-700 bg-zinc-900 font-mono text-xs text-zinc-400 disabled:opacity-50"
+                    className="min-h-[36px] w-[36px] touch-manipulation rounded border font-mono text-xs disabled:opacity-50"
+                    style={{ borderColor: '#282e38', background: '#14161c', color: '#9aa3af' }}
                   >
                     +
                   </button>
@@ -161,7 +164,8 @@ export function SongEditor({
                   <button
                     onClick={() => moveSegment(i, -1)}
                     disabled={songMode || i === 0}
-                    className="min-h-[36px] w-[36px] touch-manipulation rounded border border-zinc-700 bg-zinc-900 font-mono text-xs text-zinc-400 disabled:opacity-30"
+                    className="min-h-[36px] w-[36px] touch-manipulation rounded border font-mono text-xs disabled:opacity-30"
+                    style={{ borderColor: '#282e38', background: '#14161c', color: '#9aa3af' }}
                     title="Move up"
                   >
                     UP
@@ -169,7 +173,8 @@ export function SongEditor({
                   <button
                     onClick={() => moveSegment(i, 1)}
                     disabled={songMode || i === song.segments.length - 1}
-                    className="min-h-[36px] w-[36px] touch-manipulation rounded border border-zinc-700 bg-zinc-900 font-mono text-xs text-zinc-400 disabled:opacity-30"
+                    className="min-h-[36px] w-[36px] touch-manipulation rounded border font-mono text-xs disabled:opacity-30"
+                    style={{ borderColor: '#282e38', background: '#14161c', color: '#9aa3af' }}
                     title="Move down"
                   >
                     DN
@@ -177,7 +182,8 @@ export function SongEditor({
                   <button
                     onClick={() => removeSegment(i)}
                     disabled={songMode}
-                    className="min-h-[36px] w-[36px] touch-manipulation rounded border border-red-500/30 bg-zinc-900 font-mono text-xs text-red-400 disabled:opacity-30"
+                    className="min-h-[36px] w-[36px] touch-manipulation rounded border border-red-500/30 font-mono text-xs text-red-400 disabled:opacity-30"
+                    style={{ background: '#14161c' }}
                     title="Remove segment"
                   >
                     DEL
@@ -196,7 +202,8 @@ export function SongEditor({
             key={idx}
             onClick={() => addSegment(idx)}
             disabled={songMode}
-            className="min-h-[36px] touch-manipulation rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-[10px] uppercase tracking-wider text-zinc-400 transition-all hover:bg-zinc-800 disabled:opacity-30"
+            className="min-h-[36px] touch-manipulation rounded border px-2 py-1 font-mono text-[10px] uppercase tracking-wider transition-all hover:brightness-125 disabled:opacity-30"
+            style={{ borderColor: '#282e38', background: '#14161c', color: '#9aa3af' }}
             title={`Add segment: play slot ${idx + 1} for 4 bars`}
           >
             + {name || `slot ${idx + 1}`}
@@ -206,7 +213,7 @@ export function SongEditor({
 
       {/* Total duration */}
       {song.segments.length > 0 && (
-        <div className="mt-2 font-mono text-[10px] text-zinc-600">
+        <div className="mt-2 font-mono text-[10px]" style={{ color: '#5b6470' }}>
           {song.segments.length} segment{song.segments.length !== 1 ? 's' : ''} · {song.segments.reduce((a, s) => a + s.bars, 0)} bars total
         </div>
       )}

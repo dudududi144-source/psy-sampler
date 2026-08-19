@@ -84,11 +84,11 @@ export function SampleLibrary({
         >
           LIBRARY · {samples.length} samples
         </h2>
-        <span className="font-mono text-[10px] text-zinc-500">click to audition</span>
+        <span className="font-mono text-[10px]" style={{ color: '#5b6470' }}>click to audition</span>
       </div>
       <div className="max-h-72 space-y-1 overflow-y-auto pr-1" style={{ scrollbarWidth: 'thin' }}>
         {samples.length === 0 ? (
-          <div className="font-mono text-[10px] text-zinc-600">loading…</div>
+          <div className="font-mono text-[10px]" style={{ color: '#5b6470' }}>loading…</div>
         ) : (
           samples.map((s) => {
             const cat = s.metadata.category as SampleRole
@@ -97,11 +97,11 @@ export function SampleLibrary({
             return (
               <div
                 key={s.metadata.id}
-                className="flex min-h-[44px] w-full touch-manipulation items-center gap-2 rounded border bg-zinc-900/40 px-2 py-1 text-left transition-all hover:bg-zinc-800/60"
+                className="flex min-h-[44px] w-full touch-manipulation items-center gap-2 rounded border px-2 py-1 text-left transition-all hover:brightness-125"
                 style={{
-                  borderColor: isPlaying ? color : '#27272a',
+                  borderColor: isPlaying ? color : '#232932',
                   boxShadow: isPlaying ? `0 0 12px ${color}60, inset 0 0 8px ${color}20` : 'none',
-                  backgroundColor: isPlaying ? `${color}10` : undefined,
+                  backgroundColor: isPlaying ? `${color}10` : 'rgba(20,22,28,0.4)',
                 }}
               >
                 <button
@@ -115,16 +115,22 @@ export function SampleLibrary({
                     {s.metadata.category}
                   </span>
                   <WaveformThumbnail data={s.monoData} color={isPlaying ? '#ffffff' : color} width={48} height={18} />
-                  <span className="flex-1 truncate font-mono text-[10px] text-zinc-300">{s.metadata.id}</span>
-                  <span className="font-mono text-[11px] tabular-nums text-zinc-500">
+                  <span className="flex-1 truncate font-mono text-[10px]" style={{ color: '#cfd6df' }}>{s.metadata.id}</span>
+                  <span className="font-mono text-[11px] tabular-nums" style={{ color: '#5b6470' }}>
                     {s.features.duration.toFixed(2)}s
                   </span>
                   {s.metadata.provenance.commercialUse ? (
-                    <Badge className="border border-emerald-400/30 bg-emerald-500/10 px-1 py-0 font-mono text-[10px] uppercase text-emerald-300">
+                    <Badge
+                      className="border border-emerald-400/30 bg-emerald-500/10 px-1 py-0 font-mono text-[10px] uppercase"
+                      style={{ color: '#86f7ff' }}
+                    >
                       COMMERCIAL
                     </Badge>
                   ) : (
-                    <Badge className="border border-amber-400/30 bg-amber-500/10 px-1 py-0 font-mono text-[10px] uppercase text-amber-300">
+                    <Badge
+                      className="border border-amber-400/30 bg-amber-500/10 px-1 py-0 font-mono text-[10px] uppercase"
+                      style={{ color: '#fbbf24' }}
+                    >
                       NON-COMM
                     </Badge>
                   )}

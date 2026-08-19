@@ -49,7 +49,7 @@ export function AutomationEditor({
           AUTOMATION · {TIMELINE_DURATION}s
         </h2>
         <div className="flex items-center gap-2">
-          <span className="font-mono text-[10px] text-zinc-500">
+          <span className="font-mono text-[10px]" style={{ color: '#5b6470' }}>
             {bank.activeTracks.length} active · {bank.activeTracks.reduce((s, t) => s + t.points.length, 0)} pts
           </span>
           <button onClick={onToggle}
@@ -66,9 +66,16 @@ export function AutomationEditor({
           </button>
         </div>
       </div>
-      <div className="mb-1 flex h-4 overflow-hidden rounded-sm border border-zinc-800 bg-zinc-900/50">
+      <div
+        className="mb-1 flex h-4 overflow-hidden rounded-sm border"
+        style={{ borderColor: '#232932', background: 'rgba(20,22,28,0.8)' }}
+      >
         {Array.from({ length: TIMELINE_DURATION }).map((_, i) => (
-          <div key={i} className="flex items-center justify-center border-r border-zinc-800/50 font-mono text-[8px] text-zinc-600" style={{ width: `${100 / TIMELINE_DURATION}%` }}>
+          <div
+            key={i}
+            className="flex items-center justify-center border-r font-mono text-[8px]"
+            style={{ width: `${100 / TIMELINE_DURATION}%`, borderColor: '#232932', color: '#5b6470' }}
+          >
             {i % 4 === 0 ? `${i}s` : ''}
           </div>
         ))}
@@ -81,11 +88,11 @@ export function AutomationEditor({
             <div key={target} className="flex items-center gap-2">
               <div className="w-20 shrink-0 font-mono text-[10px] uppercase tracking-wider" style={{ color }}>{label}</div>
               <div onClick={(e) => handleClick(target, e, min, max)}
-                className="relative flex-1 cursor-crosshair overflow-hidden rounded-sm border border-zinc-800 bg-zinc-900/70"
-                style={{ height: TRACK_HEIGHT, opacity: enabled ? 0.5 : 1 }}
+                className="relative flex-1 cursor-crosshair overflow-hidden rounded-sm border"
+                style={{ height: TRACK_HEIGHT, opacity: enabled ? 0.5 : 1, borderColor: '#232932', background: 'rgba(20,22,28,0.7)' }}
                 title={enabled ? 'Stop automation to edit' : 'Click to add breakpoint'}
               >
-                <div className="absolute left-0 right-0 top-1/2 border-t border-zinc-800/50" />
+                <div className="absolute left-0 right-0 top-1/2 border-t" style={{ borderColor: '#232932' }} />
                 {points.length >= 2 && (
                   <svg className="absolute inset-0 pointer-events-none" width="100%" height={TRACK_HEIGHT} preserveAspectRatio="none" viewBox={`0 0 ${TIMELINE_DURATION} ${TRACK_HEIGHT}`}>
                     <polyline
@@ -115,7 +122,8 @@ export function AutomationEditor({
               </div>
               {points.length > 0 && (
                 <button onClick={() => onClearTrack(target)} disabled={enabled}
-                  className="min-h-[36px] w-[36px] touch-manipulation rounded border border-zinc-700 bg-zinc-900 font-mono text-xs text-zinc-400 disabled:opacity-30"
+                  className="min-h-[36px] w-[36px] touch-manipulation rounded border font-mono text-xs disabled:opacity-30"
+                  style={{ borderColor: '#282e38', background: '#14161c', color: '#9aa3af' }}
                   title="Clear all breakpoints"
                 >CLR</button>
               )}
@@ -123,7 +131,7 @@ export function AutomationEditor({
           )
         })}
       </div>
-      <div className="mt-2 font-mono text-[10px] text-zinc-600">
+      <div className="mt-2 font-mono text-[10px]" style={{ color: '#5b6470' }}>
         click on a track to add a breakpoint · line shows interpolation · {enabled ? 'running — stop to edit' : 'ready'}
       </div>
     </div>

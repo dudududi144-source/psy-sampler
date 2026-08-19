@@ -31,9 +31,9 @@ export function TimelineView({
           >
             TIMELINE
           </h2>
-          <span className="font-mono text-[10px] text-zinc-600">no segments</span>
+          <span className="font-mono text-[10px]" style={{ color: '#5b6470' }}>no segments</span>
         </div>
-        <div className="flex h-16 items-center justify-center font-mono text-[11px] text-zinc-600">
+        <div className="flex h-16 items-center justify-center font-mono text-[11px]" style={{ color: '#5b6470' }}>
           add segments in the Song Editor below to see the timeline
         </div>
       </div>
@@ -49,25 +49,35 @@ export function TimelineView({
         >
           TIMELINE · {totalBars} bars · {totalSec.toFixed(1)}s
         </h2>
-        <span className="font-mono text-[10px] text-zinc-500">
+        <span className="font-mono text-[10px]" style={{ color: '#5b6470' }}>
           {songMode ? `BAR ${currentGlobalBar}/${totalBars}` : 'STOPPED'}
         </span>
       </div>
-      <div className="mb-1 flex h-4 overflow-hidden rounded-sm border border-zinc-800 bg-zinc-900/50">
+      <div
+        className="mb-1 flex h-4 overflow-hidden rounded-sm border"
+        style={{ borderColor: '#232932', background: 'rgba(20,22,28,0.8)' }}
+      >
         {Array.from({ length: totalBars }).map((_, i) => (
-          <div key={i} className="flex items-center justify-center border-r border-zinc-800/50 font-mono text-[8px] text-zinc-600" style={{ width: `${100 / totalBars}%` }}>
+          <div
+            key={i}
+            className="flex items-center justify-center border-r font-mono text-[8px]"
+            style={{ width: `${100 / totalBars}%`, borderColor: '#232932', color: '#5b6470' }}
+          >
             {(i + 1) % 4 === 0 || i === 0 ? i + 1 : ''}
           </div>
         ))}
       </div>
-      <div className="relative flex h-12 overflow-hidden rounded-sm border border-zinc-700 bg-zinc-900/70">
+      <div
+        className="relative flex h-12 overflow-hidden rounded-sm border"
+        style={{ borderColor: '#282e38', background: 'rgba(20,22,28,0.7)' }}
+      >
         {song.segments.map((seg, i) => {
           const widthPercent = (seg.bars / totalBars) * 100
           const color = SLOT_COLORS[seg.slot % 4]!
           const isCurrent = songMode && i === currentSegment
           return (
-            <div key={i} className="relative flex items-center justify-center border-r border-zinc-950 transition-all"
-              style={{ width: `${widthPercent}%`, backgroundColor: isCurrent ? color : `${color}40`, boxShadow: isCurrent ? `inset 0 0 12px ${color}80` : 'none' }}
+            <div key={i} className="relative flex items-center justify-center border-r transition-all"
+              style={{ width: `${widthPercent}%`, backgroundColor: isCurrent ? color : `${color}40`, boxShadow: isCurrent ? `inset 0 0 12px ${color}80` : 'none', borderColor: '#0b0d11' }}
               title={`Segment ${String.fromCharCode(65 + i)}: slot ${seg.slot + 1} · ${seg.bars} bars`}
             >
               <span className="font-mono text-[10px] font-bold uppercase tracking-wider" style={{ color: isCurrent ? '#000' : color }}>
@@ -86,7 +96,7 @@ export function TimelineView({
       </div>
       <div className="mt-1 flex">
         {song.segments.map((seg, i) => (
-          <div key={i} className="text-center font-mono text-[9px] text-zinc-500" style={{ width: `${(seg.bars / totalBars) * 100}%` }}>
+          <div key={i} className="text-center font-mono text-[9px]" style={{ width: `${(seg.bars / totalBars) * 100}%`, color: '#5b6470' }}>
             slot{seg.slot + 1}
           </div>
         ))}

@@ -70,17 +70,21 @@ export function HelpOverlay({ open, onClose }: { open: boolean; onClose: () => v
       onClick={onClose}
     >
       <div
-        className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-lg border border-zinc-700 bg-zinc-950 p-6 shadow-2xl"
+        className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-lg border p-6 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
-        style={{ scrollbarWidth: 'thin' }}
+        style={{ scrollbarWidth: 'thin', background: '#0b0d11', borderColor: '#282e38' }}
       >
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-mono text-lg font-bold uppercase tracking-[0.2em] text-emerald-300">
+          <h2
+            className="font-mono text-lg font-bold uppercase tracking-[0.2em]"
+            style={{ color: '#86f7ff' }}
+          >
             PSY SAMPLER · GUIDE
           </h2>
           <button
             onClick={onClose}
-            className="rounded border border-zinc-600 px-3 py-1 font-mono text-xs text-zinc-400 hover:bg-zinc-800"
+            className="rounded border px-3 py-1 font-mono text-xs hover:brightness-125"
+            style={{ borderColor: '#3a4150', color: '#9aa3af' }}
           >
             ESC
           </button>
@@ -88,16 +92,26 @@ export function HelpOverlay({ open, onClose }: { open: boolean; onClose: () => v
 
         {/* Keyboard shortcuts */}
         <section className="mb-6">
-          <h3 className="mb-2 font-mono text-xs font-bold uppercase tracking-[0.2em] text-fuchsia-300">
+          <h3
+            className="mb-2 font-mono text-xs font-bold uppercase tracking-[0.2em]"
+            style={{ color: '#f07dc2' }}
+          >
             Keyboard Shortcuts
           </h3>
           <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
             {SHORTCUTS.map((s) => (
-              <div key={s.key} className="flex items-center gap-2 rounded border border-zinc-800 bg-zinc-900/50 px-2 py-1">
-                <kbd className="min-w-[80px] rounded border border-zinc-600 bg-zinc-800 px-2 py-0.5 text-center font-mono text-[10px] font-bold text-emerald-300">
+              <div
+                key={s.key}
+                className="flex items-center gap-2 rounded border px-2 py-1"
+                style={{ borderColor: '#232932', background: 'rgba(20,22,28,0.8)' }}
+              >
+                <kbd
+                  className="min-w-[80px] rounded border px-2 py-0.5 text-center font-mono text-[10px] font-bold"
+                  style={{ borderColor: '#3a4150', background: '#191c22', color: '#86f7ff' }}
+                >
                   {s.key}
                 </kbd>
-                <span className="font-mono text-[11px] text-zinc-300">{s.desc}</span>
+                <span className="font-mono text-[11px]" style={{ color: '#cfd6df' }}>{s.desc}</span>
               </div>
             ))}
           </div>
@@ -110,9 +124,13 @@ export function HelpOverlay({ open, onClose }: { open: boolean; onClose: () => v
           </h3>
           <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
             {FEATURES.map((f) => (
-              <div key={f.title} className="flex items-center gap-2 rounded border border-zinc-800 bg-zinc-900/50 px-2 py-1">
-                <span className="min-w-[80px] font-mono text-[10px] font-bold uppercase tracking-wider text-zinc-200">{f.title}</span>
-                <span className="font-mono text-[11px] text-zinc-400">{f.desc}</span>
+              <div
+                key={f.title}
+                className="flex items-center gap-2 rounded border px-2 py-1"
+                style={{ borderColor: '#232932', background: 'rgba(20,22,28,0.8)' }}
+              >
+                <span className="min-w-[80px] font-mono text-[10px] font-bold uppercase tracking-wider" style={{ color: '#cfd6df' }}>{f.title}</span>
+                <span className="font-mono text-[11px]" style={{ color: '#9aa3af' }}>{f.desc}</span>
               </div>
             ))}
           </div>
@@ -120,14 +138,21 @@ export function HelpOverlay({ open, onClose }: { open: boolean; onClose: () => v
 
         {/* Pattern editor */}
         <section className="mb-6">
-          <h3 className="mb-2 font-mono text-xs font-bold uppercase tracking-[0.2em] text-violet-300">
+          <h3
+            className="mb-2 font-mono text-xs font-bold uppercase tracking-[0.2em]"
+            style={{ color: '#c084fc' }}
+          >
             Pattern Editor
           </h3>
           <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
             {EDITOR_FEATURES.map((f) => (
-              <div key={f.title} className="flex items-center gap-2 rounded border border-zinc-800 bg-zinc-900/50 px-2 py-1">
-                <span className="min-w-[100px] font-mono text-[10px] font-bold uppercase tracking-wider text-violet-300">{f.title}</span>
-                <span className="font-mono text-[11px] text-zinc-400">{f.desc}</span>
+              <div
+                key={f.title}
+                className="flex items-center gap-2 rounded border px-2 py-1"
+                style={{ borderColor: '#232932', background: 'rgba(20,22,28,0.8)' }}
+              >
+                <span className="min-w-[100px] font-mono text-[10px] font-bold uppercase tracking-wider" style={{ color: '#c084fc' }}>{f.title}</span>
+                <span className="font-mono text-[11px]" style={{ color: '#9aa3af' }}>{f.desc}</span>
               </div>
             ))}
           </div>
@@ -135,21 +160,27 @@ export function HelpOverlay({ open, onClose }: { open: boolean; onClose: () => v
 
         {/* Other panels */}
         <section>
-          <h3 className="mb-2 font-mono text-xs font-bold uppercase tracking-[0.2em] text-amber-300">
+          <h3
+            className="mb-2 font-mono text-xs font-bold uppercase tracking-[0.2em]"
+            style={{ color: '#fbbf24' }}
+          >
             Other Panels
           </h3>
-          <div className="space-y-1 font-mono text-[11px] text-zinc-400">
-            <div><span className="text-emerald-300">MIXER</span> — per-bus gain + 3-band EQ + saturation + mute/solo</div>
-            <div><span className="text-fuchsia-300">SONG</span> — chain saved slots into A→B→A→C arrangement</div>
+          <div className="space-y-1 font-mono text-[11px]" style={{ color: '#9aa3af' }}>
+            <div><span style={{ color: '#86f7ff' }}>MIXER</span> — per-bus gain + 3-band EQ + saturation + mute/solo</div>
+            <div><span style={{ color: '#f07dc2' }}>SONG</span> — chain saved slots into A→B→A→C arrangement</div>
             <div><span className="text-cyan-300">TIMELINE</span> — visual song arrangement with playhead</div>
-            <div><span className="text-fuchsia-300">AUTOMATION</span> — draw parameter breakpoints (filter sweeps, volume rides)</div>
+            <div><span style={{ color: '#f07dc2' }}>AUTOMATION</span> — draw parameter breakpoints (filter sweeps, volume rides)</div>
             <div><span className="text-cyan-300">IMPORT</span> — drag-drop WAV with mandatory provenance assertion</div>
-            <div><span className="text-amber-300">ANALYSER</span> — 3 modes: BARS / WAVE / BOTH</div>
+            <div><span style={{ color: '#fbbf24' }}>ANALYSER</span> — 3 modes: BARS / WAVE / BOTH</div>
           </div>
         </section>
 
-        <div className="mt-6 border-t border-zinc-800 pt-3 text-center font-mono text-[10px] text-zinc-600">
-          Press <kbd className="rounded border border-zinc-600 bg-zinc-800 px-1 text-zinc-300">?</kbd> or <kbd className="rounded border border-zinc-600 bg-zinc-800 px-1 text-zinc-300">ESC</kbd> to close
+        <div
+          className="mt-6 border-t pt-3 text-center font-mono text-[10px]"
+          style={{ borderColor: '#232932', color: '#5b6470' }}
+        >
+          Press <kbd className="rounded border px-1" style={{ borderColor: '#3a4150', background: '#191c22', color: '#cfd6df' }}>?</kbd> or <kbd className="rounded border px-1" style={{ borderColor: '#3a4150', background: '#191c22', color: '#cfd6df' }}>ESC</kbd> to close
         </div>
       </div>
     </div>

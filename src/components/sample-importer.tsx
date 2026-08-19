@@ -16,7 +16,7 @@
 //   5. The imported sample appears in the SampleLibrary list and participates in selection.
 
 import * as React from 'react'
-import type { SampleCategory, SampleAsset } from '@/psy-sampler'
+import type { SampleCategories, SampleAsset } from '@/psy-sampler'
 import { ROLES } from '@/components/types'
 
 const LICENSE_OPTIONS = [
@@ -150,10 +150,13 @@ export function SampleImporter({
   }, [])
 
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-950/80 p-4">
+    <div
+      className="rounded-lg border p-4"
+      style={{ borderColor: '#232932', background: 'rgba(11,13,17,0.8)' }}
+    >
       <div className="mb-3 flex items-center justify-between">
         <h2 className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">IMPORT · drag WAV</h2>
-        <span className="font-mono text-[10px] text-zinc-500">provenance required</span>
+        <span className="font-mono text-[10px]" style={{ color: '#5b6470' }}>provenance required</span>
       </div>
 
       {/* Drop zone */}
@@ -175,10 +178,10 @@ export function SampleImporter({
           onChange={handleFileInput}
           className="hidden"
         />
-        <span className="font-mono text-xs text-zinc-400">
+        <span className="font-mono text-xs" style={{ color: '#9aa3af' }}>
           {dragOver ? 'DROP TO DECODE' : 'DROP WAV HERE OR CLICK'}
         </span>
-        <span className="mt-1 font-mono text-[10px] text-zinc-600">
+        <span className="mt-1 font-mono text-[10px]" style={{ color: '#5b6470' }}>
           sample enters graph only after license assertion
         </span>
       </div>
@@ -199,11 +202,12 @@ export function SampleImporter({
 
           {/* Role selector */}
           <label className="block">
-            <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">role</span>
+            <span className="font-mono text-[10px] uppercase tracking-wider" style={{ color: '#5b6470' }}>role</span>
             <select
               value={form.category}
               onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value as SampleCategory }))}
-              className="mt-0.5 w-full rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-xs text-zinc-200"
+              className="mt-0.5 w-full rounded border px-2 py-1 font-mono text-xs"
+              style={{ borderColor: '#282e38', background: '#14161c', color: '#cfd6df' }}
             >
               {ROLES.map((r) => (
                 <option key={r} value={r}>{r}</option>
@@ -213,11 +217,12 @@ export function SampleImporter({
 
           {/* License selector */}
           <label className="block">
-            <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">license</span>
+            <span className="font-mono text-[10px] uppercase tracking-wider" style={{ color: '#5b6470' }}>license</span>
             <select
               value={form.license}
               onChange={(e) => setForm((prev) => ({ ...prev, license: e.target.value }))}
-              className="mt-0.5 w-full rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-xs text-zinc-200"
+              className="mt-0.5 w-full rounded border px-2 py-1 font-mono text-xs"
+              style={{ borderColor: '#282e38', background: '#14161c', color: '#cfd6df' }}
             >
               {LICENSE_OPTIONS.map((l) => (
                 <option key={l.value} value={l.value}>{l.label}</option>
@@ -227,38 +232,41 @@ export function SampleImporter({
 
           {/* Author */}
           <label className="block">
-            <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">author *</span>
+            <span className="font-mono text-[10px] uppercase tracking-wider" style={{ color: '#5b6470' }}>author *</span>
             <input
               type="text"
               value={form.author}
               onChange={(e) => setForm((prev) => ({ ...prev, author: e.target.value }))}
               placeholder="e.g. Jane Doe"
-              className="mt-0.5 w-full rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-xs text-zinc-200"
+              className="mt-0.5 w-full rounded border px-2 py-1 font-mono text-xs"
+              style={{ borderColor: '#282e38', background: '#14161c', color: '#cfd6df' }}
             />
           </label>
 
           {/* Source */}
           <label className="block">
-            <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">source * (where from?)</span>
+            <span className="font-mono text-[10px] uppercase tracking-wider" style={{ color: '#5b6470' }}>source * (where from?)</span>
             <input
               type="text"
               value={form.source}
               onChange={(e) => setForm((prev) => ({ ...prev, source: e.target.value }))}
               placeholder="e.g. freesound.org/user123, self-recorded, etc."
-              className="mt-0.5 w-full rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-xs text-zinc-200"
+              className="mt-0.5 w-full rounded border px-2 py-1 font-mono text-xs"
+              style={{ borderColor: '#282e38', background: '#14161c', color: '#cfd6df' }}
             />
           </label>
 
           {/* Root note (for pitched roles) */}
           <label className="block">
-            <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">root note (MIDI, for bass/lead)</span>
+            <span className="font-mono text-[10px] uppercase tracking-wider" style={{ color: '#5b6470' }}>root note (MIDI, for bass/lead)</span>
             <input
               type="number"
               min={0}
               max={127}
               value={form.rootNote}
               onChange={(e) => setForm((prev) => ({ ...prev, rootNote: parseInt(e.target.value) || 60 }))}
-              className="mt-0.5 w-full rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-xs text-zinc-200"
+              className="mt-0.5 w-full rounded border px-2 py-1 font-mono text-xs"
+              style={{ borderColor: '#282e38', background: '#14161c', color: '#cfd6df' }}
             />
           </label>
 
@@ -270,20 +278,21 @@ export function SampleImporter({
               onChange={(e) => setForm((prev) => ({ ...prev, commercialUse: e.target.checked }))}
               className="h-4 w-4"
             />
-            <span className="font-mono text-[10px] text-zinc-300">
+            <span className="font-mono text-[10px]" style={{ color: '#cfd6df' }}>
               I assert this sample may be used commercially *
             </span>
           </label>
 
           {/* Attribution */}
           <label className="block">
-            <span className="font-mono text-[10px] uppercase tracking-wider text-zinc-500">attribution (optional)</span>
+            <span className="font-mono text-[10px] uppercase tracking-wider" style={{ color: '#5b6470' }}>attribution (optional)</span>
             <input
               type="text"
               value={form.attribution}
               onChange={(e) => setForm((prev) => ({ ...prev, attribution: e.target.value }))}
               placeholder="e.g. Copyright Jane Doe 2026"
-              className="mt-0.5 w-full rounded border border-zinc-700 bg-zinc-900 px-2 py-1 font-mono text-xs text-zinc-200"
+              className="mt-0.5 w-full rounded border px-2 py-1 font-mono text-xs"
+              style={{ borderColor: '#282e38', background: '#14161c', color: '#cfd6df' }}
             />
           </label>
 
@@ -297,7 +306,8 @@ export function SampleImporter({
             </button>
             <button
               onClick={cancelImport}
-              className="min-h-[44px] touch-manipulation rounded border border-zinc-600 px-3 py-2 font-mono text-xs uppercase tracking-wider text-zinc-400 transition-all hover:bg-zinc-800"
+              className="min-h-[44px] touch-manipulation rounded border px-3 py-2 font-mono text-xs uppercase tracking-wider transition-all hover:brightness-125"
+              style={{ borderColor: '#3a4150', color: '#9aa3af' }}
             >
               cancel
             </button>

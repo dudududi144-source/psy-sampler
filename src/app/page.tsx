@@ -1703,7 +1703,7 @@ export default function Home() {
 
             {/* Row 3: Sliders (BPM + Swing + Master + Section + Energy) */}
             </div>
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3 border-t border-zinc-800/50 pt-2">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 border-t pt-2" style={{ borderColor: '#232932' }}>
             {/* BPM knob */}
             <PsyKnob
               value={bpm}
@@ -1745,7 +1745,7 @@ export default function Home() {
 
             {/* Row 2: Edit + Tap + MIDI + Help */}
             </div>
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3 border-t border-zinc-800/50 pt-2">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 border-t pt-2" style={{ borderColor: '#232932' }}>
             {/* Undo / Redo */}
             <Button
               onClick={onUndo}
@@ -1789,7 +1789,8 @@ export default function Home() {
                 value={midi.selectedInputId ?? ''}
                 onChange={(e) => midi.selectInput(e.target.value || null)}
                 disabled={!midi.accessGranted}
-                className="h-11 min-w-[140px] rounded border border-zinc-700 bg-zinc-900 px-2 font-mono text-xs text-zinc-300 disabled:opacity-50"
+                className="h-11 min-w-[140px] rounded border px-2 font-mono text-xs disabled:opacity-50"
+                style={{ borderColor: '#282e38', background: '#14161c', color: '#cfd6df' }}
                 title={midi.error || 'Select MIDI input device'}
               >
                 <option value="">{midi.accessGranted ? 'MIDI: NONE' : 'MIDI…'}</option>
@@ -1800,12 +1801,12 @@ export default function Home() {
                 ))}
               </select>
             ) : (
-              <span className="font-mono text-[10px] text-zinc-600" title={midi.error || 'Web MIDI not supported'}>
+              <span className="font-mono text-[10px]" style={{ color: '#5b6470' }} title={midi.error || 'Web MIDI not supported'}>
                 no MIDI
               </span>
             )}
             {midi.lastNote !== null && (
-              <span className="font-mono text-[10px] text-emerald-300" title={`Last MIDI note: ${midi.lastNote} (vel ${(midi.lastVelocity ?? 0).toFixed(2)})`}>
+              <span className="font-mono text-[10px]" style={{ color: '#86f7ff' }} title={`Last MIDI note: ${midi.lastNote} (vel ${(midi.lastVelocity ?? 0).toFixed(2)})`}>
                 {midi.lastNote}
               </span>
             )}
@@ -1814,27 +1815,27 @@ export default function Home() {
 
           {/* ─── Harmonic status bar — shows the current harmonic structure ─── */}
           <div className="oled flex flex-wrap items-center gap-3 px-4 py-2">
-            <span className="font-mono text-[10px] uppercase tracking-widest text-zinc-500">
+            <span className="font-mono text-[10px] uppercase tracking-widest" style={{ color: '#5b6470' }}>
               HARMONY
             </span>
-            <span className="font-mono text-xs font-bold text-emerald-300">
+            <span className="font-mono text-xs font-bold" style={{ color: '#86f7ff' }}>
               {NOTE_NAMES[musicalKey]} {SCALE_LABELS[scaleName]}
             </span>
-            <span className="text-zinc-700">·</span>
-            <span className="font-mono text-xs text-amber-300">
+            <span style={{ color: '#5b6470' }}>·</span>
+            <span className="font-mono text-xs" style={{ color: '#fbbf24' }}>
               {ARPEGGIO_LABELS[arpeggio]}
             </span>
-            <span className="text-zinc-700">·</span>
-            <span className="font-mono text-xs text-rose-300">
+            <span style={{ color: '#5b6470' }}>·</span>
+            <span className="font-mono text-xs" style={{ color: '#f85149' }}>
               {BASS_LABELS[bassPattern]}
             </span>
             {lastProgression && (
               <>
-                <span className="text-zinc-700">·</span>
-                <span className="font-mono text-xs font-bold text-violet-300" title="Current chord progression">
+                <span style={{ color: '#5b6470' }}>·</span>
+                <span className="font-mono text-xs font-bold" style={{ color: '#c084fc' }} title="Current chord progression">
                   {lastProgression.label}
                 </span>
-                <span className="font-mono text-[10px] text-zinc-500" title="Roman numeral analysis">
+                <span className="font-mono text-[10px]" style={{ color: '#5b6470' }} title="Roman numeral analysis">
                   ({lastProgression.roman})
                 </span>
               </>
