@@ -18,7 +18,12 @@ export class SampleLoader {
   async load(entry: SampleManifestEntry): Promise<SampleAsset | null> {
     let response: Response
     try {
-      response = await fetch(entry.file)
+      // Build URL relative to current page, so it works with basePath (GitHub Pages)
+      // and standalone dev mode (localhost:3000/).
+      const url = entry.file.startsWith('/')
+        ? entry.file  // absolute path (for GitHub Pages with basePath)
+        : entry.file  // relative path (resolves from current page URL)
+      response = await fetch(url)
     } catch (err) {
       console.warn(`[psy-sampler] Network error fetching "${entry.file}":`, err)
       return null
