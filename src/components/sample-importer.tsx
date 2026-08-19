@@ -151,11 +151,11 @@ export function SampleImporter({
 
   return (
     <div
-      className="rounded-lg border p-4"
+      className="section p-4"
       style={{ borderColor: '#232932', background: 'rgba(11,13,17,0.8)' }}
     >
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="font-mono text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">IMPORT · drag WAV</h2>
+        <h2 className="font-mono text-xs font-bold uppercase tracking-[0.2em] ">IMPORT · drag WAV</h2>
         <span className="font-mono text-[10px]" style={{ color: '#5b6470' }}>provenance required</span>
       </div>
 
@@ -196,7 +196,7 @@ export function SampleImporter({
       {/* Provenance form (appears after decode) */}
       {pending && (
         <div className="mt-3 space-y-2 rounded border border-cyan-500/30 bg-cyan-500/5 p-3">
-          <div className="font-mono text-[11px] font-bold uppercase tracking-wider text-cyan-300">
+          <div className="font-mono text-[11px] font-bold uppercase tracking-wider ">
             decoded: {pending.file.name} ({pending.buffer.duration.toFixed(2)}s, {pending.buffer.sampleRate}Hz, {pending.buffer.numberOfChannels}ch)
           </div>
 
@@ -300,7 +300,7 @@ export function SampleImporter({
           <div className="flex gap-2 pt-1">
             <button
               onClick={submitImport}
-              className="min-h-[44px] touch-manipulation flex-1 rounded border border-cyan-400/50 bg-cyan-500/20 px-3 py-2 font-mono text-xs font-bold uppercase tracking-wider text-cyan-200 transition-all hover:bg-cyan-500/30"
+              className="min-h-[44px] touch-manipulation flex-1 rounded border   px-3 py-2 font-mono text-xs font-bold uppercase tracking-wider  transition-all hover:brightness-125"
             >
               import to library
             </button>

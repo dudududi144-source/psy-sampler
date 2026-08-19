@@ -16,7 +16,7 @@ export function PresetsPanel({
 }) {
   return (
     <div
-      className="rounded-lg border p-4"
+      className="section p-4"
       style={{ borderColor: '#232932', background: 'rgba(11,13,17,0.8)' }}
     >
       <div className="mb-3 flex items-center justify-between">
@@ -74,7 +74,7 @@ export function PatternSlots({
 }) {
   return (
     <div
-      className="rounded-lg border p-4"
+      className="section p-4"
       style={{ borderColor: '#232932', background: 'rgba(11,13,17,0.8)' }}
     >
       <div className="mb-3 flex items-center justify-between">
@@ -121,7 +121,7 @@ export function PatternSlots({
                 onClick={() => onClear(i)}
                 disabled={!name}
                 title="Clear saved slot"
-                className="min-h-[44px] touch-manipulation rounded border border-amber-400/30 bg-amber-500/10 px-1 py-0.5 font-mono text-[10px] uppercase hover:bg-amber-500/20 disabled:opacity-30"
+                className="min-h-[44px] touch-manipulation rounded border   px-1 py-0.5 font-mono text-[10px] uppercase hover:brightness-125 disabled:opacity-30"
                 style={{ color: '#fbbf24' }}
               >
                 CLR

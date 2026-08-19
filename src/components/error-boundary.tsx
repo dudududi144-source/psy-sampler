@@ -1,8 +1,5 @@
 'use client'
 
-// ErrorBoundary — catches React render errors and shows a recovery screen.
-// Prevents a single component crash from blanking the entire page.
-
 import * as React from 'react'
 
 interface ErrorBoundaryProps {
@@ -25,11 +22,7 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     return { hasError: true, error }
   }
 
-  componentDidCatch(error: Error, info: React.ErrorInfo): void {
-    console.error('[error-boundary] Caught:', error, info.componentStack)
-  }
-
-  handleReset = (): void => {
+  handleReset = () => {
     this.setState({ hasError: false, error: null })
   }
 
@@ -37,15 +30,16 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
     if (this.state.hasError) {
       if (this.props.fallback) return this.props.fallback
       return (
-        <div className="fixed inset-0 z-50 grid place-items-center 'background:#0b0d11' p-6">
-          <div className="max-w-md rounded-lg border 'borderColor:rgba(248,81,73,0.3)' 'background:#14161c' p-6 text-center">
-            <h2 className="mb-2 font-mono text-lg font-bold text-red-300">ERROR</h2>
-            <p className="mb-4 font-mono text-xs 'color:#9aa3af'">
-              {this.state.error?.message ?? 'Unknown error'}
+        <div className="fixed inset-0 z-50 grid place-items-center p-6" style={{ background: '#0b0d11' }}>
+          <div className="max-w-md p-6 text-center" style={{ borderRadius: '10px', border: '1px solid rgba(248,81,73,0.3)', background: '#14161c' }}>
+            <h2 className="mb-2 font-mono text-lg font-bold" style={{ color: '#f85149' }}>ERROR</h2>
+            <p className="mb-4 font-mono text-xs" style={{ color: '#9aa3af' }}>
+              Something went wrong. Please refresh the page.
             </p>
             <button
               onClick={this.handleReset}
-              className="rounded border 'borderColor:rgba(0,229,255,0.3)' 'background:#191c22' px-4 py-2 font-mono text-xs uppercase tracking-wider 'color:#86f7ff' hover:brightness-125"
+              className="px-4 py-2 font-mono text-xs uppercase tracking-wider hover:brightness-125"
+              style={{ borderRadius: '7px', border: '1px solid rgba(0,229,255,0.3)', background: '#191c22', color: '#86f7ff' }}
             >
               Try Again
             </button>

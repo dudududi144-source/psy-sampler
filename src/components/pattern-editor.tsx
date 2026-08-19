@@ -294,7 +294,7 @@ export function PatternEditor({
                 type="button"
                 onClick={onDouble}
                 disabled={stepCount >= 32}
-                className="touch-manipulation min-h-[28px] rounded border border-cyan-400/40 px-2 py-0.5 font-mono text-[10px] font-bold text-cyan-300 transition-all hover:bg-cyan-500/10 disabled:opacity-30"
+                className="touch-manipulation min-h-[28px] rounded border  px-2 py-0.5 font-mono text-[10px] font-bold  transition-all hover:brightness-125 disabled:opacity-30"
                 title="Double pattern (8→16 or 16→32, repeating)"
               >
                 x2
@@ -305,7 +305,7 @@ export function PatternEditor({
                 type="button"
                 onClick={onHalf}
                 disabled={stepCount <= 8}
-                className="touch-manipulation min-h-[28px] rounded border border-cyan-400/40 px-2 py-0.5 font-mono text-[10px] font-bold text-cyan-300 transition-all hover:bg-cyan-500/10 disabled:opacity-30"
+                className="touch-manipulation min-h-[28px] rounded border  px-2 py-0.5 font-mono text-[10px] font-bold  transition-all hover:brightness-125 disabled:opacity-30"
                 title="Half pattern (32→16 or 16→8, keeping first half)"
               >
                 /2

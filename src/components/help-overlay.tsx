@@ -70,7 +70,7 @@ export function HelpOverlay({ open, onClose }: { open: boolean; onClose: () => v
       onClick={onClose}
     >
       <div
-        className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-lg border p-6 shadow-2xl"
+        className="max-h-[85vh] w-full max-w-2xl overflow-y-auto "
         onClick={(e) => e.stopPropagation()}
         style={{ scrollbarWidth: 'thin', background: '#0b0d11', borderColor: '#282e38' }}
       >
@@ -119,7 +119,7 @@ export function HelpOverlay({ open, onClose }: { open: boolean; onClose: () => v
 
         {/* Transport buttons */}
         <section className="mb-6">
-          <h3 className="mb-2 font-mono text-xs font-bold uppercase tracking-[0.2em] text-cyan-300">
+          <h3 className="mb-2 font-mono text-xs font-bold uppercase tracking-[0.2em] ">
             Transport Buttons
           </h3>
           <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
@@ -169,9 +169,9 @@ export function HelpOverlay({ open, onClose }: { open: boolean; onClose: () => v
           <div className="space-y-1 font-mono text-[11px]" style={{ color: '#9aa3af' }}>
             <div><span style={{ color: '#86f7ff' }}>MIXER</span> — per-bus gain + 3-band EQ + saturation + mute/solo</div>
             <div><span style={{ color: '#f07dc2' }}>SONG</span> — chain saved slots into A→B→A→C arrangement</div>
-            <div><span className="text-cyan-300">TIMELINE</span> — visual song arrangement with playhead</div>
+            <div><span className="">TIMELINE</span> — visual song arrangement with playhead</div>
             <div><span style={{ color: '#f07dc2' }}>AUTOMATION</span> — draw parameter breakpoints (filter sweeps, volume rides)</div>
-            <div><span className="text-cyan-300">IMPORT</span> — drag-drop WAV with mandatory provenance assertion</div>
+            <div><span className="">IMPORT</span> — drag-drop WAV with mandatory provenance assertion</div>
             <div><span style={{ color: '#fbbf24' }}>ANALYSER</span> — 3 modes: BARS / WAVE / BOTH</div>
           </div>
         </section>

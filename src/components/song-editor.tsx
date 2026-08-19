@@ -154,7 +154,7 @@ export function SongEditor({
 
                 {/* Progress indicator (when playing this segment) */}
                 {isCurrent && (
-                  <span className="font-mono text-[10px] tabular-nums text-cyan-300">
+                  <span className="font-mono text-[10px] tabular-nums ">
                     bar {currentBar}/{seg.bars}
                   </span>
                 )}

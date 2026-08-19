@@ -138,7 +138,7 @@ export function SampleLibrary({
                 {onRemove && (
                   <button
                     onClick={() => onRemove(s.metadata.id)}
-                    className="shrink-0 touch-manipulation rounded border border-red-500/30 px-1.5 py-0.5 font-mono text-[10px] text-red-400 hover:bg-red-500/10"
+                    className="shrink-0 touch-manipulation rounded border  px-1.5 py-0.5 font-mono text-[10px]  hover:brightness-125"
                     title={`Remove ${s.metadata.id}`}
                   >
                     DEL
