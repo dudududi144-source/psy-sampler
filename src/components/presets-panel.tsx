@@ -1,11 +1,11 @@
 'use client'
 
 // PresetsPanel + PatternSlots — genre pattern + mixer preset loader + 4-slot save/load/clear.
+// Compact layout matching PSY hardware aesthetic.
 
 import { PATTERN_PRESETS, type PatternPreset } from '@/lib/pattern-persistence'
 import { MIXER_PRESETS, type MixerPreset } from '@/lib/mixer-presets'
-
-// ─── Presets Panel ───────────────────────────────────────────────────────────
+import * as React from 'react'
 
 export function PresetsPanel({
   onLoad,
@@ -15,51 +15,41 @@ export function PresetsPanel({
   onLoadMixer?: (preset: MixerPreset) => void
 }) {
   return (
-    <div
-      className="section p-4"
-      style={{ borderColor: '#232932', background: 'rgba(11,13,17,0.8)' }}
-    >
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="font-mono text-xs font-bold uppercase tracking-[0.2em]" style={{ color: '#86f7ff' }}>PRESETS · genre</h2>
-        <span className="font-mono text-[10px]" style={{ color: '#5b6470' }}>pattern + mixer</span>
-      </div>
-      {/* Pattern presets */}
-      <div className="mb-2 font-mono text-[9px] uppercase tracking-wider" style={{ color: '#5b6470' }}>PATTERN</div>
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+    <div className="section" style={{ '--c': '#86f7ff', padding: '8px 16px' } as React.CSSProperties}>
+      <h2 className="stitle" style={{ '--c': '#86f7ff' } as React.CSSProperties}>PRESETS</h2>
+      {/* Pattern presets — single row, compact */}
+      <div className="krow" style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
         {PATTERN_PRESETS.map((preset) => (
           <button
             key={preset.name}
             onClick={() => onLoad(preset)}
-            className="preset px-2 py-2 font-mono text-[10px] font-bold uppercase tracking-wider transition-all"
+            className="preset"
+            style={{ padding: '6px 10px', fontSize: '9px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' as const, whiteSpace: 'nowrap' as const }}
+            title={`${preset.name} - ${preset.bpm} BPM`}
           >
-            <div>{preset.name}</div>
-            <div className="mt-0.5 text-[10px] font-normal" style={{ color: '#5b6470' }}>{preset.bpm} BPM</div>
+            {preset.name}
           </button>
         ))}
       </div>
-      {/* Mixer presets */}
+      {/* Mixer presets — single row, compact */}
       {onLoadMixer && (
-        <>
-          <div className="mb-2 mt-3 font-mono text-[9px] uppercase tracking-wider" style={{ color: '#5b6470' }}>MIXER (EQ+SAT+FLT)</div>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
-            {MIXER_PRESETS.map((preset) => (
-              <button
-                key={preset.name}
-                onClick={() => onLoadMixer(preset)}
-                className="preset px-2 py-2 font-mono text-[10px] font-bold uppercase tracking-wider transition-all"
-                title={`${preset.name} mixer preset — EQ + saturation + filter`}
-              >
-                {preset.name}
-              </button>
-            ))}
-          </div>
-        </>
+        <div className="krow" style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
+          {MIXER_PRESETS.map((preset) => (
+            <button
+              key={preset.name}
+              onClick={() => onLoadMixer(preset)}
+              className="preset"
+              style={{ padding: '6px 10px', fontSize: '9px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' as const, whiteSpace: 'nowrap' as const }}
+              title={`${preset.name} mixer preset`}
+            >
+              {preset.name}
+            </button>
+          ))}
+        </div>
       )}
     </div>
   )
 }
-
-// ─── Pattern Slots ───────────────────────────────────────────────────────────
 
 export function PatternSlots({
   slotNames,
@@ -73,56 +63,63 @@ export function PatternSlots({
   onClear: (slot: number) => void
 }) {
   return (
-    <div
-      className="section p-4"
-      style={{ borderColor: '#232932', background: 'rgba(11,13,17,0.8)' }}
-    >
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="font-mono text-xs font-bold uppercase tracking-[0.2em]" style={{ color: '#f07dc2' }}>SLOTS · save/load</h2>
-        <span className="font-mono text-[10px]" style={{ color: '#5b6470' }}>localStorage · 4 slots</span>
-      </div>
-      <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
+    <div className="section" style={{ '--c': '#f07dc2', padding: '8px 16px' } as React.CSSProperties}>
+      <h2 className="stitle" style={{ '--c': '#f07dc2' } as React.CSSProperties}>SLOTS</h2>
+      <div className="krow" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
         {slotNames.map((name, i) => (
           <div
             key={i}
-            className="rounded border p-2"
-            style={{ borderColor: '#232932', background: 'rgba(20,22,28,0.4)' }}
+            style={{
+              padding: '6px 10px',
+              border: '1px solid #232932',
+              borderRadius: '6px',
+              background: 'rgba(20,22,28,0.4)',
+              minWidth: '120px',
+            }}
           >
-            <div className="mb-1.5 flex items-center justify-between">
-              <span className="font-mono text-[11px] uppercase tracking-wider" style={{ color: '#5b6470' }}>SLOT {i + 1}</span>
-              {name ? (
-                <span className="rounded bg-emerald-500/10 px-1 font-mono text-[10px] uppercase" style={{ color: '#86f7ff' }}>SAVED</span>
-              ) : (
-                <span className="rounded px-1 font-mono text-[10px] uppercase" style={{ background: '#191c22', color: '#5b6470' }}>EMPTY</span>
-              )}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+              <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '9px', color: '#5b6470', textTransform: 'uppercase' as const }}>
+                SLOT {i + 1}
+              </span>
+              <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '8px', color: name ? '#86f7ff' : '#5b6470' }}>
+                {name ? 'SAVED' : 'EMPTY'}
+              </span>
             </div>
-            <div className="mb-1.5 truncate font-mono text-[10px]" style={{ color: '#cfd6df' }} title={name}>
-              {name || '—'}
+            <div style={{
+              fontFamily: "'JetBrains Mono', monospace",
+              fontSize: '9px',
+              color: '#cfd6df',
+              whiteSpace: 'nowrap' as const,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              marginBottom: '4px',
+            }} title={name}>
+              {name || '---'}
             </div>
-            <div className="flex gap-1">
+            <div style={{ display: 'flex', gap: '4px' }}>
               <button
                 onClick={() => onSave(i)}
+                className="preset"
+                style={{ flex: 1, padding: '4px', fontSize: '8px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' as const, color: '#86f7ff' }}
                 title="Save to slot"
-                className="flex-1 min-h-[44px] touch-manipulation rounded border border-emerald-400/30 bg-emerald-500/10 px-1 py-0.5 font-mono text-[10px] uppercase hover:brightness-125"
-                style={{ color: '#86f7ff' }}
               >
                 SAVE
               </button>
               <button
                 onClick={() => onLoad(i)}
                 disabled={!name}
+                className="preset"
+                style={{ flex: 1, padding: '4px', fontSize: '8px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' as const, color: '#f07dc2', opacity: name ? 1 : 0.3 }}
                 title="Load from slot"
-                className="flex-1 min-h-[44px] touch-manipulation rounded border border-fuchsia-400/30 bg-fuchsia-500/10 px-1 py-0.5 font-mono text-[10px] uppercase hover:brightness-125 disabled:opacity-30"
-                style={{ color: '#f07dc2' }}
               >
                 LOAD
               </button>
               <button
                 onClick={() => onClear(i)}
                 disabled={!name}
-                title="Clear saved slot"
-                className="min-h-[44px] touch-manipulation rounded border   px-1 py-0.5 font-mono text-[10px] uppercase hover:brightness-125 disabled:opacity-30"
-                style={{ color: '#fbbf24' }}
+                className="preset"
+                style={{ flex: 1, padding: '4px', fontSize: '8px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' as const, color: '#fbbf24', opacity: name ? 1 : 0.3 }}
+                title="Clear slot"
               >
                 CLR
               </button>
