@@ -12,11 +12,26 @@
 
 import type { Pattern } from './demo-director'
 
+export interface FollowAction {
+  /** Target segment index to jump to (0-based). If same as current, loops. */
+  targetIndex: number
+  /** Probability 0..1 — chance of following the action (vs advancing). Default 1. */
+  probability: number
+}
+
 export interface SongSegment {
   /** Index of the pattern slot (0-3) to play during this segment. */
   slot: number
   /** Number of bars to play this segment before advancing. */
   bars: number
+  /**
+   * Phase 3.2: Follow Action — what to do after `bars` bars.
+   * If absent → advance to next segment (default, current behavior).
+   * If present → jump to targetIndex with the given probability.
+   * Set targetIndex = current segment index to loop indefinitely.
+   * probability < 1 = chance of NOT following (advances instead).
+   */
+  followAction?: FollowAction
 }
 
 export interface Song {

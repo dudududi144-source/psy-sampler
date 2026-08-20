@@ -152,6 +152,56 @@ function SongEditorImpl({
                   </button>
                 </div>
 
+                {/* Phase 3.2: Follow Action — jump to target after bars */}
+                {song.segments.length > 1 && (
+                  <div className="flex items-center gap-1">
+                    <span className="font-mono text-[9px] uppercase" style={{ color: '#5b6470' }}>FOLLOW</span>
+                    <select
+                      value={seg.followAction ? seg.followAction.targetIndex : -1}
+                      onChange={(e) => {
+                        const target = parseInt(e.target.value)
+                        if (target === -1) {
+                          updateSegment(i, { followAction: undefined })
+                        } else {
+                          updateSegment(i, { followAction: { targetIndex: target, probability: seg.followAction?.probability ?? 1 } })
+                        }
+                      }}
+                      disabled={songMode}
+                      className="rounded border px-1 py-0.5 font-mono text-[9px] disabled:opacity-50"
+                      style={{ borderColor: '#282e38', background: '#14161c', color: '#9aa3af' }}
+                      title="After this segment, jump to..."
+                    >
+                      <option value={-1}>next</option>
+                      {song.segments.map((_, si) => (
+                        <option key={si} value={si}>
+                          {si === i ? `loop (seg ${si + 1})` : `seg ${si + 1}`}
+                        </option>
+                      ))}
+                    </select>
+                    {seg.followAction && (
+                      <>
+                        <input
+                          type="range"
+                          min={0}
+                          max={1}
+                          step={0.05}
+                          value={seg.followAction.probability}
+                          onChange={(e) => updateSegment(i, {
+                            followAction: { ...seg.followAction!, probability: parseFloat(e.target.value) }
+                          })}
+                          disabled={songMode}
+                          className="h-1.5 w-12"
+                          style={{ accentColor: '#c084fc' }}
+                          title="Probability of following the action"
+                        />
+                        <span className="font-mono text-[9px] tabular-nums" style={{ color: '#5b6470' }}>
+                          {Math.round(seg.followAction.probability * 100)}%
+                        </span>
+                      </>
+                    )}
+                  </div>
+                )}
+
                 {/* Progress indicator (when playing this segment) */}
                 {isCurrent && (
                   <span className="font-mono text-[10px] tabular-nums ">

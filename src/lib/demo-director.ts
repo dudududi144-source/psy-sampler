@@ -145,7 +145,7 @@ export class DemoDirector {
   // When song mode is enabled, the director advances through a sequence of
   // {pattern, bars} segments at bar boundaries. Each segment's pattern
   // replaces the current pattern when the segment starts.
-  private songSegments: Array<{ pattern: Pattern; bars: number; slot: number }> = []
+  private songSegments: Array<{ pattern: Pattern; bars: number; slot: number; followAction?: { targetIndex: number; probability: number } }> = []
   private songSegmentIndex = 0
   private songBarCounter = 0
   private songMode = false
@@ -714,8 +714,18 @@ export class DemoDirector {
           this.songBarCounter += 1
           const currentSeg = this.songSegments[this.songSegmentIndex]
           if (currentSeg && this.songBarCounter >= currentSeg.bars) {
-            // Advance to the next segment.
-            this.songSegmentIndex += 1
+            // Phase 3.2: Follow Action — jump to targetIndex with probability.
+            // If no followAction, or probability check fails, advance to next.
+            let nextIndex = this.songSegmentIndex + 1  // default: advance
+            const fa = currentSeg.followAction
+            if (fa && fa.targetIndex >= 0 && fa.targetIndex < this.songSegments.length) {
+              // Roll the dice: if random < probability → follow the action.
+              // Otherwise → advance to next (default).
+              if (Math.random() < fa.probability) {
+                nextIndex = fa.targetIndex
+              }
+            }
+            this.songSegmentIndex = nextIndex
             this.songBarCounter = 0
             if (this.songSegmentIndex >= this.songSegments.length) {
               // Song ended — stop song mode and playback.

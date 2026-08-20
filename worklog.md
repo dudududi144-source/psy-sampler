@@ -4720,3 +4720,90 @@ Verification:
 % complete per ROAST.md:
 - UX/UI polish: 40% → 45% (+5%, React.memo reduces unnecessary renders)
 - Overall: 39% → 40%
+
+---
+Task ID: PHASE-3.2-PATTERN-CHAINING
+Agent: main
+Task: Pattern chaining — follow actions (Phase 3.2)
+
+Follow actions are the standard way to chain patterns in live performance.
+Every commercial DAW (Ableton, FL Studio, Bitwig) has them. Without them,
+the song mode can only play segments sequentially — no jumping, looping,
+or probabilistic transitions.
+
+═══════════════════════════════════════════════════════════════════════════════
+Step 3.2.1 — FollowAction type (src/lib/song-persistence.ts)
+═══════════════════════════════════════════════════════════════════════════════
+
+New FollowAction interface:
+  - targetIndex: number (0-based segment to jump to)
+  - probability: number (0..1, chance of following vs advancing)
+
+SongSegment extended with optional followAction:
+  - followAction?: FollowAction
+  - If absent → advance to next segment (default, backward-compatible)
+  - If present → jump to targetIndex with given probability
+  - targetIndex = current index → loop indefinitely
+  - probability < 1 → chance of NOT following (advances instead)
+
+Examples:
+  - {targetIndex: 0, probability: 1} → always jump to segment 1
+  - {targetIndex: 0, probability: 0.5} → 50% chance to jump, 50% advance
+  - {targetIndex: 2, probability: 1} where current=2 → loop segment 3
+
+═══════════════════════════════════════════════════════════════════════════════
+Step 3.2.2 — Director: apply follow action (src/lib/demo-director.ts)
+═══════════════════════════════════════════════════════════════════════════════
+
+Modified the segment advance logic in tick():
+  - When songBarCounter >= currentSeg.bars:
+    1. Check if currentSeg has a followAction
+    2. If yes AND targetIndex is valid → roll Math.random() < probability
+    3. If roll succeeds → jump to targetIndex
+    4. If roll fails OR no followAction → advance to next (default)
+  - Guards: targetIndex must be 0..songSegments.length-1
+  - Out-of-bounds target → falls through to default advance
+
+Type update:
+  - songSegments type extended with followAction? in the director's
+    private field (TypeScript inline type, matches the SongSegment interface)
+
+═══════════════════════════════════════════════════════════════════════════════
+Step 3.2.3 — SongEditor UI: follow action per segment
+═══════════════════════════════════════════════════════════════════════════════
+
+Added compact FOLLOW section in each segment row (only visible when
+2+ segments exist):
+  - Dropdown: "next" (default, no follow) OR "seg N" (jump to N) OR
+    "loop (seg N)" (when target = current, loops indefinitely)
+  - Probability slider: 0-100% (purple, PSY color)
+  - Probability display: "75%"
+  - Disabled during songMode (can't edit while playing)
+
+UI is compact: single row with dropdown + slider + % readout.
+Only appears when there are 2+ segments (follow action only makes
+sense with multiple segments).
+
+═══════════════════════════════════════════════════════════════════════════════
+Verification
+═══════════════════════════════════════════════════════════════════════════════
+
+- Lint: 0 errors
+- TypeScript: 0 errors in src/
+- Unit tests: 750 pass, 6 skip, 0 fail (51 files)
+- Backward-compatible: existing songs without followAction still work
+  (absent followAction = default advance behavior)
+
+% complete per ROAST.md commitment:
+- Sequencing: 30% → 45% (+15%, follow actions are a major sequencer feature)
+- Overall: 40% → 42%
+
+Stage Summary:
+- 1 new interface: FollowAction (targetIndex + probability)
+- SongSegment extended with optional followAction
+- Director: probabilistic segment jumping with fallback to advance
+- SongEditor: compact FOLLOW dropdown + probability slider per segment
+- Enables: looping segments, jumping to specific segments, probabilistic
+  transitions (like Ableton's Follow Actions)
+- 0 lint, 0 TS, 0 test failures
+- Backward-compatible (existing songs unaffected)
