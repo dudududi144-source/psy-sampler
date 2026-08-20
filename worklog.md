@@ -3152,3 +3152,64 @@ Stage Summary:
 - All sample provenance strings accurate (point to the script that
   actually generated them)
 - No user-visible impact (samples themselves are unchanged from v2)
+
+---
+Task ID: PER-ROLE-MUTE-SOLO
+Agent: main
+Task: Add per-role mute/solo to the pattern editor (finer than bus mute)
+
+The mixer had bus-level mute/solo (drum/music/atmos), but there was no way
+to mute a single instrument within a bus — e.g. mute just the kick while
+leaving the hats/clap playing. Added per-role mute/solo buttons (M/S) in
+each pattern-editor row, plumbed down to the DemoDirector's scheduler.
+
+Implementation:
+
+src/lib/demo-director.ts:
+- New fields: mutedRoles: Set<SampleRole>, soloedRoles: Set<SampleRole>
+- New API:
+  * setRoleMuted(role, muted), isRoleMuted(role)
+  * setRoleSoloed(role, soloed), isRoleSoloed(role)
+  * hasSolo getter
+  * getMutedRoles(), getSoloedRoles() — snapshots for UI display
+  * clearMuteSolo() — reset all (for new pattern loads)
+- scheduleStep() now skips muted roles AND non-soloed roles when any
+  role is soloed (standard DAW solo behaviour). 3-line change in
+  the existing loop, no rewrite of scheduling logic.
+
+src/components/pattern-editor.tsx:
+- New optional props: mutedRoles, soloedRoles, onToggleMute, onToggleSolo
+- Each role row now has M (mute) and S (solo) buttons in the row header
+  next to COPY/PASTE/FILL
+- M button turns PSY red (#f85149) when active
+- S button turns amber (#fbbf24) when active
+- Row opacity drops to 0.4 when effectively muted (either explicit mute
+  OR implicit mute from another role being soloed)
+
+src/app/page.tsx:
+- New state: mutedRoles, soloedRoles (mirrors director's sets)
+- New callbacks: onToggleMute, onToggleSolo (update director + state)
+- Passed to <PatternEditor> as new props
+- State declared BEFORE the callbacks that use it (lint immutability rule)
+
+Verified via Agent Browser:
+- 18 buttons present (9 roles x 2 buttons each)
+- Click M on bass → bass row opacity drops to 0.4, all others stay at 1
+- M button turns PSY red (rgb(248,81,73)) when active
+- Click S on kick → kick stays at opacity 1, all 8 other rows drop to 0.4
+- S button turns amber (rgb(251,191,36)) when active
+- Mute toggled during playback (no errors, no audio glitches)
+- Solo cleared, mute cleared, playback continues normally
+- 0 lint errors, 0 new TS errors (pre-existing scalePattern errors
+  shifted by added lines but are unchanged)
+- 0 runtime/console errors
+
+Stage Summary:
+- New: per-instrument mute/solo at the pattern level
+- Independent of bus mute (bus is master-level, role is per-instrument)
+- Standard DAW solo behaviour (solo any role mutes all others)
+- Visual feedback via row opacity + button color (PSY red/amber)
+- 9 new buttons (was 0), 0 new TS errors, 0 lint errors
+- Playback verified, mute/solo verified live during playback
+
+Live: https://dudududi144-source.github.io/psy-sampler/

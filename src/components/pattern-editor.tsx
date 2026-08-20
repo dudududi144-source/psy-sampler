@@ -60,6 +60,10 @@ export function PatternEditor({
   nowPlayingAt,
   onClearPattern,
   noteMap,
+  mutedRoles,
+  soloedRoles,
+  onToggleMute,
+  onToggleSolo,
 }: {
   pattern: Pattern
   currentStep: number
@@ -104,6 +108,14 @@ export function PatternEditor({
   nowPlayingRole: SampleRole | null
   nowPlayingAt: number
   onClearPattern: () => void
+  /** Currently muted roles (per-row mute at pattern level). */
+  mutedRoles?: SampleRole[]
+  /** Currently soloed roles (per-row solo at pattern level). */
+  soloedRoles?: SampleRole[]
+  /** Toggle per-row mute. */
+  onToggleMute?: (role: SampleRole) => void
+  /** Toggle per-row solo. */
+  onToggleSolo?: (role: SampleRole) => void
 }) {
   const now = Date.now()
   const fresh = nowPlayingRole !== null && (now - nowPlayingAt) < NOW_PLAYING_MS
@@ -355,6 +367,12 @@ export function PatternEditor({
         {ROLES.map((role) => {
           const isNowPlaying = fresh && nowPlayingRole === role
           const color = ROLE_COLORS[role]
+          const isMuted = mutedRoles?.includes(role) ?? false
+          const isSoloed = soloedRoles?.includes(role) ?? false
+          const hasSolo = (soloedRoles?.length ?? 0) > 0
+          // A role is effectively muted if explicitly muted OR if another role
+          // is soloed and this one isn't.
+          const isEffectivelyMuted = isMuted || (hasSolo && !isSoloed)
           return (
             <div
               key={role}
@@ -362,6 +380,7 @@ export function PatternEditor({
               style={{
                 backgroundColor: isNowPlaying ? `${color}10` : 'transparent',
                 boxShadow: isNowPlaying ? `inset 0 0 12px ${color}30` : 'none',
+                opacity: isEffectivelyMuted ? 0.4 : 1,
               }}
             >
               <div
@@ -374,6 +393,37 @@ export function PatternEditor({
                 <span className="font-mono text-[11px] font-bold uppercase tracking-wider">
                   {ROLE_LABEL[role]}
                 </span>
+                {/* Mute / Solo buttons */}
+                {onToggleMute && onToggleSolo && (
+                  <div className="flex gap-0.5">
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); onToggleMute(role) }}
+                      className="touch-manipulation rounded px-1 font-mono text-[8px] font-bold"
+                      style={{
+                        border: `1px solid ${isMuted ? '#f85149' : '#3a4150'}`,
+                        color: isMuted ? '#f85149' : '#9aa3af',
+                        background: isMuted ? 'rgba(248,81,73,0.15)' : 'transparent',
+                      }}
+                      title={`Mute ${role}`}
+                    >
+                      M
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); onToggleSolo(role) }}
+                      className="touch-manipulation rounded px-1 font-mono text-[8px] font-bold"
+                      style={{
+                        border: `1px solid ${isSoloed ? '#fbbf24' : '#3a4150'}`,
+                        color: isSoloed ? '#fbbf24' : '#9aa3af',
+                        background: isSoloed ? 'rgba(251,191,36,0.15)' : 'transparent',
+                      }}
+                      title={`Solo ${role}`}
+                    >
+                      S
+                    </button>
+                  </div>
+                )}
                 {/* Copy / Paste buttons */}
                 <div className="flex gap-0.5">
                   <button

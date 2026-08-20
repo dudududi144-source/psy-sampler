@@ -179,6 +179,32 @@ export default function Home() {
   // ─── Copy/paste between roles ───────────────────────────────────────────────
   const clipboardRef = React.useRef<{ row: number[]; fromRole: SampleRole } | null>(null)
 
+  // ─── Per-role mute/solo (pattern-level) ────────────────────────────────────
+  // Mirror of director.mutedRoles/soloedRoles. UI updates this state to
+  // trigger re-render; the director is the source of truth for scheduling.
+  // Declared BEFORE the callbacks that use them (setMutedRoles/setSoloedRoles).
+  const [mutedRoles, setMutedRoles] = React.useState<SampleRole[]>([])
+  const [soloedRoles, setSoloedRoles] = React.useState<SampleRole[]>([])
+
+  // These bypass the director's scheduling — muted roles are skipped in
+  // scheduleStep. Solo follows standard DAW behaviour: when any role is
+  // soloed, all others are effectively muted.
+  const onToggleMute = React.useCallback((role: SampleRole) => {
+    const director = directorRef.current
+    if (!director) return
+    const next = !director.isRoleMuted(role)
+    director.setRoleMuted(role, next)
+    setMutedRoles(director.getMutedRoles())
+  }, [])
+
+  const onToggleSolo = React.useCallback((role: SampleRole) => {
+    const director = directorRef.current
+    if (!director) return
+    const next = !director.isRoleSoloed(role)
+    director.setRoleSoloed(role, next)
+    setSoloedRoles(director.getSoloedRoles())
+  }, [])
+
   const onCopyRole = React.useCallback((role: SampleRole) => {
     const director = directorRef.current
     if (!director) return
@@ -218,6 +244,7 @@ export default function Home() {
   const automationBankRef = React.useRef(automationBank)
   const [automationEnabled, setAutomationEnabled] = React.useState(false)
   const [automationDirty, setAutomationDirty] = React.useState(0)
+  // ─── Per-role mute/solo state moved up (declared before callbacks that use it) ─
   const [busState, setBusState] = React.useState<Record<BusName, BusMixerState>>({
     drum: { gain: 0.9, muted: false, solo: false, eqLow: 0, eqMid: 0, eqHigh: 0, saturation: 0 },
     music: { gain: 0.85, muted: false, solo: false, eqLow: 0, eqMid: 0, eqHigh: 0, saturation: 0 },
@@ -1977,6 +2004,10 @@ export default function Home() {
                 nowPlayingRole={nowPlaying.role}
                 nowPlayingAt={nowPlaying.at}
                 onClearPattern={onClearPattern}
+                mutedRoles={mutedRoles}
+                soloedRoles={soloedRoles}
+                onToggleMute={onToggleMute}
+                onToggleSolo={onToggleSolo}
               />
             </div>
             <PerformancePads

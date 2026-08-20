@@ -115,6 +115,13 @@ export class DemoDirector {
   private evolveSeed = 42
   private evolveBarCounter = 0
   private readonly evolveInterval = 4 // mutate every 4 bars
+  // ─── Per-role mute/solo (pattern-level, finer than bus mute) ───────────────
+  // When a role is muted, scheduleStep skips it entirely (no NoteEvent
+  // published). Solo: if any role is soloed, all others are muted.
+  // This is independent of the mixer's bus mute — bus mute is master-level,
+  // role mute is per-instrument within the pattern.
+  private mutedRoles = new Set<SampleRole>()
+  private soloedRoles = new Set<SampleRole>()
   // ─── Per-step probability overlay ──────────────────────────────────────────
   // A separate map from "role:step" → probability (0..1). When a step fires,
   // the director rolls a random number; if it's > probability, the step is
@@ -274,6 +281,55 @@ export class DemoDirector {
 
   get hasProbabilities(): boolean {
     return this.probabilities.size > 0
+  }
+
+  // ─── Per-role mute/solo ────────────────────────────────────────────────────
+  /**
+   * Mute a specific role at the pattern level. The role's notes are NOT
+   * published during scheduling. Independent of bus mute — bus mute is
+   * master-level, role mute is per-instrument within the pattern.
+   */
+  setRoleMuted(role: SampleRole, muted: boolean): void {
+    if (muted) this.mutedRoles.add(role)
+    else this.mutedRoles.delete(role)
+  }
+
+  isRoleMuted(role: SampleRole): boolean {
+    return this.mutedRoles.has(role)
+  }
+
+  /**
+   * Solo a specific role. When any role is soloed, all non-soloed roles
+   * are effectively muted (standard DAW solo behaviour).
+   */
+  setRoleSoloed(role: SampleRole, soloed: boolean): void {
+    if (soloed) this.soloedRoles.add(role)
+    else this.soloedRoles.delete(role)
+  }
+
+  isRoleSoloed(role: SampleRole): boolean {
+    return this.soloedRoles.has(role)
+  }
+
+  /** Returns true if any role is currently soloed. */
+  get hasSolo(): boolean {
+    return this.soloedRoles.size > 0
+  }
+
+  /** Returns a snapshot of muted role IDs for UI display. */
+  getMutedRoles(): SampleRole[] {
+    return Array.from(this.mutedRoles)
+  }
+
+  /** Returns a snapshot of soloed role IDs for UI display. */
+  getSoloedRoles(): SampleRole[] {
+    return Array.from(this.soloedRoles)
+  }
+
+  /** Clear all mute/solo state (e.g. when loading a new pattern). */
+  clearMuteSolo(): void {
+    this.mutedRoles.clear()
+    this.soloedRoles.clear()
   }
 
   /**
@@ -644,7 +700,13 @@ export class DemoDirector {
 
   private scheduleStep(step: number, at: number): void {
     const secPerStep = (60 / this.transport.currentBpm) / 4
+    // Per-role mute/solo: if any role is soloed, all non-soloed roles are
+    // muted. This is the standard DAW solo behaviour.
+    const hasSolo = this.soloedRoles.size > 0
     for (const role of Object.keys(this.pattern) as SampleRole[]) {
+      // Skip muted roles (explicit mute OR implicit mute from solo).
+      if (this.mutedRoles.has(role)) continue
+      if (hasSolo && !this.soloedRoles.has(role)) continue
       const row = this.pattern[role]
       if (!row) continue
       const velocity = row[step] ?? 0
