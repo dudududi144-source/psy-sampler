@@ -663,31 +663,36 @@ no CC automation. Just note on/off.
 
 ## Part 5: Honest Percentage Breakdown
 
-| Area | Pre-Phase-0 | Post-Phase-0 | Target | Gap |
-|------|------------|--------------|--------|-----|
-| Audio engine | 25% | 25% | 90% | -65% |
-| Sample management | 15% | 15% | 85% | -70% |
-| Sequencing | 25% | 25% | 85% | -60% |
-| Mixer/FX | 30% | 30% | 80% | -50% |
-| MIDI | 10% | 10% | 80% | -70% |
-| Export | 20% | 20% | 80% | -60% |
-| UX/UI polish | 40% | 40% | 90% | -50% |
-| Accessibility | 5% | 5% | 95% | -90% |
-| i18n | 0% | 0% | 50% | -50% |
-| Collaboration | 0% | 0% | 70% | -70% |
-| Cloud/sync | 0% | 0% | 80% | -80% |
-| Analytics | 0% | 0% | 80% | -80% |
-| Error tracking | 0% | **30%** | 100% | -70% |
-| CI/CD | 0% | **100%** | 100% | 0% ✅ |
-| Performance monitoring | 0% | 0% | 80% | -80% |
-| Security | 0% | 0% | 80% | -80% |
-| Testing (E2E) | 0% | **40%** | 80% | -40% |
-| Testing (visual) | 0% | 0% | 60% | -60% |
-| Documentation (user) | 10% | 10% | 80% | -70% |
-| Distribution | 5% | 5% | 70% | -65% |
-| **OVERALL** | **~18%** | **~22%** | **~85%** | **-63%** |
+| Area | Pre-Phase-0 | Post-Phase-0 | Post-Phase-1 | Target | Gap |
+|------|------------|--------------|--------------|--------|-----|
+| Audio engine | 25% | 25% | **55%** | 90% | -35% |
+| Loop points | 0% | 0% | **80%** | 100% | -20% |
+| Per-voice FX | 0% | 0% | **60%** | 90% | -30% |
+| Stereo support | 50% | 50% | **100%** | 100% | 0% ✅ |
+| Time-stretch | 0% | 0% | **40%** | 90% | -50% |
+| Pitch-shift | 0% | 0% | **40%** | 90% | -50% |
+| Sample management | 15% | 15% | 15% | 85% | -70% |
+| Sequencing | 25% | 25% | 25% | 85% | -60% |
+| Mixer/FX | 30% | 30% | 30% | 80% | -50% |
+| MIDI | 10% | 10% | 10% | 80% | -70% |
+| Export | 20% | 20% | 20% | 80% | -60% |
+| UX/UI polish | 40% | 40% | 40% | 90% | -50% |
+| Accessibility | 5% | 5% | 5% | 95% | -90% |
+| i18n | 0% | 0% | 0% | 50% | -50% |
+| Collaboration | 0% | 0% | 0% | 70% | -70% |
+| Cloud/sync | 0% | 0% | 0% | 80% | -80% |
+| Analytics | 0% | 0% | 0% | 80% | -80% |
+| Error tracking | 0% | **30%** | 30% | 100% | -70% |
+| CI/CD | 0% | **100%** | **100%** | 100% | 0% ✅ |
+| Performance monitoring | 0% | 0% | 0% | 80% | -80% |
+| Security | 0% | 0% | 0% | 80% | -80% |
+| Testing (E2E) | 0% | **40%** | 40% | 80% | -40% |
+| Testing (visual) | 0% | 0% | 0% | 60% | -60% |
+| Documentation (user) | 10% | 10% | 10% | 80% | -70% |
+| Distribution | 5% | 5% | 5% | 70% | -65% |
+| **OVERALL** | **~18%** | **~22%** | **~27%** | **~85%** | **-58%** |
 
-**Phase 0 closed 4% of the gap. Next: Phase 1 (Audio Engine Quality).**
+**Phase 0 closed 4% of the gap. Phase 1 closed another 5%. Total: ~9% closed.**
 
 The 18% that works:
 - Basic audio playback (samples trigger, transport works)

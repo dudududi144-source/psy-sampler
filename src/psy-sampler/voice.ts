@@ -16,6 +16,7 @@
 import type { Voice } from '../psy-foundation-shim/voice-pool'
 import type { VoiceTriggerOptions } from './types'
 import { safeDisconnect } from '../lib/safe-disconnect'
+import { combinedFxCurve } from './voice-fx-curves'
 
 export interface SampleVoiceInit {
   audioContext: AudioContext
@@ -103,7 +104,80 @@ export class SampleVoice implements Voice {
     // ── Build a fresh per-trigger chain ───────────────────────────────────
     const source = ctx.createBufferSource()
     source.buffer = buffer
-    source.playbackRate.value = opts.playbackRate
+
+    // ── Phase 1.3: Loop points + reverse ─────────────────────────────────
+    // The Web Audio API's AudioBufferSourceNode supports:
+    //   - loop: boolean — when true, the source loops between loopStart and loopEnd
+    //   - loopStart/loopEnd: number — loop boundaries in seconds
+    //   - playbackRate: number — can be NEGATIVE for reverse playback
+    //     (Chrome/Firefox/Safari all support negative playbackRate)
+    //
+    // We translate the VoiceTriggerOptions.loop enum into AudioBufferSourceNode
+    // settings:
+    //   - 'one-shot' → loop=false (default; plays buffer once then ends)
+    //   - 'forward'  → loop=true, loopStart/loopEnd set, playbackRate positive
+    //   - 'backward' → loop=true, playbackRate NEGATIVE throughout (loops in
+    //                  reverse direction; Web Audio handles the wraparound)
+    //   - 'ping-pong' → loop=true with alternating direction. Web Audio doesn't
+    //                   natively support ping-pong, so we use a scheduled
+    //                   playbackRate sign-flip at each loop boundary via
+    //                   setValueAtTime on a timeline.
+    //
+    // Reverse (one-shot, no loop) is handled by negating playbackRate and
+    // starting from the end of the buffer.
+    const loopMode = opts.loop ?? 'one-shot'
+    const reverse = opts.reverse ?? false
+    const bufDuration = buffer.duration
+    const loopStart = Math.max(0, Math.min(bufDuration - 0.001, opts.loopStart ?? 0))
+    const loopEnd = Math.max(loopStart + 0.001, Math.min(bufDuration, opts.loopEnd ?? bufDuration))
+
+    // Base playback rate (may be negated for reverse/backward).
+    let rate = opts.playbackRate
+    if (reverse) rate = -rate
+    if (loopMode === 'backward') rate = -Math.abs(rate)
+    source.playbackRate.value = rate
+
+    // Compute the start offset (where playback begins).
+    let startOffset: number
+    if (loopMode === 'one-shot') {
+      // One-shot: start at startOffset, or end of buffer if reversed.
+      startOffset = reverse
+        ? bufDuration - (opts.startOffset ?? 0)
+        : (opts.startOffset ?? 0)
+    } else {
+      // Looping: start at loopStart (forward) or loopEnd (backward/ping-pong).
+      startOffset = (loopMode === 'backward' || reverse)
+        ? loopEnd
+        : (opts.startOffset ?? loopStart)
+      source.loop = true
+      source.loopStart = loopStart
+      source.loopEnd = loopEnd
+    }
+
+    // For ping-pong, schedule the playbackRate sign-flip at each boundary.
+    // Web Audio doesn't natively do ping-pong, so we manually schedule
+    // direction reversals at the loop boundaries.
+    if (loopMode === 'ping-pong') {
+      // Forward phase duration (loopStart → loopEnd)
+      const forwardDur = (loopEnd - loopStart) / Math.abs(rate)
+      // Backward phase duration (same duration since |rate| is the same)
+      const backwardDur = forwardDur
+      // Total ping-pong cycle = forward + backward
+      const cycleDur = forwardDur + backwardDur
+      // Schedule sign-flips for the duration of opts.decay (envelope length).
+      // We cap at 100 cycles to avoid pathological scheduling.
+      const numCycles = Math.min(100, Math.ceil(opts.decay / cycleDur))
+      const pr = source.playbackRate
+      pr.cancelScheduledValues(at)
+      pr.setValueAtTime(rate, at)
+      for (let c = 0; c < numCycles; c++) {
+        // After forward phase, flip to backward.
+        pr.setValueAtTime(-rate, at + (c + 1) * forwardDur + c * backwardDur)
+        // After backward phase, flip back to forward (next cycle).
+        pr.setValueAtTime(rate, at + (c + 1) * cycleDur)
+      }
+    }
+    // ── End Phase 1.3 ────────────────────────────────────────────────────
 
     // Per-trigger gain: instant attack, exponential decay. Owns the envelope.
     const sourceGain = ctx.createGain()
@@ -115,6 +189,49 @@ export class SampleVoice implements Voice {
     const panner = ctx.createStereoPanner()
     panner.pan.value = Math.max(-1, Math.min(1, opts.pan))
     sourceGain.connect(panner)
+
+    // ── Phase 1.6: Per-voice FX chain ──────────────────────────────────────
+    // Insert a WaveShaperNode with a combined curve for transient design +
+    // bitcrushing + saturation. Inserted between sourceGain and the anti-
+    // alias lowpass so the lowpass can still tame mirror images AFTER the
+    // FX adds harmonics. The panner stays at the end (post-FX) so FX isn't
+    // affected by pan position.
+    //
+    // Chain order:
+    //   source → sourceGain → [fxShaper] → [lowpass] → [lowpass2] → panner → out
+    //
+    // We use a SINGLE WaveShaperNode with a pre-combined curve (more
+    // efficient than 3 separate shapers). The curve is generated by
+    // combinedFxCurve() which applies transient → bitcrusher → saturation
+    // in that order (matches the chain order in the docstring).
+    let fxShaper: WaveShaperNode | null = null
+    const hasFx = opts.fx && (
+      (typeof opts.fx.transient === 'number' && Math.abs(opts.fx.transient) > 0.01) ||
+      (typeof opts.fx.bitcrusher === 'number' && opts.fx.bitcrusher < 16) ||
+      (typeof opts.fx.saturation === 'number' && opts.fx.saturation > 0.01)
+    )
+    if (hasFx && typeof ctx.createWaveShaper === 'function') {
+      try {
+        fxShaper = ctx.createWaveShaper()
+        // 2x oversampling for smoother curve interpolation at high freqs.
+        if ('oversample' in fxShaper) {
+          fxShaper.oversample = '2x'
+        }
+        // Generate the combined curve (cached per (transient,bitcrusher,saturation)
+        // tuple in production; for MVP we regenerate each trigger which is fine
+        // for our use case — triggers are infrequent relative to sample rate).
+        fxShaper.curve = combinedFxCurve(opts.fx!)
+        // No additional DC offset — our curves are odd functions.
+        // Insert: sourceGain → fxShaper → panner (lowpass will reconnect
+        // below if needed).
+        sourceGain.disconnect()
+        sourceGain.connect(fxShaper)
+        fxShaper.connect(panner)
+      } catch {
+        // WaveShaper unavailable — play without FX (degraded).
+        fxShaper = null
+      }
+    }
 
     // Optional anti-alias lowpass for pitched-up playback (HQI mode).
     //
@@ -163,9 +280,12 @@ export class SampleVoice implements Voice {
           lowpass2.Q.value = 0.5 // lower Q on the second filter for a smoother combined slope
         }
 
-        // Insert: sourceGain → lowpass → [lowpass2] → panner.
-        sourceGain.disconnect()
-        sourceGain.connect(lowpass)
+        // Insert: fxShaper-or-sourceGain → lowpass → [lowpass2] → panner.
+        // We disconnect the fxShaper→panner (or sourceGain→panner if no FX)
+        // and insert the lowpass chain in between.
+        const preLowpassNode = fxShaper ?? sourceGain
+        preLowpassNode.disconnect()
+        preLowpassNode.connect(lowpass)
         if (lowpass2) {
           lowpass.connect(lowpass2)
           lowpass2.connect(panner)
@@ -188,7 +308,7 @@ export class SampleVoice implements Voice {
     sourceGain.gain.linearRampToValueAtTime(gain, at + 0.001)
     sourceGain.gain.exponentialRampToValueAtTime(0.0001, at + opts.decay)
 
-    const chain: ActiveChain = { source, sourceGain, panner, lowpass, lowpass2 }
+    const chain: ActiveChain = { source, sourceGain, panner, lowpass, lowpass2, fxShaper }
     this.activeChain = chain
 
     // ── Cleanup when the source ends (natural or forced) ──────────────────
@@ -203,7 +323,9 @@ export class SampleVoice implements Voice {
     }
 
     try {
-      source.start(at)
+      // Phase 1.3: pass startOffset so reverse + loop start positions work.
+      // start() signature: source.start(when, offset?)
+      source.start(at, Math.max(0, startOffset))
       // Hard stop a hair past the decay so the exponential ramp's tail (which
       // approaches but never reaches zero) doesn't drone forever.
       source.stop(at + opts.decay + 0.05)
@@ -292,11 +414,16 @@ interface ActiveChain {
   panner: StereoPannerNode
   lowpass: BiquadFilterNode | null
   lowpass2: BiquadFilterNode | null
+  /** Per-voice FX WaveShaper (Phase 1.6) — transient + bitcrusher + saturation combined. */
+  fxShaper: WaveShaperNode | null
 }
 
 function disposeChain(chain: ActiveChain): void {
   safeDisconnect(chain.source)
   safeDisconnect(chain.sourceGain)
+  if (chain.fxShaper) {
+    safeDisconnect(chain.fxShaper)
+  }
   if (chain.lowpass) {
     safeDisconnect(chain.lowpass)
   }

@@ -277,6 +277,91 @@ export interface VoiceTriggerOptions {
   pan: number
   /** Decay in seconds (envelope). */
   decay: number
+  /**
+   * Loop mode (Phase 1.3). Default 'one-shot' (no loop).
+   *   - 'one-shot': play buffer from startOffset to end, then stop.
+   *   - 'forward':  play from loopStart, when reaching loopEnd, jump back
+   *                 to loopStart and play forward again.
+   *   - 'backward': play from loopEnd reversed, when reaching loopStart,
+   *                 jump to loopEnd and play backward again.
+   *   - 'ping-pong': play forward from loopStart to loopEnd, then backward
+   *                 to loopStart, then forward again.
+   *
+   * For 'backward' and 'ping-pong', the source's playbackRate is
+   * temporarily negated at the loop boundaries.
+   */
+  loop?: 'one-shot' | 'forward' | 'backward' | 'ping-pong'
+  /**
+   * Loop start offset in seconds (default 0). When loop mode is set,
+   * playback begins at this offset and loops between loopStart and loopEnd.
+   */
+  loopStart?: number
+  /**
+   * Loop end offset in seconds (default: end of buffer). Must be > loopStart.
+   */
+  loopEnd?: number
+  /**
+   * Start offset in seconds (default 0). Used for one-shot playback or to
+   * start a loop at a non-zero offset.
+   */
+  startOffset?: number
+  /**
+   * Reverse the entire buffer on playback (default false). This is
+   * independent of loop mode — you can reverse a one-shot OR reverse
+   * a looped sample. The reverse is achieved by negating playbackRate
+   * and starting from the end.
+   */
+  reverse?: boolean
+  /**
+   * Per-voice FX chain (Phase 1.6). Each effect is optional; if absent,
+   * that effect is bypassed. Effects chain in fixed order:
+   *   source → sourceGain → [transient] → [bitcrusher] → lowpass → panner → output
+   *
+   * Inserting transient BEFORE bitcrusher matters: transient designer
+   * amplifies sharp attacks (good for punch), bitcrusher adds lo-fi
+   * harmonics (good for character). Order matters for sound design.
+   */
+  fx?: VoiceFXOptions
+}
+
+/**
+ * Per-voice FX chain options (Phase 1.6).
+ * Each effect is optional. When enabled, the effect node is inserted
+ * into the voice's per-trigger chain. Effects are stateless across
+ * triggers — a new chain gets fresh effect instances every time.
+ *
+ * This is the foundation for a full modulation matrix (Phase 1.7):
+ * every parameter here will eventually be modulatable by LFOs,
+ * envelopes, and MIDI CC.
+ */
+export interface VoiceFXOptions {
+  /**
+   * Transient designer: amplifies or attenuates the attack portion of
+   * a sample. Positive values = sharper attack (more punch). Negative
+   * = softer attack (more legato). Range -1..+1, 0 = bypass.
+   *
+   * Implementation: a WaveShaperNode with a custom curve that
+   * emphasizes fast transients. Cheap (no FFT, no envelope follower).
+   * For full ADSR-shaping we'd need an AudioWorklet — Phase 1.6 MVP
+   * uses WaveShaper which is portable.
+   */
+  transient?: number
+  /**
+   * Bitcrusher: reduces sample bit-depth for lo-fi character. Range
+   * 0..16 (bits). 16 = no effect (CD quality). 8 = crunchy. 4 = harsh.
+   * 0 = silence.
+   *
+   * Implementation: a WaveShaperNode with a quantization curve. We use
+   * WaveShaper instead of a ScriptProcessor/AudioWorklet because
+   * WaveShaper is sample-accurate and runs on the audio thread natively
+   * (no JS callback overhead).
+   */
+  bitcrusher?: number
+  /**
+   * Saturation drive (0..10). 0 = bypass. Higher = more harmonic content.
+   * Distinct from the master bus saturation — this is per-voice.
+   */
+  saturation?: number
 }
 
 // ─── Bus names ───────────────────────────────────────────────────────────────

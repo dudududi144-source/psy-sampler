@@ -203,3 +203,8 @@ export { sliceAudioBuffer } from './slicer'
 /** Downmix an AudioBuffer to a mono Float32Array. */
 export { toMono as sliceToMono } from './slicer'
 export { toMono } from './slicer'
+
+// ─── Time-stretcher (Phase 1.1 + 1.2) ────────────────────────────────────────
+
+/** Granular pitch-shift + time-stretch. */
+export { granularStretch, pitchShift, timeStretch, pitchAndTempoShift } from './time-stretcher'
