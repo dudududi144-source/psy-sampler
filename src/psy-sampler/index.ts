@@ -84,6 +84,9 @@ export type { SelectionInput, SelectionOutput } from './types'
 /** Options for SampleVoice.trigger(). */
 export type { VoiceTriggerOptions } from './types'
 
+/** Per-voice FX chain options (Phase 1.6). */
+export type { VoiceFXOptions } from './types'
+
 /** Bus name (drum, music, atmos). */
 export type { BusName } from './types'
 

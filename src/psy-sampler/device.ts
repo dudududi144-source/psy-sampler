@@ -30,7 +30,7 @@ import type { SelectionPolicy } from './selector'
 import type { RealizationScheduler, ScheduledSampleEvent } from './realization-scheduler'
 import type { AudioGraph } from './audio-graph'
 import type { SampleVoice } from './voice'
-import { parseChannel, roleToBus, type SampleRole } from './types'
+import { parseChannel, roleToBus, type SampleRole, type VoiceTriggerOptions, type VoiceFXOptions } from './types'
 
 export interface SamplerDeviceOptions {
   audioContext: AudioContext
@@ -65,6 +65,16 @@ export class SamplerDevice implements PsyDevice {
    * breaking the determinism contract.
    */
   private readonly hitCounters = new Map<SampleRole, number>()
+  /**
+   * Per-role FX chain options (Phase 1.6.2). Set externally via setRoleFx();
+   * merged into VoiceTriggerOptions on every note-on. Per-role granularity
+   * (not per-sample) — every sample in a role shares the same FX.
+   *
+   * This is the foundation for a full modulation matrix (Phase 1.7):
+   * eventually every parameter here will be modulatable by LFOs, envelopes,
+   * and MIDI CC. For MVP it's a static per-role setting.
+   */
+  private readonly perRoleFx = new Map<SampleRole, VoiceFXOptions>()
   /** Counters for observability. */
   eventsReceived = 0
   notesTriggered = 0
@@ -105,6 +115,32 @@ export class SamplerDevice implements PsyDevice {
     // Kept for future context-aware selection (e.g. softer kicks in BREAK).
     // See selector.ts honesty fix.
     this.context = context
+  }
+
+  /**
+   * Set per-role FX chain options (Phase 1.6.2).
+   *
+   * The FX chain is applied to EVERY trigger of the given role. Per-role
+   * granularity (not per-sample) — every sample in a role shares the same FX.
+   *
+   * Calling with `null` clears the FX for that role (back to bypass).
+   *
+   * @param role The role to apply FX to.
+   * @param fx The FX options (transient, bitcrusher, saturation). null = clear.
+   */
+  setRoleFx(role: SampleRole, fx: VoiceFXOptions | null): void {
+    if (fx === null) {
+      this.perRoleFx.delete(role)
+    } else {
+      this.perRoleFx.set(role, fx)
+    }
+  }
+
+  /**
+   * Get the current per-role FX options. Returns undefined if no FX set.
+   */
+  getRoleFx(role: SampleRole): VoiceFXOptions | undefined {
+    return this.perRoleFx.get(role)
   }
 
   onEvent(event: MusicalEvent): void {
@@ -203,6 +239,8 @@ export class SamplerDevice implements PsyDevice {
         gain: selection.gain,
         pan: selection.pan,
         decay,
+        // Phase 1.6.2: attach per-role FX if set.
+        fx: this.perRoleFx.get(role),
       },
     }
     this.opts.scheduler.schedule(scheduledEvent)

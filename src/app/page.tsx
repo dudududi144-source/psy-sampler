@@ -30,6 +30,7 @@ import {
   type SampleAsset,
   type SampleRole,
   type BusName,
+  type VoiceFXOptions,
   parseChannel,
   roleToBus,
 } from '@/psy-sampler'
@@ -80,6 +81,7 @@ import { InitOverlay } from '@/components/init-overlay'
 import { PatternEditor } from '@/components/pattern-editor'
 import { SampleLibrary } from '@/components/sample-library'
 import { SampleImporter } from '@/components/sample-importer'
+import { RoleFxPanel } from '@/components/role-fx-panel'
 import { SongEditor } from '@/components/song-editor'
 import { Visualizer } from '@/components/visualizer'
 import { Mixer } from '@/components/mixer'
@@ -255,6 +257,28 @@ export default function Home() {
     loadMixerPreset,
     resetMixer,
   } = useMixerOps({ bundleRef })
+
+  // ─── Per-role FX state (Phase 1.6.2) ─────────────────────────────────────
+  // Mirror of device.perRoleFx — kept in React state so the RoleFxPanel
+  // re-renders when the user changes a slider. The device is the source of
+  // truth for audio; this state is the UI mirror.
+  const [roleFxState, setRoleFxState] = React.useState<Partial<Record<SampleRole, VoiceFXOptions>>>({})
+
+  const onRoleFxChange = React.useCallback((role: SampleRole, fx: VoiceFXOptions | null) => {
+    const device = bundleRef.current?.device
+    if (device) {
+      device.setRoleFx(role, fx)
+    }
+    setRoleFxState((prev) => {
+      const next = { ...prev }
+      if (fx === null) {
+        delete next[role]
+      } else {
+        next[role] = fx
+      }
+      return next
+    })
+  }, [bundleRef])
 
   // ─── Initialize audio (on user gesture) ────────────────────────────────────
 
@@ -1853,6 +1877,17 @@ export default function Home() {
               onLoad={loadFromSlotN}
               onClear={clearSlotN}
             />
+          </div>
+
+          {/* ─── Per-role FX panel (Phase 1.6.2) ───────────────────────────── */}
+          <div className="section mt-3">
+            <ErrorBoundary name="RoleFxPanel">
+              <RoleFxPanel
+                fxState={roleFxState}
+                onChange={onRoleFxChange}
+                disabled={!initialized}
+              />
+            </ErrorBoundary>
           </div>
 
           {/* ─── Timeline + Song + Automation (2-col grid) ─── */}

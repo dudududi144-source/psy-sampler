@@ -7,9 +7,11 @@ import * as React from 'react'
 import type { SampleAsset, SampleRole } from '@/psy-sampler'
 import { Badge } from '@/components/ui/badge'
 import {
+  ROLES,
   ROLE_COLORS,
   NOW_PLAYING_MS,
 } from '@/components/types'
+import { ScrubableWaveform } from '@/components/scrubable-waveform'
 
 // ─── Waveform Thumbnail (mini canvas from monoData) ──────────────────────────
 
@@ -59,6 +61,8 @@ export function WaveformThumbnail({ data, color, width = 48, height = 18 }: { da
 
 // ─── Sample Library Browser ──────────────────────────────────────────────────
 
+type SortMode = 'category' | 'name' | 'duration'
+
 export function SampleLibrary({
   samples,
   onAudition,
@@ -75,6 +79,75 @@ export function SampleLibrary({
   const now = Date.now()
   const fresh = nowPlayingSampleId !== null && (now - nowPlayingAt) < NOW_PLAYING_MS
 
+  // Phase 2.1: search + filter + sort state.
+  const [search, setSearch] = React.useState('')
+  const [filterRole, setFilterRole] = React.useState<SampleRole | 'all'>('all')
+  const [sortMode, setSortMode] = React.useState<SortMode>('category')
+
+  // Phase 2.2: expanded preview state. Clicking a sample's "preview" button
+  // expands a large scrubable waveform below the row.
+  const [expandedId, setExpandedId] = React.useState<string | null>(null)
+  // Play fraction for the expanded preview's playhead (0..1).
+  const [previewFraction, setPreviewFraction] = React.useState(0)
+  // RAF handle for the playhead animation.
+  const rafRef = React.useRef<number | null>(null)
+  // Track the timestamp when preview playback started, for playhead animation.
+  const previewStartRef = React.useRef<{ audioCtxTime: number; sampleDuration: number; sampleRate: number } | null>(null)
+
+  // Cancel any pending playhead animation on unmount.
+  React.useEffect(() => {
+    return () => {
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current)
+      }
+    }
+  }, [])
+
+  // Apply search + filter + sort. useMemo so we don't recompute on every render
+  // (only when inputs change).
+  const displayed = React.useMemo(() => {
+    let list = samples
+    // Search filter (case-insensitive, matches ID or category).
+    if (search.trim()) {
+      const q = search.trim().toLowerCase()
+      list = list.filter((s) =>
+        s.metadata.id.toLowerCase().includes(q) ||
+        s.metadata.category.toLowerCase().includes(q),
+      )
+    }
+    // Role filter.
+    if (filterRole !== 'all') {
+      list = list.filter((s) => s.metadata.category === filterRole)
+    }
+    // Sort.
+    const sorted = [...list]
+    switch (sortMode) {
+      case 'category':
+        sorted.sort((a, b) =>
+          a.metadata.category.localeCompare(b.metadata.category) ||
+          a.metadata.id.localeCompare(b.metadata.id),
+        )
+        break
+      case 'name':
+        sorted.sort((a, b) => a.metadata.id.localeCompare(b.metadata.id))
+        break
+      case 'duration':
+        sorted.sort((a, b) => a.features.duration - b.features.duration)
+        break
+    }
+    return sorted
+  }, [samples, search, filterRole, sortMode])
+
+  // Tag counts for the role filter buttons.
+  const roleCounts = React.useMemo(() => {
+    const counts: Partial<Record<SampleRole, number>> = {}
+    for (const s of samples) {
+      const cat = s.metadata.category as SampleRole
+      counts[cat] = (counts[cat] ?? 0) + 1
+    }
+    return counts
+  }, [samples])
+
   return (
     <div className="section p-4">
       <div className="mb-3 flex items-center justify-between">
@@ -84,19 +157,82 @@ export function SampleLibrary({
         >
           LIBRARY · {samples.length} samples
         </h2>
-        <span className="font-mono text-[10px]" style={{ color: '#5b6470' }}>click to audition</span>
+        <span className="font-mono text-[10px]" style={{ color: '#5b6470' }}>
+          {displayed.length === samples.length ? 'click to audition' : `${displayed.length} shown`}
+        </span>
       </div>
+
+      {/* Phase 2.1: Search + sort controls */}
+      <div className="mb-2 flex flex-wrap gap-2">
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="search id or role…"
+          className="min-w-[140px] flex-1 rounded border px-2 py-1 font-mono text-[10px]"
+          style={{ borderColor: '#282e38', background: '#14161c', color: '#cfd6df' }}
+        />
+        <select
+          value={sortMode}
+          onChange={(e) => setSortMode(e.target.value as SortMode)}
+          className="rounded border px-1 py-1 font-mono text-[10px]"
+          style={{ borderColor: '#282e38', background: '#14161c', color: '#cfd6df' }}
+          title="Sort mode"
+        >
+          <option value="category">by category</option>
+          <option value="name">by name</option>
+          <option value="duration">by duration</option>
+        </select>
+      </div>
+
+      {/* Role filter — tag chips */}
+      <div className="mb-3 flex flex-wrap gap-1">
+        <button
+          onClick={() => setFilterRole('all')}
+          className="rounded border px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider hover:brightness-125"
+          style={{
+            borderColor: filterRole === 'all' ? '#b8e05a' : '#3a4150',
+            color: filterRole === 'all' ? '#b8e05a' : '#9aa3af',
+            background: filterRole === 'all' ? 'rgba(184,224,90,0.1)' : 'transparent',
+          }}
+        >
+          ALL · {samples.length}
+        </button>
+        {ROLES.map((r) => {
+          const count = roleCounts[r]
+          if (!count) return null
+          const active = filterRole === r
+          const color = ROLE_COLORS[r]
+          return (
+            <button
+              key={r}
+              onClick={() => setFilterRole(active ? 'all' : r)}
+              className="rounded border px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider hover:brightness-125"
+              style={{
+                borderColor: active ? color : '#3a4150',
+                color: active ? color : '#9aa3af',
+                background: active ? `${color}10` : 'transparent',
+              }}
+            >
+              {r} · {count}
+            </button>
+          )
+        })}
+      </div>
+
       <div className="max-h-72 space-y-1 overflow-y-auto pr-1" style={{ scrollbarWidth: 'thin' }}>
         {samples.length === 0 ? (
           <div className="font-mono text-[10px]" style={{ color: '#5b6470' }}>loading…</div>
+        ) : displayed.length === 0 ? (
+          <div className="font-mono text-[10px]" style={{ color: '#5b6470' }}>no samples match filter</div>
         ) : (
-          samples.map((s) => {
+          displayed.map((s) => {
             const cat = s.metadata.category as SampleRole
             const color = ROLE_COLORS[cat] ?? '#71717a'
             const isPlaying = fresh && nowPlayingSampleId === s.metadata.id
             return (
+              <div key={s.metadata.id}>
               <div
-                key={s.metadata.id}
                 className="flex min-h-[44px] w-full touch-manipulation items-center gap-2 rounded border px-2 py-1 text-left transition-all hover:brightness-125"
                 style={{
                   borderColor: isPlaying ? color : '#232932',
@@ -144,8 +280,73 @@ export function SampleLibrary({
                     DEL
                   </button>
                 )}
+                {/* Phase 2.2: expand/collapse preview */}
+                <button
+                  onClick={() => {
+                    setExpandedId(expandedId === s.metadata.id ? null : s.metadata.id)
+                    setPreviewFraction(0)
+                    previewStartRef.current = null
+                  }}
+                  className="shrink-0 touch-manipulation rounded border px-1.5 py-0.5 font-mono text-[10px] hover:brightness-125"
+                  style={{
+                    borderColor: expandedId === s.metadata.id ? color : '#3a4150',
+                    color: expandedId === s.metadata.id ? color : '#9aa3af',
+                  }}
+                  title="Toggle large preview"
+                >
+                  {expandedId === s.metadata.id ? '−' : '+'}
+                </button>
               </div>
-            )
+              {/* Phase 2.2: expanded scrubable waveform */}
+              {expandedId === s.metadata.id && (
+                <div className="mt-2">
+                  <ScrubableWaveform
+                    data={s.monoData}
+                    sampleRate={s.features.sampleRate}
+                    color={color}
+                    onScrub={(fraction) => {
+                      // Trigger audition from this position. For MVP we just
+                      // call onAudition (full sample). True scrub-from-position
+                      // would require modifying onAudition to accept an offset —
+                      // future enhancement.
+                      onAudition(s)
+                      // Animate playhead across the sample's duration.
+                      previewStartRef.current = {
+                        audioCtxTime: 0, // would need AudioContext ref
+                        sampleDuration: s.features.duration,
+                        sampleRate: s.features.sampleRate,
+                      }
+                      setPreviewFraction(fraction)
+                      // Animate the playhead for the sample's duration.
+                      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current)
+                      const startTime = performance.now()
+                      const duration = s.features.duration * 1000 // ms
+                      const animate = () => {
+                        const elapsed = performance.now() - startTime
+                        const frac = (fraction * duration + elapsed) / duration
+                        if (frac >= 1) {
+                          setPreviewFraction(0)
+                          previewStartRef.current = null
+                          rafRef.current = null
+                          return
+                        }
+                        setPreviewFraction(Math.min(1, frac))
+                        rafRef.current = requestAnimationFrame(animate)
+                      }
+                      rafRef.current = requestAnimationFrame(animate)
+                    }}
+                    playFraction={previewFraction}
+                    height={50}
+                  />
+                  <div className="mt-1 flex justify-between font-mono text-[9px]" style={{ color: '#5b6470' }}>
+                    <span>0:00</span>
+                    <span>click anywhere to preview from that point</span>
+                    <span>{s.features.duration.toFixed(2)}s</span>
+                  </div>
+                </div>
+              )}
+              </div>
+          )
           })
         )}
       </div>
