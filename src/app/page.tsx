@@ -67,6 +67,7 @@ import { ErrorBoundary } from '@/components/error-boundary'
 import { useKeyboardShortcuts } from '@/lib/use-keyboard-shortcuts'
 import { useUndoRedo } from '@/lib/use-undo-redo'
 import { useMidiInput, roleForNote } from '@/lib/use-midi-input'
+import { useMidiLearn } from '@/hooks/use-midi-learn'
 import { MIXER_PRESETS, type MixerPreset } from '@/lib/mixer-presets'
 import { Metronome } from '@/lib/metronome'
 import { generateChordPattern, NOTE_NAMES, SCALE_LABELS, ARPEGGIO_LABELS, BASS_LABELS, type ArpeggioPattern, type BassPattern } from '@/lib/chord-progression'
@@ -260,6 +261,47 @@ export default function Home() {
     loadMixerPreset,
     resetMixer,
   } = useMixerOps({ bundleRef })
+
+  // ─── MIDI learn (Phase 5.1) ──────────────────────────────────────────────
+  // Manages CC→paramId mappings. Right-click any PsyKnob → "MIDI learn" →
+  // twist a hardware knob → mapped. Mappings persist to localStorage.
+  const midiLearn = useMidiLearn()
+
+  // Register setters for mappable parameters. Each setter receives a
+  // normalized 0..1 value (from MIDI CC 0..127). We convert to the
+  // parameter's native range inside the setter.
+  React.useEffect(() => {
+    // Mixer bus gains (0..1.2 range)
+    midiLearn.registerSetter('mixer.drum.gain', (v) => onBusGain('drum', v * 1.2))
+    midiLearn.registerSetter('mixer.music.gain', (v) => onBusGain('music', v * 1.2))
+    midiLearn.registerSetter('mixer.atmos.gain', (v) => onBusGain('atmos', v * 1.2))
+    // Mixer sends (0..1)
+    midiLearn.registerSetter('mixer.drum.delaySend', (v) => onBusDelaySend('drum', v))
+    midiLearn.registerSetter('mixer.drum.reverbSend', (v) => onBusReverbSend('drum', v))
+    midiLearn.registerSetter('mixer.music.delaySend', (v) => onBusDelaySend('music', v))
+    midiLearn.registerSetter('mixer.music.reverbSend', (v) => onBusReverbSend('music', v))
+    midiLearn.registerSetter('mixer.atmos.delaySend', (v) => onBusDelaySend('atmos', v))
+    midiLearn.registerSetter('mixer.atmos.reverbSend', (v) => onBusReverbSend('atmos', v))
+    // Transport
+    midiLearn.registerSetter('transport.bpm', (v) => setBpm(60 + v * 180))
+    midiLearn.registerSetter('transport.swing', (v) => setSwing(v * 0.7))
+    midiLearn.registerSetter('transport.master', (v) => setMasterVolume(v * 1.2))
+    return () => {
+      // Unregister all on unmount.
+      midiLearn.unregisterSetter('mixer.drum.gain')
+      midiLearn.unregisterSetter('mixer.music.gain')
+      midiLearn.unregisterSetter('mixer.atmos.gain')
+      midiLearn.unregisterSetter('mixer.drum.delaySend')
+      midiLearn.unregisterSetter('mixer.drum.reverbSend')
+      midiLearn.unregisterSetter('mixer.music.delaySend')
+      midiLearn.unregisterSetter('mixer.music.reverbSend')
+      midiLearn.unregisterSetter('mixer.atmos.delaySend')
+      midiLearn.unregisterSetter('mixer.atmos.reverbSend')
+      midiLearn.unregisterSetter('transport.bpm')
+      midiLearn.unregisterSetter('transport.swing')
+      midiLearn.unregisterSetter('transport.master')
+    }
+  }, [onBusGain, onBusDelaySend, onBusReverbSend])
 
   // ─── Per-role FX state (Phase 1.6.2) ─────────────────────────────────────
   // Mirror of device.perRoleFx — kept in React state so the RoleFxPanel
@@ -1290,21 +1332,27 @@ export default function Home() {
       setNowPlaying({ role, sampleId: null, at: Date.now() })
     },
     onCC: (controller, value) => {
-      // Map CC 1 (mod wheel) to master filter cutoff.
-      // Map CC 7 (volume) to master gain.
-      // This is a starting point — a real product would have MIDI learn.
+      // Phase 5.1: route through MIDI learn hook.
+      // If learning → captures the CC as a mapping.
+      // If not learning → routes to the mapped setter (if any).
+      midiLearn.handleCC(controller, value)
+
+      // Fallback for unmapped CCs: keep the old hardcoded mappings
+      // (mod wheel → filter, volume → master gain) so existing setups
+      // still work without explicit learning.
       const graph = bundleRef.current?.audioGraph
       if (!graph) return
-      if (controller === 1) {
-        // Mod wheel to filter cutoff (200Hz..20000Hz, exponential).
-        const freq = 200 * Math.pow(100, value / 127)
-        graph.setMasterFilter({ type: value > 0 ? 'lowpass' : 'allpass', freq, Q: 2 })
-        setFilterMode(value > 0 ? 'lp' : 'off')
-      } else if (controller === 7) {
-        // Volume CC to master gain (0..1.2).
-        const gain = (value / 127) * 1.2
-        graph.setMasterGain(gain)
-        setMasterVolume(gain)
+      // Only apply if this CC is NOT mapped (don't double-apply).
+      if (midiLearn.mappings[controller] === undefined) {
+        if (controller === 1) {
+          const freq = 200 * Math.pow(100, value / 127)
+          graph.setMasterFilter({ type: value > 0 ? 'lowpass' : 'allpass', freq, Q: 2 })
+          setFilterMode(value > 0 ? 'lp' : 'off')
+        } else if (controller === 7) {
+          const gain = (value / 127) * 1.2
+          graph.setMasterGain(gain)
+          setMasterVolume(gain)
+        }
       }
     },
   })
@@ -1908,6 +1956,7 @@ export default function Home() {
                 onReverbSend={onBusReverbSend}
                 onMute={onBusMute}
                 onSolo={onBusSolo}
+                midiLearn={midiLearn}
               />
               </ErrorBoundary>
             </div>

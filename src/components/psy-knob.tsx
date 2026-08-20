@@ -65,6 +65,10 @@ export interface PsyKnobProps {
   onChange: (v: number) => void
   /** Disabled state. */
   disabled?: boolean
+  /** Phase 5.1: Called when the user right-clicks to start MIDI learn. */
+  onLearn?: () => void
+  /** Phase 5.1: True when this knob is in MIDI learn mode (visual indicator). */
+  learning?: boolean
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -82,6 +86,8 @@ export function PsyKnob({
   fmt,
   onChange,
   disabled = false,
+  onLearn,
+  learning = false,
 }: PsyKnobProps) {
   const zoneRef = React.useRef<HTMLDivElement>(null)
   const defaultValue = def ?? (min + max) / 2
@@ -189,11 +195,22 @@ export function PsyKnob({
         onWheel={handleWheel}
         onDoubleClick={handleDoubleClick}
         onKeyDown={handleKeyDown}
+        onContextMenu={(e) => {
+          if (onLearn && !disabled) {
+            e.preventDefault()
+            onLearn()
+          }
+        }}
         style={{
           width: `${size}px`,
           height: `${size}px`,
           touchAction: 'none',
           cursor: disabled ? 'default' : 'ns-resize',
+          // Phase 5.1: MIDI learn visual indicator — pulsing glow when learning.
+          outline: learning ? `2px solid ${color}` : 'none',
+          outlineOffset: learning ? '2px' : '0',
+          boxShadow: learning ? `0 0 12px ${color}, 0 0 4px ${color}` : 'none',
+          borderRadius: '50%',
         }}
       >
         <svg viewBox="0 0 100 100" width={size} height={size}>

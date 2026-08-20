@@ -30,6 +30,7 @@ export function Mixer({
   onReverbSend,
   onMute,
   onSolo,
+  midiLearn,
 }: {
   busState: Record<BusName, BusMixerState>
   onGain: (name: BusName, value: number) => void
@@ -41,6 +42,11 @@ export function Mixer({
   onReverbSend: (name: BusName, value: number) => void
   onMute: (name: BusName) => void
   onSolo: (name: BusName) => void
+  /** Phase 5.1: MIDI learn state + handlers (optional). */
+  midiLearn?: {
+    startLearn: (paramId: string) => void
+    learningParam: string | null
+  }
 }) {
   return (
     <div className="section" style={{ '--c': '#4dd6e8' } as React.CSSProperties}>
@@ -93,6 +99,8 @@ export function Mixer({
                   label="GAIN"
                   fmt={v => v.toFixed(2)}
                   onChange={v => onGain(name, v)}
+                  onLearn={midiLearn ? () => midiLearn.startLearn(`mixer.${name}.gain`) : undefined}
+                  learning={midiLearn?.learningParam === `mixer.${name}.gain`}
                 />
                 <PsyKnob
                   value={state.eqLow}
@@ -154,6 +162,8 @@ export function Mixer({
                   label="DLY"
                   fmt={v => v > 0.01 ? v.toFixed(2) : 'off'}
                   onChange={v => onDelaySend(name, v)}
+                  onLearn={midiLearn ? () => midiLearn.startLearn(`mixer.${name}.delaySend`) : undefined}
+                  learning={midiLearn?.learningParam === `mixer.${name}.delaySend`}
                 />
                 <PsyKnob
                   value={state.reverbSend ?? 0}
@@ -166,6 +176,8 @@ export function Mixer({
                   label="REV"
                   fmt={v => v > 0.01 ? v.toFixed(2) : 'off'}
                   onChange={v => onReverbSend(name, v)}
+                  onLearn={midiLearn ? () => midiLearn.startLearn(`mixer.${name}.reverbSend`) : undefined}
+                  learning={midiLearn?.learningParam === `mixer.${name}.reverbSend`}
                 />
               </div>
 
