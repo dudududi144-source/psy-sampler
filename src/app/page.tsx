@@ -1139,6 +1139,10 @@ export default function Home() {
           atmos: busState.atmos.saturation,
         },
         baseFilename: `psy-sampler-stems-${bpm}bpm-${Date.now()}`,
+        // Phase 6.2: pass BPM + key for README + filename.
+        bpm,
+        musicalKey: NOTE_NAMES[musicalKey],
+        scaleName: scaleName,
       })
       toast({
         title: `Exported ${result.stems.length} stems in ${result.totalMs.toFixed(0)}ms`,

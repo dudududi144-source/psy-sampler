@@ -4298,3 +4298,93 @@ Stage Summary:
 
 Next: Phase 5.2 (MIDI clock sync) + Phase 6 (Export improvements)
 per the roadmap.
+
+---
+Task ID: PHASE-6.1-6.2-EXPORT-IMPROVEMENTS
+Agent: main
+Task: Export improvements — multi-bit-depth WAV + stem metadata + BPM filenames
+
+Phase 6.1 + 6.2 of the roadmap: Export quality + metadata improvements.
+
+═══════════════════════════════════════════════════════════════════════════════
+Step 6.1.1 — WAV export: 24-bit + 32-bit float
+═══════════════════════════════════════════════════════════════════════════════
+
+Upgraded src/lib/wav-export.ts from 16-bit only to 3 bit depths:
+
+  - 16-bit PCM (default, CD quality, smallest file — unchanged)
+  - 24-bit PCM (studio quality, +50% file size, better dynamic range)
+  - 32-bit IEEE float (maximum headroom, 2× file size, used for mastering)
+
+New API:
+  export type WavBitDepth = 16 | 24 | 32
+  audioBufferToWavBlob(buffer, bitDepth = 16)
+
+Implementation details:
+  - 16-bit: setInt16 (unchanged)
+  - 24-bit: 3× setUint8 (signed little-endian, 0x800000 for negative)
+  - 32-bit: setFloat32 (IEEE 754, audio format code 3 instead of 1)
+  - fmt chunk: audio format 1 (PCM) for 16/24, format 3 (IEEE float) for 32
+  - bytesPerSample / byteRate / blockAlign all scale with bit depth
+
+═══════════════════════════════════════════════════════════════════════════════
+Step 6.2.1 — Stem export: README.txt metadata
+═══════════════════════════════════════════════════════════════════════════════
+
+Upgraded src/lib/stem-export.ts:
+
+New StemExportOptions fields:
+  - bpm?: number (for README + filename)
+  - musicalKey?: string (for README + filename)
+  - scaleName?: string (for README)
+
+New generateReadme() function produces a README.txt blob with:
+  - Date/time of export
+  - BPM, Key + Scale
+  - Duration, Sample Rate, Render Time
+  - Stem descriptions (which instruments are in which stem)
+  - Provenance statement (all samples licensed)
+  - Usage instructions (import at same BPM, pre-mixed, no master chain)
+  - Project URL
+
+New downloadBlob() helper — generic blob download.
+
+exportStems now also downloads README.txt alongside the 3 stems.
+StemExportResult includes readmeBlob + filename per stem.
+
+page.tsx integration:
+  - handleExportStems passes bpm, musicalKey (converted from rootPc number
+    to note name via NOTE_NAMES), scaleName to exportStems
+
+═══════════════════════════════════════════════════════════════════════════════
+Step 6.2.2 — Better filenames with BPM + key
+═══════════════════════════════════════════════════════════════════════════════
+
+Stem filenames now include BPM + key for easy DAW identification:
+  Before: "psy-sampler-stems-140bpm-1234567890_drum.wav"
+  After:  "psy-sampler-stems-140bpm-1234567890_140bpm_A_drum.wav"
+
+README filename: "psy-sampler-stems-140bpm-1234567890_140bpm_README.txt"
+
+This makes it trivial to identify which export belongs to which project
+when you have multiple exports in your Downloads folder.
+
+═══════════════════════════════════════════════════════════════════════════════
+Verification
+═══════════════════════════════════════════════════════════════════════════════
+
+- Lint: 0 errors
+- TypeScript: 0 errors in src/
+- Unit tests: 750 pass, 6 skip, 0 fail (51 files)
+- All existing export tests still pass (backward-compatible API)
+
+% complete per ROAST.md commitment:
+- Export: 20% → 35% (+15%, multi-bit-depth + metadata + better filenames)
+- Overall: 34% → 35%
+
+Stage Summary:
+- 1 upgraded file: wav-export.ts (16/24/32-bit)
+- 1 upgraded file: stem-export.ts (README + BPM/key filenames)
+- 1 upgraded call site: page.tsx handleExportStems
+- 0 lint, 0 TS, 0 test failures
+- Backward-compatible: default 16-bit, old callers unaffected

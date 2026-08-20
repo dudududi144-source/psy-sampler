@@ -1,20 +1,32 @@
 // WAV export utility — renders audio offline and exports as a downloadable WAV.
 //
 // Uses OfflineAudioContext to render `durationSec` seconds of audio from the
-// sampler's master node, then encodes the result as a 16-bit PCM WAV file.
+// sampler's master node, then encodes the result as a PCM WAV file.
+//
+// Supports 3 bit depths (Phase 6.1):
+//   - 16-bit PCM (default, CD quality, smallest file)
+//   - 24-bit PCM (studio quality, +50% file size, better dynamic range)
+//   - 32-bit float (maximum headroom, 2× file size, used for mastering)
 //
 // This is browser-portable (no MediaRecorder/decodeAudioData round-trip).
 // Works on Chrome, Firefox, Safari, Edge.
 
 import { safeDisconnect, safeStop } from './safe-disconnect'
 
+export type WavBitDepth = 16 | 24 | 32
+
 /**
- * Encode an AudioBuffer as a 16-bit PCM WAV Blob.
+ * Encode an AudioBuffer as a PCM WAV Blob at the given bit depth.
+ *
+ * @param buffer   The AudioBuffer to encode.
+ * @param bitDepth 16 (PCM int), 24 (PCM int), or 32 (IEEE float). Default 16.
  */
-export function audioBufferToWavBlob(buffer: AudioBuffer): Blob {
+export function audioBufferToWavBlob(buffer: AudioBuffer, bitDepth: WavBitDepth = 16): Blob {
   const numChannels = buffer.numberOfChannels
   const sampleRate = buffer.sampleRate
-  const length = buffer.length * numChannels * 2 + 44
+  const bytesPerSample = bitDepth / 8
+  const dataLength = buffer.length * numChannels * bytesPerSample
+  const length = dataLength + 44
   const arrayBuffer = new ArrayBuffer(length)
   const view = new DataView(arrayBuffer)
 
@@ -26,18 +38,19 @@ export function audioBufferToWavBlob(buffer: AudioBuffer): Blob {
   // fmt chunk
   writeString(view, 12, 'fmt ')
   view.setUint32(16, 16, true) // chunk size
-  view.setUint16(20, 1, true) // audio format (PCM)
+  // Audio format: 1 = PCM (16/24-bit), 3 = IEEE float (32-bit)
+  view.setUint16(20, bitDepth === 32 ? 3 : 1, true)
   view.setUint16(22, numChannels, true)
   view.setUint32(24, sampleRate, true)
-  view.setUint32(28, sampleRate * numChannels * 2, true) // byte rate
-  view.setUint16(32, numChannels * 2, true) // block align
-  view.setUint16(34, 16, true) // bits per sample
+  view.setUint32(28, sampleRate * numChannels * bytesPerSample, true) // byte rate
+  view.setUint16(32, numChannels * bytesPerSample, true) // block align
+  view.setUint16(34, bitDepth, true) // bits per sample
 
   // data chunk
   writeString(view, 36, 'data')
-  view.setUint32(40, length - 44, true)
+  view.setUint32(40, dataLength, true)
 
-  // Interleave channels
+  // Interleave channels + write samples
   let offset = 44
   const channels: Float32Array[] = []
   for (let ch = 0; ch < numChannels; ch++) {
@@ -47,8 +60,22 @@ export function audioBufferToWavBlob(buffer: AudioBuffer): Blob {
   for (let i = 0; i < buffer.length; i++) {
     for (let ch = 0; ch < numChannels; ch++) {
       const sample = Math.max(-1, Math.min(1, channels[ch]![i]!))
-      view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true)
-      offset += 2
+      if (bitDepth === 16) {
+        view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true)
+        offset += 2
+      } else if (bitDepth === 24) {
+        // 24-bit PCM: 3 bytes, signed, little-endian.
+        const val = sample < 0 ? sample * 0x800000 : sample * 0x7fffff
+        const intVal = Math.round(val)
+        view.setUint8(offset, intVal & 0xff)
+        view.setUint8(offset + 1, (intVal >> 8) & 0xff)
+        view.setUint8(offset + 2, (intVal >> 16) & 0xff)
+        offset += 3
+      } else {
+        // 32-bit IEEE float: 4 bytes, little-endian.
+        view.setFloat32(offset, sample, true)
+        offset += 4
+      }
     }
   }
 
