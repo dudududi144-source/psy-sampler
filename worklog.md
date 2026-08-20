@@ -4585,3 +4585,96 @@ Stage Summary:
 - LED-style segmented display with color zones (green/yellow/red)
 - 0 lint, 0 TS, 0 test failures
 - Honest limitation: not true LUFS (needs AudioWorklet for K-weighting)
+
+---
+Task ID: PHASE-5.2-MIDI-CLOCK
+Agent: main
+Task: MIDI clock sync — master (send) + slave (receive) + tempo derive
+
+MIDI clock is the standard protocol for tempo synchronization between
+hardware devices and software. Every commercial sampler supports it.
+Without it, the sampler can't sync to external drum machines, sequencers,
+or DAWs.
+
+═══════════════════════════════════════════════════════════════════════════════
+Step 5.2.1+5.2.2 — useMidiClock hook (src/hooks/use-midi-clock.ts)
+═══════════════════════════════════════════════════════════════════════════════
+
+New hook supporting 3 modes:
+  - 'off'    : no clock sync (default)
+  - 'master' : SEND 24 PPQ clock pulses to external hardware
+  - 'slave'  : RECEIVE clock pulses + derive tempo from pulse spacing
+
+MIDI clock protocol:
+  - 0xF8 = Clock pulse (24 per quarter note = 24 PPQ)
+  - 0xFA = Start (begin from position 0)
+  - 0xFB = Continue (resume from current position)
+  - 0xFC = Stop (halt playback)
+
+MASTER mode implementation:
+  - Pulse interval = 60 / (BPM * 24) seconds → milliseconds
+  - At 120 BPM: 20.8ms between pulses
+  - Sends Start (0xFA) before first pulse
+  - Sends Stop (0xFC) when leaving master mode
+  - Uses setInterval (sufficient for 24 PPQ at typical BPMs)
+  - Uses selected MIDI output device
+
+SLAVE mode implementation:
+  - Listens for 0xF8 pulses on selected MIDI input
+  - Counts pulses; every 24 pulses = 1 quarter note
+  - Derives BPM: 60000 / (24 * dt) where dt = time between pulses
+  - Calls onTempoChange callback with derived BPM
+  - Handles Start (0xFA) → onStart callback → triggers playback
+  - Handles Stop (0xFC) → onStop callback → halts playback
+  - Guards derived BPM to 30-300 range (rejects outliers)
+
+Architecture:
+  - midiAccessRef: stores MIDI access for output listing
+  - sendIntervalRef: holds the setInterval handle (master mode)
+  - pulseCountRef: counts received pulses (slave mode)
+  - lastPulseTimeRef: tracks last pulse timestamp for tempo derivation
+  - handlersRef: stores onStart/onStop/onTempoChange callbacks (stable)
+
+Output device listing:
+  - Populates available MIDI outputs on mount
+  - selectOutput(id) lets user choose which device to send to
+
+═══════════════════════════════════════════════════════════════════════════════
+Step 5.2.3 — UI: clock mode toggle in transport bar
+═══════════════════════════════════════════════════════════════════════════════
+
+New CLK button in the transport bar (next to MIDI OUT / MIDI IN):
+  - Cycles: off → master → slave → off
+  - Labels: CLK (off, gray) / MCLK (master, cyan) / SCLK (slave, amber)
+  - aria-label: "MIDI clock mode: {mode}"
+  - Toast notification on mode change:
+    "Clock: MASTER — Sending 24 PPQ to external hardware"
+    "Clock: SLAVE — Receiving tempo from external"
+    "Clock: OFF"
+
+page.tsx integration:
+  - useMidiClock({ audioContext, bpm, onStart, onStop, onTempoChange })
+  - onStart: calls togglePlay() if not already playing
+  - onStop: calls stopPlayback() if playing
+  - onTempoChange: updates BPM on director + transport + React state
+
+═══════════════════════════════════════════════════════════════════════════════
+Verification
+═══════════════════════════════════════════════════════════════════════════════
+
+- Lint: 0 errors
+- TypeScript: 0 errors in src/
+- Unit tests: 750 pass, 6 skip, 0 fail (51 files)
+- 0 runtime errors
+
+% complete per ROAST.md commitment:
+- MIDI: 35% → 50% (+15%, clock sync is a major MIDI feature)
+- Overall: 37% → 39%
+
+Stage Summary:
+- 1 new hook: use-midi-clock.ts (master + slave + tempo derive)
+- 1 new button in transport bar (CLK/MCLK/SCLK toggle)
+- 3 MIDI clock message types handled (0xF8 pulse, 0xFA start, 0xFC stop)
+- Tempo derivation from pulse spacing (every 24 pulses = 1 quarter note)
+- 0 lint, 0 TS, 0 test failures
+- Browser support: Chrome/Edge (Web MIDI API output)

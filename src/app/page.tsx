@@ -68,6 +68,7 @@ import { useKeyboardShortcuts } from '@/lib/use-keyboard-shortcuts'
 import { useUndoRedo } from '@/lib/use-undo-redo'
 import { useMidiInput, roleForNote } from '@/lib/use-midi-input'
 import { useMidiLearn } from '@/hooks/use-midi-learn'
+import { useMidiClock, type MidiClockMode } from '@/hooks/use-midi-clock'
 import { MIXER_PRESETS, type MixerPreset } from '@/lib/mixer-presets'
 import { Metronome } from '@/lib/metronome'
 import { generateChordPattern, NOTE_NAMES, SCALE_LABELS, ARPEGGIO_LABELS, BASS_LABELS, type ArpeggioPattern, type BassPattern } from '@/lib/chord-progression'
@@ -268,6 +269,22 @@ export default function Home() {
   // twist a hardware knob → mapped. Mappings persist to localStorage.
   const midiLearn = useMidiLearn()
 
+  // ─── MIDI clock (Phase 5.2) ──────────────────────────────────────────────
+  // Master mode: sends 24 PPQ clock to external hardware.
+  // Slave mode: receives clock + derives tempo from pulse spacing.
+  // Off: no clock sync.
+  const midiClock = useMidiClock({
+    audioContext: audioCtx,
+    bpm,
+    onStart: () => { if (!isPlaying) togglePlay() },
+    onStop: () => { if (isPlaying) stopPlayback() },
+    onTempoChange: (newBpm) => {
+      setBpm(newBpm)
+      directorRef.current?.setBpm(newBpm)
+      if (ctxRef.current) transportRef.current?.setBpm(newBpm, ctxRef.current)
+    },
+  })
+
   // Register setters for mappable parameters. Each setter receives a
   // normalized 0..1 value (from MIDI CC 0..127). We convert to the
   // parameter's native range inside the setter.
@@ -339,7 +356,7 @@ export default function Home() {
     setSamples(bundle.library.list())
     setEditingAsset(null)
     toast({ title: `Edited ${edited.metadata.id}`, description: 'Sample updated in library' })
-  }, [bundleRef])
+  }, [bundleRef, setEditingAsset])
 
   const onRoleFxChange = React.useCallback((role: SampleRole, fx: VoiceFXOptions | null) => {
     const device = bundleRef.current?.device
@@ -1520,6 +1537,27 @@ export default function Home() {
                 title="Import .mid file — extract pattern from a DAW"
               >
                 {midiImporting ? 'LOADING…' : 'MIDI IN'}
+              </Button>
+
+              {/* Phase 5.2: MIDI clock mode toggle (off → master → slave → off) */}
+              <Button
+                onClick={() => {
+                  const next: MidiClockMode = midiClock.mode === 'off' ? 'master' : midiClock.mode === 'master' ? 'slave' : 'off'
+                  midiClock.setMode(next)
+                  toast({
+                    title: next === 'off' ? 'Clock: OFF' : `Clock: ${next.toUpperCase()}`,
+                    description: next === 'master' ? 'Sending 24 PPQ to external hardware' : next === 'slave' ? 'Receiving tempo from external' : undefined,
+                  })
+                }}
+                className="tbtn midi h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em]"
+                aria-label={`MIDI clock mode: ${midiClock.mode}`}
+                style={{
+                  borderColor: midiClock.mode === 'off' ? '#3f3f46' : midiClock.mode === 'master' ? 'rgba(0,255,200,0.5)' : 'rgba(251,191,36,0.5)',
+                  color: midiClock.mode === 'off' ? '#71717a' : midiClock.mode === 'master' ? '#00ffc8' : '#fbbf24',
+                }}
+                title="MIDI clock sync — master sends tempo, slave follows external"
+              >
+                {midiClock.mode === 'off' ? 'CLK' : midiClock.mode === 'master' ? 'MCLK' : 'SCLK'}
               </Button>
               <input
                 ref={midiFileInputRef}
