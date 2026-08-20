@@ -129,6 +129,12 @@ export class DemoDirector {
   // pattern. Default probability = 1.0 (always play). Set to 0.5 = 50% chance.
   // Uses a SEEDED RNG so it's deterministic (same seed → same skips).
   private probabilities = new Map<string, number>()
+
+  // ─── Per-step micro-timing (Phase 3.1) ───────────────────────────────────
+  // Per-step timing offset in SECONDS (can be negative = early, positive = late).
+  // Range: ±0.05 (±50ms). 0 = on-grid. Applied AFTER swing + before scheduling.
+  // Uses the SAME key format as probabilities: "role:step".
+  private microTiming = new Map<string, number>()
   private probabilitySeed = 42
   // ─── Per-step note map (pitch override) ───────────────────────────────────
   // See NoteMap type doc. null = use ROLE_NOTES; number = play that MIDI note.
@@ -281,6 +287,61 @@ export class DemoDirector {
 
   get hasProbabilities(): boolean {
     return this.probabilities.size > 0
+  }
+
+  // ─── Per-step micro-timing (Phase 3.1) ────────────────────────────────────
+  /**
+   * Get the micro-timing offset for a step (in SECONDS, ±0.05 = ±50ms).
+   * Returns 0 if not set (on-grid).
+   */
+  getMicroTiming(role: SampleRole, step: number): number {
+    return this.microTiming.get(`${role}:${step}`) ?? 0
+  }
+
+  /**
+   * Set the micro-timing offset for a step (in SECONDS, ±0.05 = ±50ms).
+   * Negative = early (rushed), positive = late (laid back). 0 = on-grid.
+   * Clamped to ±0.05s to avoid extreme values that break the scheduler.
+   */
+  setMicroTiming(role: SampleRole, step: number, offsetSec: number): void {
+    const clamped = Math.max(-0.05, Math.min(0.05, offsetSec))
+    if (Math.abs(clamped) < 0.0001) {
+      this.microTiming.delete(`${role}:${step}`)
+    } else {
+      this.microTiming.set(`${role}:${step}`, clamped)
+    }
+  }
+
+  /** Get all micro-timing offsets as a {role: {step: offset}} map. */
+  getAllMicroTiming(): Record<string, Record<number, number>> {
+    const result: Record<string, Record<number, number>> = {}
+    for (const [key, offset] of this.microTiming) {
+      const [role, stepStr] = key.split(':')
+      if (!role || !stepStr) continue
+      const step = parseInt(stepStr, 10)
+      if (!result[role]) result[role] = {}
+      result[role][step] = offset
+    }
+    return result
+  }
+
+  /** Load micro-timing from a saved map. */
+  loadMicroTiming(timing: Record<string, Record<number, number>>): void {
+    this.microTiming.clear()
+    for (const [role, stepMap] of Object.entries(timing)) {
+      for (const [stepStr, offset] of Object.entries(stepMap)) {
+        this.setMicroTiming(role as SampleRole, parseInt(stepStr, 10), offset)
+      }
+    }
+  }
+
+  /** Clear all micro-timing (back to on-grid). */
+  clearMicroTiming(): void {
+    this.microTiming.clear()
+  }
+
+  get hasMicroTiming(): boolean {
+    return this.microTiming.size > 0
   }
 
   // ─── Per-role mute/solo ────────────────────────────────────────────────────
@@ -723,6 +784,10 @@ export class DemoDirector {
         if (rng.next() > prob) continue // skip this note
       }
       const note = this.noteMap[role]?.[step] ?? ROLE_NOTES[role] ?? 60
+      // Phase 3.1: per-step micro-timing offset (±50ms).
+      // Applied AFTER swing (which is global) + per-step probability.
+      // Negative = early (rushed), positive = late (laid back).
+      const microOffset = this.getMicroTiming(role, step)
       const event: NoteEvent = {
         type: 'note',
         note,
@@ -730,7 +795,7 @@ export class DemoDirector {
         velocity: velocity / 127,
         duration: secPerStep * 0.9,
         channel: role, // channel = role (sampler parses it)
-        at,
+        at: at + microOffset,
       }
       this.host.publish(event)
     }

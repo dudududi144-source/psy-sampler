@@ -67,12 +67,15 @@ export function SampleLibrary({
   samples,
   onAudition,
   onRemove,
+  onEdit,
   nowPlayingSampleId,
   nowPlayingAt,
 }: {
   samples: SampleAsset[]
   onAudition: (asset: SampleAsset) => void
   onRemove?: (sampleId: string) => void
+  /** Phase 2.3: open the edit modal for this sample. */
+  onEdit?: (asset: SampleAsset) => void
   nowPlayingSampleId: string | null
   nowPlayingAt: number
 }) {
@@ -278,6 +281,16 @@ export function SampleLibrary({
                     title={`Remove ${s.metadata.id}`}
                   >
                     DEL
+                  </button>
+                )}
+                {onEdit && (
+                  <button
+                    onClick={() => onEdit(s)}
+                    className="shrink-0 touch-manipulation rounded border px-1.5 py-0.5 font-mono text-[10px] hover:brightness-125"
+                    style={{ borderColor: '#22d3ee80', color: '#22d3ee' }}
+                    title={`Edit ${s.metadata.id} (trim, fade, normalize, reverse)`}
+                  >
+                    EDIT
                   </button>
                 )}
                 {/* Phase 2.2: expand/collapse preview */}

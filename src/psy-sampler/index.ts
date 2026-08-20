@@ -211,3 +211,15 @@ export { toMono } from './slicer'
 
 /** Granular pitch-shift + time-stretch. */
 export { granularStretch, pitchShift, timeStretch, pitchAndTempoShift } from './time-stretcher'
+
+// ─── Sample editor (Phase 2.3) ───────────────────────────────────────────────
+
+/** Offline sample editing: trim, fade, normalize, reverse. */
+export {
+  trimBuffer,
+  fadeInOut,
+  normalizeBuffer,
+  reverseBuffer,
+  applyEdits,
+  type SampleEditOptions,
+} from './sample-editor'

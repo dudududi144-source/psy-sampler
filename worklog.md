@@ -3942,3 +3942,157 @@ Stage Summary:
 
 Next: Phase 2.3 (sample editing: trim + fade + normalize + reverse) +
 Phase 3 (sequencing improvements) per the roadmap.
+
+---
+Task ID: PHASE-2.3-3.1-SAMPLE-EDIT-MICRO-TIMING
+Agent: main
+Task: Sample editing (Phase 2.3) + per-step micro-timing (Phase 3.1)
+
+═══════════════════════════════════════════════════════════════════════════════
+Step 2.3.1 — Sample editor: pure functions (trim + fade + normalize + reverse)
+═══════════════════════════════════════════════════════════════════════════════
+
+Created src/psy-sampler/sample-editor.ts — non-destructive AudioBuffer editing:
+
+- trimBuffer(source, ctx, startSec, endSec) → new buffer with [start, end]
+  Clamps to buffer bounds, enforces end > start (min 1ms gap).
+- fadeInOut(source, ctx, fadeInSec, fadeOutSec) → applies linear fades
+  Fade-in: 0→1 over fadeInSamples. Fade-out: 1→0 over last fadeOutSamples.
+- normalizeBuffer(source, ctx, targetPeak=0.95) → scales to target peak
+  Finds peak across ALL channels, scales uniformly. Silent buffer → copy unchanged (no NaN).
+- reverseBuffer(source, ctx) → reverses sample order
+- applyEdits(source, ctx, opts) → all-in-one in correct order:
+  1. Trim (reduces size, speeds up subsequent ops)
+  2. Reverse (before fades so fades apply to correct ends)
+  3. Fades (applied to reversed buffer if reversed)
+  4. Normalize LAST (final peak = target, regardless of fades)
+
+All functions return NEW AudioBuffer (non-destructive). Source never mutated.
+
+14 unit tests verify math (tests/psy-sampler/sample-editor-tests.test.ts):
+- Trim: range, clamping, channel count preservation
+- Fade-in: ramps 0→1, midpoint = 0.5, end = 1.0
+- Fade-out: ramps 1→0, midpoint = 0.5, start = 1.0
+- No fades = identity copy
+- Normalize: scales to target, silent buffer stays silent (no NaN),
+  stereo channel independence (L and R scaled by same factor)
+- Reverse: order flipped, length preserved
+- Combined: trim + reverse + fade + normalize in correct order
+- No edits = identity
+
+═══════════════════════════════════════════════════════════════════════════════
+Step 2.3.2 — Sample edit modal UI
+═══════════════════════════════════════════════════════════════════════════════
+
+Created src/components/sample-edit-modal.tsx — modal overlay with:
+- Live preview waveform (ScrubableWaveform, edits applied via useMemo)
+- TRIM section: start + end sliders (0.001s precision)
+- FADES section: fade-in + fade-out sliders (0.005s precision)
+- REVERSE toggle (PSY pink when active)
+- NORMALIZE 0.95 toggle (library green when active)
+- APPLY EDITS button → calls onApply with edited asset
+- RESET button → restores all defaults
+- CANCEL button → closes without applying
+- Click backdrop or ✕ to close
+- Honest limitation note: "Edits are non-destructive — APPLY replaces
+  the sample in the library. Original file on disk unchanged."
+
+Page.tsx integration:
+- New state: editingAsset (SampleAsset | null)
+- onApplyEdit callback: removes old sample from library, re-adds edited
+  via addFromBuffer (preserves provenance, appends "(edited)" to usageRestrictions)
+- Toast: "Edited {id} · Sample updated in library"
+- Modal rendered at root level (overlays everything)
+
+═══════════════════════════════════════════════════════════════════════════════
+Step 2.3.3 — Wire EDIT button in SampleLibrary
+═══════════════════════════════════════════════════════════════════════════════
+
+Added onEdit prop to SampleLibrary component. Each row now has an EDIT
+button (cyan, PSY color) next to DEL. Clicking opens the SampleEditModal.
+
+Verified via Agent Browser:
+- 5+ EDIT buttons visible in library
+- Click EDIT → modal opens with "EDIT · BASS-DEEP" heading
+- TRIM sliders, FADES sliders, REVERSE + NORMALIZE toggles all visible
+- Click REVERSE → toggles active (pink)
+- Click NORMALIZE → toggles active (green)
+- Click APPLY EDITS → toast "Edited bass-deep · Sample updated in library"
+- Modal closes, library refreshed
+- 0 runtime errors
+
+═══════════════════════════════════════════════════════════════════════════════
+Step 3.1 — Per-step micro-timing in DemoDirector
+═══════════════════════════════════════════════════════════════════════════════
+
+Added per-step micro-timing to src/lib/demo-director.ts. Each step can
+now have a ±50ms timing offset, independent of the global swing.
+
+New state:
+  private microTiming = new Map<string, number>()  // "role:step" → offsetSec
+
+New API:
+  - getMicroTiming(role, step) → number (0 if not set)
+  - setMicroTiming(role, step, offsetSec) → clamps to ±0.05s,
+    deletes if near-zero (auto-cleanup)
+  - getAllMicroTiming() → Record<role, Record<step, offset>>
+  - loadMicroTiming(map) → clears + restores from saved map
+  - clearMicroTiming() → removes all entries
+  - hasMicroTiming getter → boolean
+
+Integration in scheduleStep():
+  - For each role's note, looks up getMicroTiming(role, step)
+  - Adds the offset to the NoteEvent.at: at + microOffset
+  - Applied AFTER global swing (which is per-step, applied in tick())
+  - Applied AFTER probability check (skipped notes don't need timing)
+
+9 unit tests verify (tests/psy-sampler/micro-timing-tests.test.ts):
+- Round-trip set/get
+- Default = 0 (on-grid)
+- Clamping to ±50ms
+- Near-zero values cleared (not stored)
+- hasMicroTiming tracks state
+- getAllMicroTiming returns full map
+- loadMicroTiming restores from saved
+- clearMicroTiming removes all
+- loadMicroTiming replaces (not appends)
+
+═══════════════════════════════════════════════════════════════════════════════
+Verification matrix
+═══════════════════════════════════════════════════════════════════════════════
+
+- Lint: 0 errors
+- TypeScript: 0 errors in src/
+- Unit tests: 749 pass, 1 skip, 0 fail (50 files)
+- Total: 749 pass, 0 fail
+- New tests: +23 (14 sample-editor + 9 micro-timing)
+
+═══════════════════════════════════════════════════════════════════════════════
+Phase 2.3 + 3.1 closure — % complete updated
+═══════════════════════════════════════════════════════════════════════════════
+
+Per the ROAST.md commitment:
+
+| Area | Before | After | Target | Gap |
+|------|--------|-------|--------|-----|
+| Sample editing | 0% | **80%** | 90% | -10% |
+| Per-step timing | 0% | **70%** | 85% | -15% (UI pending) |
+| Sample management | 60% | **75%** | 85% | -10% |
+| Sequencing | 25% | **30%** | 85% | -55% |
+| Overall | 29% | **31%** | 85% | -54% |
+
+Closed ~2% of the gap. Sample editing went from 0% to 80% (trim + fade +
+normalize + reverse with live preview). Per-step micro-timing backend is
+done (70% — UI integration pending).
+
+Stage Summary:
+- 3 new source files: sample-editor.ts, sample-edit-modal.tsx, + extensions
+  to demo-director.ts (micro-timing API)
+- 23 new tests (14 sample-editor + 9 micro-timing)
+- 0 lint, 0 TS, 0 test failures (749 tests still pass)
+- All UI verified via Agent Browser (edit modal opens, APPLY works, toast shows)
+- Honest limitations documented: edits non-destructive, micro-timing backend
+  only (UI pending)
+
+Next: Phase 3.2 (pattern chaining / follow actions) + Phase 4 (Mixer/FX)
+per the roadmap.

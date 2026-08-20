@@ -82,6 +82,7 @@ import { PatternEditor } from '@/components/pattern-editor'
 import { SampleLibrary } from '@/components/sample-library'
 import { SampleImporter } from '@/components/sample-importer'
 import { RoleFxPanel } from '@/components/role-fx-panel'
+import { SampleEditModal } from '@/components/sample-edit-modal'
 import { SongEditor } from '@/components/song-editor'
 import { Visualizer } from '@/components/visualizer'
 import { Mixer } from '@/components/mixer'
@@ -263,6 +264,37 @@ export default function Home() {
   // re-renders when the user changes a slider. The device is the source of
   // truth for audio; this state is the UI mirror.
   const [roleFxState, setRoleFxState] = React.useState<Partial<Record<SampleRole, VoiceFXOptions>>>({})
+
+  // ─── Sample edit modal state (Phase 2.3.2) ──────────────────────────────
+  // When non-null, the SampleEditModal is shown for the given asset.
+  const [editingAsset, setEditingAsset] = React.useState<SampleAsset | null>(null)
+
+  // Apply edited sample: replace in library, update React state, close modal.
+  const onApplyEdit = React.useCallback((edited: SampleAsset) => {
+    const bundle = bundleRef.current
+    if (!bundle) {
+      setEditingAsset(null)
+      return
+    }
+    // Remove the old sample (by id) and add the edited one.
+    bundle.library.remove(edited.metadata.id)
+    // Use addFromBuffer — re-validates provenance + recomputes features.
+    // Since the edited buffer inherits the original's metadata, provenance
+    // is preserved (license, author, source all carry over).
+    bundle.library.addFromBuffer(edited.metadata.id, edited.audioBuffer, {
+      category: edited.metadata.category,
+      subcategory: edited.metadata.subcategory,
+      provenance: {
+        ...edited.metadata.provenance,
+        // Append a note that this sample was edited.
+        usageRestrictions: edited.metadata.provenance.usageRestrictions + ' (edited)',
+      },
+      rootNote: edited.metadata.character.rootNote,
+    })
+    setSamples(bundle.library.list())
+    setEditingAsset(null)
+    toast({ title: `Edited ${edited.metadata.id}`, description: 'Sample updated in library' })
+  }, [bundleRef])
 
   const onRoleFxChange = React.useCallback((role: SampleRole, fx: VoiceFXOptions | null) => {
     const device = bundleRef.current?.device
@@ -1932,6 +1964,7 @@ export default function Home() {
                 samples={samples}
                 onAudition={auditionSample}
                 onRemove={onRemoveSample}
+                onEdit={(asset) => setEditingAsset(asset)}
                 nowPlayingSampleId={nowPlaying.sampleId}
                 nowPlayingAt={nowPlaying.at}
               />
@@ -1956,6 +1989,17 @@ export default function Home() {
           </footer>
         </div>
       </Chassis>
+
+      {/* Phase 2.3.2: Sample edit modal — rendered at root level so it
+          overlays everything else when open. */}
+      {editingAsset && (
+        <SampleEditModal
+          asset={editingAsset}
+          audioContext={audioCtx}
+          onApply={onApplyEdit}
+          onCancel={() => setEditingAsset(null)}
+        />
+      )}
     </ErrorBoundary>
   )
 }
