@@ -185,6 +185,77 @@ export function detectOnsets(
 }
 
 /**
+ * Estimate BPM from onset spacing. Heuristic: compute median inter-onset
+ * interval (more robust than mean against outliers like a missing hit),
+ * then convert to BPM assuming the median interval is a 16th note.
+ *
+ * Returns a result with the detected BPM + confidence 0..1 (higher = more
+ * uniform spacing → more reliable estimate).
+ *
+ * If we have fewer than 4 onsets, returns 0 BPM + confidence 0 (too few
+ * to estimate a tempo).
+ */
+export interface BpmEstimate {
+  /** Estimated tempo in BPM. 0 if unknown. */
+  bpm: number
+  /** Confidence 0..1. Higher = more uniform spacing. */
+  confidence: number
+  /** The median inter-onset interval, in seconds. */
+  medianInterval: number
+  /** Best-guess note value: '16th' | '8th' | '4th'. */
+  noteValue: '16th' | '8th' | '4th'
+}
+
+export function estimateBpmFromOnsets(onsets: Onset[]): BpmEstimate {
+  if (onsets.length < 4) {
+    return { bpm: 0, confidence: 0, medianInterval: 0, noteValue: '16th' }
+  }
+
+  // Compute inter-onset intervals.
+  const intervals: number[] = []
+  for (let i = 1; i < onsets.length; i++) {
+    intervals.push(onsets[i].time - onsets[i - 1].time)
+  }
+  intervals.sort((a, b) => a - b)
+
+  // Median.
+  const median = intervals[Math.floor(intervals.length / 2)]
+
+  // Confidence: low standard deviation relative to mean → high confidence.
+  const mean = intervals.reduce((a, b) => a + b, 0) / intervals.length
+  const variance = intervals.reduce((acc, x) => acc + (x - mean) ** 2, 0) / intervals.length
+  const stddev = Math.sqrt(variance)
+  // CV = stddev/mean. Low CV = uniform. Confidence = max(0, 1 - cv * 2).
+  const cv = mean > 0 ? stddev / mean : 1
+  const confidence = Math.max(0, 1 - cv * 2)
+
+  // Try 16th-note interpretation first (most common for drum loops):
+  //   16th note at BPM X has interval 60 / (BPM * 4) seconds.
+  //   → BPM = 60 / (interval * 4) = 15 / interval
+  let bpm16 = 15 / median
+  // Snap to a "reasonable" range (60..200 BPM). If outside, the loop is
+  // probably using a different note value.
+  let noteValue: '16th' | '8th' | '4th' = '16th'
+  let bpm = bpm16
+  if (bpm16 < 60) {
+    // Try as 8th notes: BPM = 30 / interval
+    bpm = 30 / median
+    noteValue = '8th'
+  } else if (bpm16 > 200) {
+    // Try as 4th notes: BPM = 60 / interval
+    bpm = 60 / median
+    noteValue = '4th'
+  }
+
+  // Snap to nearest integer BPM if confidence is high.
+  if (confidence > 0.5) {
+    bpm = Math.round(bpm)
+  }
+
+  return { bpm, confidence, medianInterval: median, noteValue }
+}
+
+/**
  * Slice an AudioBuffer at the given onset times.
  *
  * Each slice spans [onset[i], onset[i+1]). The last slice runs to the end of

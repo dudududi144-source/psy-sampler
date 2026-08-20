@@ -21,7 +21,7 @@
 //      into library.addFromBuffer.
 
 import * as React from 'react'
-import { detectOnsets, sliceAudioBuffer, toMono } from '@/psy-sampler'
+import { detectOnsets, sliceAudioBuffer, toMono, estimateBpmFromOnsets } from '@/psy-sampler'
 import type { Onset } from '@/psy-sampler'
 import type { SampleAsset, SampleCategory, SampleProvenance } from '@/psy-sampler'
 import { ROLES, ROLE_COLORS, ROLE_LABEL } from '@/components/types'
@@ -53,6 +53,15 @@ export interface SampleSlicerProps {
   onImport: (asset: SampleAsset) => void
   /** Called when the user cancels / closes the slicer. */
   onCancel: () => void
+  /** Optional: reconstruct the current pattern from slice timing. Called
+   * with a per-role list of {step, sliceIndex} mappings + the detected BPM.
+   * The page wireframe applies this to the director + pattern state. */
+  onReconstruct?: (reconstruction: {
+    /** Detected BPM (or 0 if unknown). Page can apply this as the new tempo. */
+    bpm: number
+    /** Map role → list of {step, sliceIdx} entries. */
+    placements: Record<string, Array<{ step: number; sliceIdx: number }>>
+  }) => void
 }
 
 export function SampleSlicer({
@@ -62,6 +71,7 @@ export function SampleSlicer({
   provenance,
   onImport,
   onCancel,
+  onReconstruct,
 }: SampleSlicerProps) {
   // ─── Compute mono downmix (derived value, no ref) ────────────────────────
   const mono = React.useMemo(() => toMono(buffer), [buffer])
@@ -73,6 +83,12 @@ export function SampleSlicer({
   const onsets = React.useMemo(
     () => detectOnsets(mono, buffer.sampleRate, { sensitivity }),
     [mono, buffer.sampleRate, sensitivity],
+  )
+
+  // Estimate BPM from onset spacing.
+  const bpmEstimate = React.useMemo(
+    () => estimateBpmFromOnsets(onsets),
+    [onsets],
   )
 
   // ─── User overrides per slice (kept + role) — keyed by slice index ────────
@@ -170,6 +186,36 @@ export function SampleSlicer({
     onCancel()
   }, [rows, buffer, fileName, provenance, onImport, onCancel])
 
+  // ─── Reconstruct pattern from slice timing ──────────────────────────────
+  // Maps each slice to a pattern step based on its onset time and the
+  // detected BPM. The user gets back the original loop's groove, with
+  // slices auto-assigned to the role they picked in the slicer UI.
+  const reconstructPattern = React.useCallback(() => {
+    if (!onReconstruct) return
+    const kept = rows.filter((r) => r.keep)
+    if (kept.length === 0) return
+    const bpm = bpmEstimate.bpm > 0 ? bpmEstimate.bpm : 120
+    // If confidence is low or BPM unknown, default to 16-step pattern.
+    // secPerStep = 60 / (bpm * 4) [16th notes]
+    const secPerStep = 60 / (bpm * 4)
+    const maxStep = 32 // cap at 32-step pattern
+    // Map each kept slice to a step index. Snap to nearest step.
+    const placements: Record<string, Array<{ step: number; sliceIdx: number }>> = {}
+    kept.forEach((row, i) => {
+      const step = Math.min(maxStep - 1, Math.max(0, Math.round(row.start / secPerStep)))
+      const role = row.role
+      if (!placements[role]) placements[role] = []
+      // Avoid duplicate steps for the same role (later slice wins).
+      const existing = placements[role].find(p => p.step === step)
+      if (existing) {
+        existing.sliceIdx = i
+      } else {
+        placements[role].push({ step, sliceIdx: i })
+      }
+    })
+    onReconstruct({ bpm, placements })
+  }, [rows, bpmEstimate, onReconstruct])
+
   // ─── Render ────────────────────────────────────────────────────────────────
   const keptCount = rows.filter((r) => r.keep).length
   return (
@@ -188,6 +234,25 @@ export function SampleSlicer({
           {fileName} · {buffer.duration.toFixed(2)}s · {buffer.sampleRate}Hz
         </span>
       </div>
+
+      {/* BPM estimate — shown if we have enough onsets for a confident guess */}
+      {bpmEstimate.bpm > 0 && (
+        <div
+          className="mb-3 flex items-center justify-between rounded border px-3 py-1.5 font-mono text-[11px]"
+          style={{
+            borderColor: bpmEstimate.confidence > 0.5 ? '#22d3ee80' : '#3a4150',
+            background: 'rgba(34,211,238,0.06)',
+          }}
+        >
+          <span>
+            <span style={{ color: '#22d3ee', fontWeight: 'bold' }}>ESTIMATED BPM:</span>{' '}
+            <span style={{ color: '#cfd6df' }}>{bpmEstimate.bpm}</span>
+          </span>
+          <span style={{ color: '#5b6470' }}>
+            {bpmEstimate.noteValue} notes · confidence {(bpmEstimate.confidence * 100).toFixed(0)}%
+          </span>
+        </div>
+      )}
 
       {/* Waveform + slice markers */}
       <SlicerWaveform
@@ -329,6 +394,22 @@ export function SampleSlicer({
         >
           SLICE {keptCount} SAMPLES
         </button>
+        {onReconstruct && (
+          <button
+            onClick={reconstructPattern}
+            disabled={keptCount === 0}
+            className="min-h-[44px] touch-manipulation flex-1 rounded border px-3 py-2 font-mono text-xs font-bold uppercase tracking-wider transition-all hover:brightness-125 disabled:opacity-40"
+            style={{
+              borderColor: '#b967ff',
+              color: '#b967ff',
+              background: 'rgba(185,103,255,0.1)',
+              boxShadow: '0 0 12px rgba(185,103,255,0.4)',
+            }}
+            title="Slice + reconstruct the original loop's groove in the pattern editor"
+          >
+            RECONSTRUCT PATTERN
+          </button>
+        )}
         <button
           onClick={onCancel}
           className="min-h-[44px] touch-manipulation rounded border px-3 py-2 font-mono text-xs uppercase tracking-wider transition-all hover:brightness-125"

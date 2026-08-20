@@ -39,9 +39,15 @@ interface PendingImport {
 export function SampleImporter({
   audioContext,
   onImport,
+  onReconstruct,
 }: {
   audioContext: AudioContext | null
   onImport: (asset: SampleAsset) => void
+  /** Optional: pattern reconstruction callback (passed to SampleSlicer). */
+  onReconstruct?: (reconstruction: {
+    bpm: number
+    placements: Record<string, Array<{ step: number; sliceIdx: number }>>
+  }) => void
 }) {
   const [pending, setPending] = React.useState<PendingImport | null>(null)
   const [error, setError] = React.useState<string | null>(null)
@@ -361,6 +367,7 @@ export function SampleImporter({
             usageRestrictions: 'None — user asserted commercial rights',
           }}
           onImport={onImport}
+          onReconstruct={onReconstruct}
           onCancel={() => {
             setSlicing(false)
             setPending(null)

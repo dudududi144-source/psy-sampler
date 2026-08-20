@@ -194,6 +194,9 @@ export type { Onset, DetectOnsetsOptions } from './slicer'
 /** Detect onsets in a mono signal using spectral flux. */
 export { detectOnsets } from './slicer'
 
+/** Estimate BPM from onset spacing. */
+export { estimateBpmFromOnsets, type BpmEstimate } from './slicer'
+
 /** Split an AudioBuffer at the given onset times. */
 export { sliceAudioBuffer } from './slicer'
 

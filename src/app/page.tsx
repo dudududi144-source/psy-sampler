@@ -68,11 +68,13 @@ import { useMidiInput, roleForNote } from '@/lib/use-midi-input'
 import { MIXER_PRESETS, type MixerPreset } from '@/lib/mixer-presets'
 import { Metronome } from '@/lib/metronome'
 import { generateChordPattern, NOTE_NAMES, SCALE_LABELS, ARPEGGIO_LABELS, BASS_LABELS, type ArpeggioPattern, type BassPattern } from '@/lib/chord-progression'
-import { humanizePattern, quantizePattern, rampPattern } from '@/lib/humanize'
+import { humanizePattern, quantizePattern, rampPattern, scalePattern } from '@/lib/humanize'
 import { TimelineView } from '@/components/timeline-view'
 import { AutomationEditor } from '@/components/automation-editor'
 import { HelpOverlay } from '@/components/help-overlay'
 import { toast } from '@/hooks/use-toast'
+import { usePatternOps } from '@/hooks/use-pattern-ops'
+import { useMixerOps } from '@/hooks/use-mixer-ops'
 import { InitOverlay } from '@/components/init-overlay'
 import { PatternEditor } from '@/components/pattern-editor'
 import { SampleLibrary } from '@/components/sample-library'
@@ -123,13 +125,8 @@ export default function Home() {
   // Bass octave offset: -2 to +2. Shifts the bass register independently.
   const [bassOctave, setBassOctave] = React.useState(0)
   const [currentStep, setCurrentStep] = React.useState(0)
-  const { state: pattern, set: setPatternWithHistory, undo, redo, canUndo, canRedo, reset: resetPatternHistory } = useUndoRedo<Pattern>(structuredClone(DEFAULT_PATTERN))
-  // NoteMap: per-step pitch overrides (from chord progression). Tracked in
-  // state so the PatternEditor re-renders and shows pitch labels on cells.
-  const [noteMap, setNoteMap] = React.useState<NoteMap>({})
-  // Last generated chord progression — persisted in the UI so the user can
-  // always see the current harmonic structure (not just a fleeting toast).
-  const [lastProgression, setLastProgression] = React.useState<{ label: string; roman: string } | null>(null)
+  // NOTE: pattern, noteMap, lastProgression + all pattern-op callbacks live in
+  // usePatternOps() below (declared after directorRef so the hook can use it).
   const [samples, setSamples] = React.useState<SampleAsset[]>([])
   const [analyser, setAnalyser] = React.useState<AnalyserNode | null>(null)
   const [audioCtx, setAudioCtx] = React.useState<AudioContext | null>(null)
@@ -148,92 +145,16 @@ export default function Home() {
   const projectFileInputRef = React.useRef<HTMLInputElement>(null)
   const [pumpEnabled, setPumpEnabled] = React.useState(false)
   const [evolveEnabled, setEvolveEnabled] = React.useState(false)
-  const [filterMode, setFilterMode] = React.useState<'off' | 'lp' | 'hp'>('off')
+  // filterMode moved into useMixerOps() below
   // ─── Pattern length (8/16/32 steps) ─────────────────────────────────────────
-  const [stepCount, setStepCount] = React.useState(16)
+  // stepCount moved into usePatternOps() below
   // ─── Help overlay ───────────────────────────────────────────────────────────
   const [helpOpen, setHelpOpen] = React.useState(false)
   // ─── Metronome ──────────────────────────────────────────────────────────────
   const [metronomeEnabled, setMetronomeEnabled] = React.useState(false)
   const metronomeRef = React.useRef<Metronome | null>(null)
-  // ─── Per-step probabilities ─────────────────────────────────────────────────
-  const [probabilities, setProbabilities] = React.useState<Record<string, Record<number, number>>>({})
+  // probabilities moved into usePatternOps() below
 
-  const onStepCountChange = React.useCallback((newSteps: number) => {
-    const director = directorRef.current
-    if (!director) return
-    director.setStepCount(newSteps)
-    setStepCount(newSteps)
-    const newPattern = structuredClone(director.getPattern())
-    setPatternWithHistory(newPattern)
-    try { autosavePattern(newPattern) } catch { /* */ }
-  }, [setPatternWithHistory])
-
-  const onSetProbability = React.useCallback((role: SampleRole, step: number, prob: number) => {
-    const director = directorRef.current
-    if (!director) return
-    director.setProbability(role, step, prob)
-    setProbabilities(director.getAllProbabilities())
-  }, [])
-
-  // ─── Copy/paste between roles ───────────────────────────────────────────────
-  const clipboardRef = React.useRef<{ row: number[]; fromRole: SampleRole } | null>(null)
-
-  // ─── Per-role mute/solo (pattern-level) ────────────────────────────────────
-  // Mirror of director.mutedRoles/soloedRoles. UI updates this state to
-  // trigger re-render; the director is the source of truth for scheduling.
-  // Declared BEFORE the callbacks that use them (setMutedRoles/setSoloedRoles).
-  const [mutedRoles, setMutedRoles] = React.useState<SampleRole[]>([])
-  const [soloedRoles, setSoloedRoles] = React.useState<SampleRole[]>([])
-
-  // These bypass the director's scheduling — muted roles are skipped in
-  // scheduleStep. Solo follows standard DAW behaviour: when any role is
-  // soloed, all others are effectively muted.
-  const onToggleMute = React.useCallback((role: SampleRole) => {
-    const director = directorRef.current
-    if (!director) return
-    const next = !director.isRoleMuted(role)
-    director.setRoleMuted(role, next)
-    setMutedRoles(director.getMutedRoles())
-  }, [])
-
-  const onToggleSolo = React.useCallback((role: SampleRole) => {
-    const director = directorRef.current
-    if (!director) return
-    const next = !director.isRoleSoloed(role)
-    director.setRoleSoloed(role, next)
-    setSoloedRoles(director.getSoloedRoles())
-  }, [])
-
-  const onCopyRole = React.useCallback((role: SampleRole) => {
-    const director = directorRef.current
-    if (!director) return
-    const row = director.getPattern()[role]
-    if (row) {
-      clipboardRef.current = { row: [...row], fromRole: role }
-      toast({ title: `Copied ${role}`, description: `${row.length} steps` })
-    }
-  }, [])
-
-  const onPasteRole = React.useCallback((role: SampleRole): boolean => {
-    const director = directorRef.current
-    if (!director || !clipboardRef.current) return false
-    const { row } = clipboardRef.current
-    // Paste into the target role, adjusting length if needed.
-    const targetRow = director.getPattern()[role]
-    if (!targetRow) return false
-    const newPattern = structuredClone(pattern)
-    // Copy values, padding/truncating to match the target row length.
-    const targetLen = targetRow.length
-    for (let i = 0; i < targetLen; i++) {
-      newPattern[role]![i] = row[i] ?? 0
-    }
-    director.setPattern(newPattern)
-    setPatternWithHistory(newPattern)
-    try { autosavePattern(newPattern) } catch { /* */ }
-    toast({ title: `Pasted to ${role}`, description: `From ${clipboardRef.current.fromRole}` })
-    return true
-  }, [pattern, setPatternWithHistory])
   // ─── Song mode state (UX4) ──────────────────────────────────────────────────
   const [song, setSong] = React.useState<Song>(loadSong())
   const [songMode, setSongMode] = React.useState(false)
@@ -244,12 +165,7 @@ export default function Home() {
   const automationBankRef = React.useRef(automationBank)
   const [automationEnabled, setAutomationEnabled] = React.useState(false)
   const [automationDirty, setAutomationDirty] = React.useState(0)
-  // ─── Per-role mute/solo state moved up (declared before callbacks that use it) ─
-  const [busState, setBusState] = React.useState<Record<BusName, BusMixerState>>({
-    drum: { gain: 0.9, muted: false, solo: false, eqLow: 0, eqMid: 0, eqHigh: 0, saturation: 0 },
-    music: { gain: 0.85, muted: false, solo: false, eqLow: 0, eqMid: 0, eqHigh: 0, saturation: 0 },
-    atmos: { gain: 0.7, muted: false, solo: false, eqLow: 0, eqMid: 0, eqHigh: 0, saturation: 0 },
-  })
+  // busState + filterMode + all mixer callbacks live in useMixerOps() below.
 
   const ctxRef = React.useRef<AudioContext | null>(null)
   const bundleRef = React.useRef<SamplerBundle | null>(null)
@@ -260,6 +176,58 @@ export default function Home() {
   const lastEventAtRef = React.useRef<number>(-1) // tracks dev.lastEvent.at to dedup
   const initializingRef = React.useRef(false)
 
+  // ─── Pattern ops hook (owns pattern + stepCount + probabilities + noteMap +
+  // lastProgression + mutedRoles + soloedRoles + 24 callbacks). Declared AFTER
+  // directorRef so the hook can use it; declared AFTER the chord params so the
+  // hook can use them. ────────────────────────────────────────────────────────
+  const {
+    pattern,
+    stepCount,
+    probabilities,
+    noteMap,
+    lastProgression,
+    mutedRoles,
+    soloedRoles,
+    canUndo,
+    canRedo,
+    setNoteMap,
+    setLastProgression,
+    setPatternWithHistory,
+    resetPatternHistory,
+    setStepCount,
+    setProbabilities,
+    onStepCountChange,
+    onSetProbability,
+    onToggleStep,
+    onPaintStep,
+    onClearPattern,
+    onRandomizePattern,
+    onFillRole,
+    onGenerateChords,
+    onHumanize,
+    onQuantize,
+    onRampUp,
+    onRampDown,
+    onScaleUp,
+    onScaleDown,
+    onDoublePattern,
+    onHalfPattern,
+    onCopyRole,
+    onPasteRole,
+    onToggleMute,
+    onToggleSolo,
+    onUndo,
+    onRedo,
+    loadPattern: loadPatternIntoDirector,
+  } = usePatternOps({
+    directorRef,
+    arpeggio,
+    bassPattern,
+    density,
+    melodyOctave,
+    bassOctave,
+  })
+
   // Refresh slot names from localStorage.
   const refreshSlots = React.useCallback(() => {
     try {
@@ -268,6 +236,24 @@ export default function Home() {
       console.warn('[psy-sampler] Failed to read slot names:', err)
     }
   }, [])
+
+  // ─── Mixer ops hook (owns busState + filterMode + 6 bus callbacks +
+  // loadMixerPreset + resetMixer). Declared AFTER bundleRef so the hook can
+  // access the audioGraph. ───────────────────────────────────────────────────
+  const {
+    busState,
+    busStateRef,
+    filterMode,
+    setBusState,
+    setFilterMode,
+    onBusGain,
+    onBusEQ,
+    onBusSaturation,
+    onBusMute,
+    onBusSolo,
+    loadMixerPreset,
+    resetMixer,
+  } = useMixerOps({ bundleRef })
 
   // ─── Initialize audio (on user gesture) ────────────────────────────────────
 
@@ -345,7 +331,6 @@ export default function Home() {
           }
         }
       )
-      // eslint-disable-next-line react-hooks/immutability
       directorRef.current = director
 
       // Push initial context
@@ -520,226 +505,10 @@ export default function Home() {
     directorRef.current?.setContext({ scale })
   }, [])
 
-  const onToggleStep = React.useCallback((role: SampleRole, step: number) => {
-    const director = directorRef.current
-    if (!director) return
-    // Toggle on a FRESH clone (never mutate the state object in place — that
-    // would corrupt the undo stack, since the undo stack holds references to
-    // previous state objects).
-    const newPattern = structuredClone(pattern)
-    const row = newPattern[role]
-    if (!row) return
-    const current = row[step] ?? 0
-    if (current === 0) row[step] = 100
-    else if (current < 127) row[step] = 127
-    else row[step] = 0
-    director.setPattern(newPattern)
-    setPatternWithHistory(newPattern)
-    // Autosave on every toggle (best-effort).
-    try {
-      autosavePattern(newPattern)
-    } catch {
-      // ignore — localStorage unavailable
-    }
-  }, [pattern, setPatternWithHistory])
-
-  /** Paint a step to an explicit velocity (used by drag-paint). */
-  const onPaintStep = React.useCallback((role: SampleRole, step: number, velocity: number) => {
-    const director = directorRef.current
-    if (!director) return
-    // Paint on a FRESH clone (same reason as onToggleStep).
-    const newPattern = structuredClone(pattern)
-    const row = newPattern[role]
-    if (!row) return
-    row[step] = Math.max(0, Math.min(127, Math.round(velocity)))
-    director.setPattern(newPattern)
-    setPatternWithHistory(newPattern)
-    // Autosave on paint (best-effort).
-    try {
-      autosavePattern(newPattern)
-    } catch {
-      // ignore — localStorage unavailable
-    }
-  }, [pattern, setPatternWithHistory])
-
-  const onClearPattern = React.useCallback(() => {
-    const empty = structuredClone(DEFAULT_PATTERN)
-    directorRef.current?.setPattern(empty)
-    directorRef.current?.clearNoteMap() // clear pitch overrides too
-    setNoteMap({}); setLastProgression(null)
-    setPatternWithHistory(empty)
-    // Autosave the cleared pattern (best-effort).
-    try {
-      autosavePattern(empty)
-    } catch {
-      // ignore — localStorage unavailable
-    }
-  }, [setPatternWithHistory])
-
-  /** Randomize the pattern (seeded — deterministic). */
-  const onRandomizePattern = React.useCallback(() => {
-    const director = directorRef.current
-    if (!director) return
-    director.randomizePattern()
-    director.clearNoteMap() // randomize replaces rhythm — clear old pitches
-    setNoteMap({}); setLastProgression(null)
-    const result = structuredClone(director.getPattern())
-    setPatternWithHistory(result)
-    try { autosavePattern(result) } catch { /* */ }
-    toast({ title: 'Pattern randomized' })
-  }, [setPatternWithHistory])
-
-  /** Fill a single role with a quick pattern. */
-  const onFillRole = React.useCallback((role: SampleRole) => {
-    const director = directorRef.current
-    if (!director) return
-    director.fillRole(role)
-    director.clearNoteMap() // fill replaces rhythm — clear old pitches
-    setNoteMap({}); setLastProgression(null)
-    const result = structuredClone(director.getPattern())
-    setPatternWithHistory(result)
-    try { autosavePattern(result) } catch { /* */ }
-    toast({ title: `Filled ${role}`, description: 'Quick pattern generated for this role' })
-  }, [setPatternWithHistory])
-
-  /** Generate a chord-aware bass/lead/texture pattern from the current key + scale. */
-  const onGenerateChords = React.useCallback(() => {
-    const director = directorRef.current
-    if (!director) return
-    const ctx = director.getContext()
-    const currentPattern = director.getPattern()
-    const seed = Math.floor(Math.random() * 1000000)
-    const { pattern: newPattern, noteMap: newNoteMap, progression } = generateChordPattern(currentPattern, ctx, seed, arpeggio, bassPattern, density, melodyOctave, bassOctave)
-    director.setPattern(newPattern)
-    director.setNoteMap(newNoteMap)
-    setNoteMap(newNoteMap)
-    setLastProgression({ label: progression.label, roman: progression.roman })
-    setPatternWithHistory(structuredClone(newPattern))
-    try { autosavePattern(newPattern) } catch { /* */ }
-    toast({
-      title: `Chords: ${progression.label}`,
-      description: `${progression.roman} · ${arpeggio} arp · ${bassPattern} bass`,
-    })
-  }, [setPatternWithHistory, arpeggio, bassPattern, density, melodyOctave, bassOctave])
-
-  /** Humanize velocities — add groove via random variation. Works on any
-   *  pattern (generated or hand-edited). Does NOT change which steps are
-   *  active or the NoteMap pitches — only applies ±15 velocity variation. */
-  const onHumanize = React.useCallback(() => {
-    const director = directorRef.current
-    if (!director) return
-    const seed = Math.floor(Math.random() * 1000000)
-    const humanized = humanizePattern(pattern, 0.5, seed) // 50% = ±7.5 variation
-    director.setPattern(humanized)
-    setPatternWithHistory(structuredClone(humanized))
-    try { autosavePattern(humanized) } catch { /* */ }
-    toast({ title: 'Groove added' })
-  }, [pattern, setPatternWithHistory])
-
-  /** Quantize velocities — snap to standard tiers (off/normal/accent).
-   *  The complement to humanize: removes variation for clean, punchy hits.
-   *  Standard workflow: quantize to humanize (clean but groovy). */
-  const onQuantize = React.useCallback(() => {
-    const director = directorRef.current
-    if (!director) return
-    const quantized = quantizePattern(pattern, 3) // 3 tiers: off, normal, accent
-    director.setPattern(quantized)
-    setPatternWithHistory(structuredClone(quantized))
-    try { autosavePattern(quantized) } catch { /* */ }
-    toast({ title: 'Quantized' })
-  }, [pattern, setPatternWithHistory])
-
-  /** Ramp up — velocity build-up (lowtohigh across pattern).
-   *  Step 0 = quiet, last step = loud. For intros and risers. */
-  const onRampUp = React.useCallback(() => {
-    const director = directorRef.current
-    if (!director) return
-    const ramped = rampPattern(pattern, 'up', 40, 127)
-    director.setPattern(ramped)
-    setPatternWithHistory(structuredClone(ramped))
-    try { autosavePattern(ramped) } catch { /* */ }
-    toast({ title: 'Build-up applied' })
-  }, [pattern, setPatternWithHistory])
-
-  /** Ramp down — velocity breakdown (hightolow across pattern).
-   *  Step 0 = loud, last step = quiet. For breakdowns and fade-outs. */
-  const onRampDown = React.useCallback(() => {
-    const director = directorRef.current
-    if (!director) return
-    const ramped = rampPattern(pattern, 'down', 40, 127)
-    director.setPattern(ramped)
-    setPatternWithHistory(structuredClone(ramped))
-    try { autosavePattern(ramped) } catch { /* */ }
-    toast({ title: 'Breakdown applied' })
-  }, [pattern, setPatternWithHistory])
-
-  /** Scale up — all velocities ×1.25 (louder). Clamps to 127. */
-  const onScaleUp = React.useCallback(() => {
-    const director = directorRef.current
-    if (!director) return
-    const scaled = scalePattern(pattern, 1.25)
-    director.setPattern(scaled)
-    setPatternWithHistory(structuredClone(scaled))
-    try { autosavePattern(scaled) } catch { /* */ }
-    toast({ title: 'Louder' })
-  }, [pattern, setPatternWithHistory])
-
-  /** Scale down — all velocities ×0.75 (softer). Clamps to 1. */
-  const onScaleDown = React.useCallback(() => {
-    const director = directorRef.current
-    if (!director) return
-    const scaled = scalePattern(pattern, 0.75)
-    director.setPattern(scaled)
-    setPatternWithHistory(structuredClone(scaled))
-    try { autosavePattern(scaled) } catch { /* */ }
-    toast({ title: 'Softer' })
-  }, [pattern, setPatternWithHistory])
-
-  /** Double the pattern (8to16 or 16to32, repeating). */
-  const onDoublePattern = React.useCallback(() => {
-    const director = directorRef.current
-    if (!director) return
-    if (director.stepCount >= 32) {
-      toast({ title: 'Already 32 steps', description: 'Cannot double further' })
-      return
-    }
-    director.doublePattern()
-    setStepCount(director.stepCount)
-    const result = structuredClone(director.getPattern())
-    setPatternWithHistory(result)
-    try { autosavePattern(result) } catch { /* */ }
-    toast({ title: `Doubled to ${director.stepCount} steps`, description: 'Pattern repeated' })
-  }, [setPatternWithHistory])
-
-  /** Half the pattern (32to16 or 16to8, keeping first half). */
-  const onHalfPattern = React.useCallback(() => {
-    const director = directorRef.current
-    if (!director) return
-    if (director.stepCount <= 8) {
-      toast({ title: 'Already 8 steps', description: 'Cannot halve further' })
-      return
-    }
-    director.halfPattern()
-    setStepCount(director.stepCount)
-    const result = structuredClone(director.getPattern())
-    setPatternWithHistory(result)
-    try { autosavePattern(result) } catch { /* */ }
-    toast({ title: `Halved to ${director.stepCount} steps`, description: 'Kept first half' })
-  }, [setPatternWithHistory])
-
-  const onUndo = React.useCallback(() => {
-    undo()
-    // Sync the director with the undone pattern after the state updates.
-    setTimeout(() => {
-      // Read the latest pattern via a ref-free approach: undo() already set it.
-      // We use setTimeout(0) to let React commit, then sync the director.
-    }, 0)
-  }, [undo])
-
-  const onRedo = React.useCallback(() => {
-    redo()
-  }, [redo])
-
+  // ─── Pattern operations moved to usePatternOps() hook ──────────────────────
+  // (onToggleStep, onPaintStep, onClearPattern, onRandomizePattern, onFillRole,
+  //  onGenerateChords, onHumanize, onQuantize, onRampUp, onRampDown, onScaleUp,
+  //  onScaleDown, onDoublePattern, onHalfPattern, onUndo, onRedo)
   // ─── Song mode (UX4) ───────────────────────────────────────────────────────
 
   const onSongChange = React.useCallback((newSong: Song) => {
@@ -937,75 +706,60 @@ export default function Home() {
     }
   }, [])
 
-  const busStateRef = React.useRef(busState)
-  React.useEffect(() => { busStateRef.current = busState }, [busState])
-
-  // Sync the director's pattern when undo/redo changes the pattern state.
-  // This is needed because undo/redo bypass the director (they restore a
-  // previous React state directly), so the director's internal pattern would
-  // be stale. We detect this by comparing the director's pattern to the React
-  // state and re-syncing when they differ.
-  React.useEffect(() => {
+  /** Reconstruct a pattern from sliced loop timing. Called by SampleSlicer
+   *  when the user clicks RECONSTRUCT PATTERN. Maps each slice to a step
+   *  index based on its onset time + detected BPM, then writes the new
+   *  pattern into the director + history + autosave. */
+  const onReconstructPattern = React.useCallback((reconstruction: {
+    bpm: number
+    placements: Record<string, Array<{ step: number; sliceIdx: number }>>
+  }) => {
     const director = directorRef.current
     if (!director) return
-    const directorPattern = JSON.stringify(director.getPattern())
-    const statePattern = JSON.stringify(pattern)
-    if (directorPattern !== statePattern) {
-      director.setPattern(structuredClone(pattern))
+    // Build a new empty pattern (current step count).
+    const stepCount = director.stepCount
+    const emptyRow = () => new Array(stepCount).fill(0)
+    const newPattern: Pattern = {
+      kick: emptyRow(),
+      bass: emptyRow(),
+      lead: emptyRow(),
+      'hat-closed': emptyRow(),
+      'hat-open': emptyRow(),
+      clap: emptyRow(),
+      perc: emptyRow(),
+      texture: emptyRow(),
+      fx: emptyRow(),
     }
-  }, [pattern])
-
-  const onBusGain = React.useCallback((name: BusName, value: number) => {
-    const graph = bundleRef.current?.audioGraph
-    if (graph) {
-      graph.setBusGain(name, value)
-      const soloed = BUS_NAMES.filter((n) => busStateRef.current[n].solo)
-      if (soloed.length > 0) graph.applySolo(soloed)
-    }
-    setBusState((prev) => ({ ...prev, [name]: { ...prev[name], gain: value } }))
-  }, [])
-
-  const onBusEQ = React.useCallback((name: BusName, band: 'low' | 'mid' | 'high', value: number) => {
-    const graph = bundleRef.current?.audioGraph
-    if (graph) {
-      graph.setBusEQ(name, { [band]: value })
-    }
-    setBusState((prev) => ({ ...prev, [name]: { ...prev[name], [`eq${band.charAt(0).toUpperCase() + band.slice(1)}`]: value } }))
-  }, [])
-
-  const onBusSaturation = React.useCallback((name: BusName, value: number) => {
-    const graph = bundleRef.current?.audioGraph
-    if (graph) {
-      graph.setBusSaturation(name, value)
-    }
-    setBusState((prev) => ({ ...prev, [name]: { ...prev[name], saturation: value } }))
-  }, [])
-
-  const onBusMute = React.useCallback((name: BusName) => {
-    const newMuted = !busStateRef.current[name].muted
-    const graph = bundleRef.current?.audioGraph
-    if (graph) {
-      graph.setBusMuted(name, newMuted)
-      const soloed = BUS_NAMES.filter((n) => busStateRef.current[n].solo)
-      if (soloed.length > 0) graph.applySolo(soloed)
-    }
-    setBusState((prev) => ({ ...prev, [name]: { ...prev[name], muted: newMuted } }))
-  }, [])
-
-  const onBusSolo = React.useCallback((name: BusName) => {
-    const newSolo = !busStateRef.current[name].solo
-    const next = { ...busStateRef.current, [name]: { ...busStateRef.current[name], solo: newSolo } }
-    const soloed = BUS_NAMES.filter((n) => next[n].solo)
-    const graph = bundleRef.current?.audioGraph
-    if (graph) {
-      if (soloed.length > 0) {
-        graph.applySolo(soloed)
-      } else {
-        BUS_NAMES.forEach((n) => graph.setBusGain(n, next[n].gain))
+    // Apply each placement: set velocity to 100 (default).
+    for (const [role, placements] of Object.entries(reconstruction.placements)) {
+      const row = newPattern[role as SampleRole]
+      if (!row) continue
+      for (const { step } of placements) {
+        if (step >= 0 && step < stepCount) row[step] = 100
       }
     }
-    setBusState(next)
-  }, [])
+    director.setPattern(newPattern)
+    director.clearNoteMap()
+    setNoteMap({})
+    setLastProgression(null)
+    setPatternWithHistory(structuredClone(newPattern))
+    try { autosavePattern(newPattern) } catch { /* */ }
+    // Apply detected BPM if it's reasonable.
+    if (reconstruction.bpm > 60 && reconstruction.bpm < 200) {
+      const bpmInt = Math.round(reconstruction.bpm)
+      director.setBpm(bpmInt)
+      setBpm(bpmInt)
+      toast({
+        title: `Reconstructed · ${bpmInt} BPM`,
+        description: `${Object.keys(reconstruction.placements).length} roles placed in pattern`,
+      })
+    } else {
+      toast({
+        title: 'Pattern reconstructed',
+        description: `${Object.keys(reconstruction.placements).length} roles placed (BPM unknown)`,
+      })
+    }
+  }, [directorRef, setNoteMap, setLastProgression, setPatternWithHistory])
 
   // ─── Pattern presets ───────────────────────────────────────────────────────
 
@@ -1027,33 +781,22 @@ export default function Home() {
     toast({ title: `Loaded ${preset.name} · ${preset.bpm} BPM` })
   }, [])
 
-  /** Load a mixer preset (EQ + saturation + filter per genre). */
-  const loadMixerPreset = React.useCallback((preset: MixerPreset) => {
-    const graph = bundleRef.current?.audioGraph
-    setBusState(preset.busState)
-    setFilterMode(preset.filterMode)
-    if (graph) {
-      for (const busName of ['drum', 'music', 'atmos'] as const) {
-        const bs = preset.busState[busName]
-        graph.setBusGain(busName, bs.gain)
-        graph.setBusMuted(busName, bs.muted)
-        graph.setBusEQ(busName, { low: bs.eqLow, mid: bs.eqMid, high: bs.eqHigh })
-        graph.setBusSaturation(busName, bs.saturation)
-      }
-      if (preset.filterMode === 'off') {
-        graph.setMasterFilter({ type: 'allpass', freq: 20000, Q: 1 })
-        graph.setFilterEnvelopeEnabled(false)
-      } else if (preset.filterMode === 'lp') {
-        graph.setMasterFilter({ type: 'lowpass', freq: 8000, Q: 2 })
-        graph.setFilterEnvelopeEnabled(true)
-        graph.setFilterEnvelopeParams(0.6, 0.25)
-      } else {
-        graph.setMasterFilter({ type: 'highpass', freq: 200, Q: 1.5 })
-        graph.setFilterEnvelopeEnabled(false)
-      }
+  // loadMixerPreset moved to useMixerOps() hook
+
+  // Sync the director's pattern when undo/redo changes the pattern state.
+  // This is needed because undo/redo bypass the director (they restore a
+  // previous React state directly), so the director's internal pattern would
+  // be stale. We detect this by comparing the director's pattern to the React
+  // state and re-syncing when they differ.
+  React.useEffect(() => {
+    const director = directorRef.current
+    if (!director) return
+    const directorPattern = JSON.stringify(director.getPattern())
+    const statePattern = JSON.stringify(pattern)
+    if (directorPattern !== statePattern) {
+      director.setPattern(structuredClone(pattern))
     }
-    toast({ title: `Mixer: ${preset.name}`, description: 'EQ + saturation + filter applied' })
-  }, [])
+  }, [pattern, directorRef])
 
   // ─── Pattern slots ─────────────────────────────────────────────────────────
 
@@ -2144,6 +1887,7 @@ export default function Home() {
               <SampleImporter
                 audioContext={audioCtx}
                 onImport={onImportSample}
+                onReconstruct={onReconstructPattern}
               />
             </div>
             <Visualizer analyser={analyser} isPlaying={isPlaying} />

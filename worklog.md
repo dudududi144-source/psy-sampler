@@ -3213,3 +3213,142 @@ Stage Summary:
 - Playback verified, mute/solo verified live during playback
 
 Live: https://dudududi144-source.github.io/psy-sampler/
+
+---
+Task ID: FINAL-CLOSURE
+Agent: main
+Task: Close all open items — TS errors, page.tsx refactor, BPM detection, pattern reconstruct
+
+Closed all open items from the project's TODO list. Each item below is a
+separate logical commit but they're grouped here as one final batch.
+
+═══ Step 1: Fix pre-existing scalePattern TS errors ═══════════════════════════
+
+The page.tsx had 2 pre-existing TypeScript errors at lines 680 and 691
+referencing `scalePattern()` which existed in src/lib/humanize.ts but
+wasn't imported. Fixed by adding `scalePattern` to the import statement.
+
+Result: 2 TS errors → 0 TS errors (in src/app, src/components, src/lib,
+src/hooks, src/psy-sampler — tests still report their own bun:test issues
+which are pre-existing and unrelated).
+
+═══ Step 2: Extract pattern operations to use-pattern-ops hook ═════════════════
+
+Created src/hooks/use-pattern-ops.ts (390 lines). Owns:
+- pattern (with undo/redo via useUndoRedo)
+- stepCount (8/16/32)
+- probabilities (per-step)
+- noteMap (per-step pitch overrides)
+- lastProgression (chord progression label)
+- mutedRoles, soloedRoles (per-row mute/solo)
+- clipboardRef (for copy/paste between roles)
+
+Exposes 24 callbacks:
+- onStepCountChange, onSetProbability
+- onToggleStep, onPaintStep, onClearPattern
+- onRandomizePattern, onFillRole, onGenerateChords
+- onHumanize, onQuantize, onRampUp, onRampDown
+- onScaleUp, onScaleDown, onDoublePattern, onHalfPattern
+- onCopyRole, onPasteRole
+- onToggleMute, onToggleSolo
+- onUndo, onRedo
+- loadPattern (basic set-pattern for external callers)
+
+Receives: directorRef, arpeggio, bassPattern, density, melodyOctave,
+bassOctave. Page calls useToast() inside the hook for notifications.
+
+page.tsx went from 2170 → 1924 lines (-246, 11% reduction).
+
+═══ Step 3: Extract mixer operations to use-mixer-ops hook ═════════════════════
+
+Created src/hooks/use-mixer-ops.ts (153 lines). Owns:
+- busState (drum/music/atmos: gain, muted, solo, eq, saturation)
+- filterMode ('off' | 'lp' | 'hp')
+- busStateRef (mirror for callbacks to read latest state)
+
+Exposes 7 callbacks:
+- onBusGain, onBusEQ, onBusSaturation, onBusMute, onBusSolo
+- loadMixerPreset (applies EQ + saturation + filter per genre)
+- resetMixer (for project loading)
+
+Receives: bundleRef (for audioGraph access).
+
+page.tsx went from 1924 → 1857 lines (-67, 3% additional reduction).
+Total reduction: 2170 → 1857 = -313 lines (14% smaller).
+
+═══ Step 4: BPM auto-detection from slices ═══════════════════════════════════
+
+Added `estimateBpmFromOnsets(onsets)` to src/psy-sampler/slicer.ts.
+
+Algorithm:
+- Compute inter-onset intervals
+- Sort + take median (robust against outliers like missing hits)
+- Confidence = max(0, 1 - 2*coefficient_of_variation)
+  (uniform intervals → high confidence)
+- Try 16th-note interpretation first (BPM = 15/interval)
+- If BPM < 60, retry as 8th notes (BPM = 30/interval)
+- If BPM > 200, retry as 4th notes (BPM = 60/interval)
+- Snap to integer BPM if confidence > 0.5
+
+Returns: { bpm, confidence, medianInterval, noteValue }
+
+UI integration in src/components/sample-slicer.tsx:
+- BPM estimate displayed in a cyan-bordered box above the slice list
+- Shows: "ESTIMATED BPM: 62 · 16th notes · confidence 49%"
+- Hidden if BPM is 0 (too few onsets)
+
+Verified: 9-onset test loop → BPM 61.52 detected, 16th notes, 49% conf.
+
+═══ Step 5: Pattern auto-reconstruct from slices ═══════════════════════════════
+
+Added "RECONSTRUCT PATTERN" button to the slicer (purple PSY color).
+When clicked, calls onReconstruct callback with:
+- bpm (detected, or 120 fallback)
+- placements: per-role list of {step, sliceIdx}
+
+Algorithm in reconstructPattern():
+- For each kept slice, compute step = round(start / secPerStep)
+  where secPerStep = 60 / (bpm * 4) [16th notes]
+- Cap step at 31 (32-step pattern)
+- Assign slice to its role's pattern row at that step
+- Velocity = 100 (default)
+
+Page's onReconstructPattern callback:
+- Builds an empty 16-step pattern for all 9 roles
+- Applies placements (sets velocity 100 at each step)
+- Writes to director + history + autosave
+- If detected BPM is in 60..200 range, sets the project BPM
+- Shows toast: "Reconstructed · 62 BPM · 4 roles placed in pattern"
+
+Verified end-to-end via Agent Browser:
+- Uploaded test-loop.wav → 9 onsets detected → BPM 61.52 shown
+- Clicked RECONSTRUCT PATTERN
+- Pattern editor updated: kick at steps 1+4, hat-closed at 1+3+5+7
+  (matching original loop's kick + hat positions)
+- BPM slider changed to 62 (detected BPM, snapped)
+- 0 runtime errors, 0 lint errors, 0 TS errors
+
+═══ Verification matrix ════════════════════════════════════════════════════════
+
+- Lint: 0 errors
+- TypeScript (src/): 0 errors (tests still have pre-existing bun:test
+  module resolution issues, unrelated to this work)
+- Dev server: HTTP 200 on /
+- All 31 samples serve HTTP 200
+- Library loads 31 samples
+- PLAY/STOP works
+- Per-role mute/solo works (bass mute → opacity 0.4, kick solo → all
+  others at 0.4)
+- Bus mute/solo works (drum bus mute → button turns amber)
+- Sample slicing works (9 onsets detected on test loop)
+- BPM auto-detection works (61.52 BPM, 16th notes, 49% conf)
+- Pattern reconstruct works (kicks at expected steps, BPM updated)
+- 0 runtime/console errors throughout
+
+Stage Summary:
+- All 5 open items closed
+- page.tsx reduced 14% (2170 → 1857 lines)
+- 2 new hooks (use-pattern-ops, use-mixer-ops) — clean separation
+- New slicer features: BPM detection + pattern reconstruction
+- Single end-to-end workflow: drop loop → slice → reconstruct → play
+- Live: https://dudududi144-source.github.io/psy-sampler/
