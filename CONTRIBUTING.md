@@ -103,7 +103,7 @@ All samples must:
 3. Have `verification: "PROCEDURAL"` or `"VERIFIED"` (never `"UNKNOWN"` or `"QUARANTINED"`)
 4. Have `commercialUse: true`
 
-Use `scripts/generate-samples.ts` to generate new procedural samples.
+Use `scripts/generate-samples-v2.ts` to generate new procedural samples.
 
 ## Code style
 
