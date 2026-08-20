@@ -16,7 +16,7 @@
 
 import * as React from 'react'
 
-export function LoudnessMeter({ analyser, isPlaying }: {
+function LoudnessMeterImpl({ analyser, isPlaying }: {
   analyser: AnalyserNode | null
   isPlaying: boolean
 }) {
@@ -175,3 +175,6 @@ export function LoudnessMeter({ analyser, isPlaying }: {
     </div>
   )
 }
+
+// Phase 7.3.1: React.memo
+export const LoudnessMeter = React.memo(LoudnessMeterImpl)

@@ -21,7 +21,7 @@ import {
 } from '@/components/types'
 import type { BusName } from '@/psy-sampler'
 
-export function Mixer({
+function MixerImpl({
   busState,
   onGain,
   onEQ,
@@ -243,3 +243,6 @@ export function Mixer({
     </div>
   )
 }
+
+// Phase 7.3.1: React.memo prevents re-renders when currentStep changes
+export const Mixer = React.memo(MixerImpl)

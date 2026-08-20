@@ -65,7 +65,7 @@ const ROWS: FxRow[] = [
   },
 ]
 
-export function RoleFxPanel({ fxState, onChange, disabled }: RoleFxPanelProps) {
+function RoleFxPanelImpl({ fxState, onChange, disabled }: RoleFxPanelProps) {
   return (
     <div className="section p-4">
       <div className="mb-3 flex items-center justify-between">
@@ -167,3 +167,6 @@ export function RoleFxPanel({ fxState, onChange, disabled }: RoleFxPanelProps) {
     </div>
   )
 }
+
+// Phase 7.3.1: React.memo
+export const RoleFxPanel = React.memo(RoleFxPanelImpl)

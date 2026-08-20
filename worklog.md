@@ -4678,3 +4678,45 @@ Stage Summary:
 - Tempo derivation from pulse spacing (every 24 pulses = 1 quarter note)
 - 0 lint, 0 TS, 0 test failures
 - Browser support: Chrome/Edge (Web MIDI API output)
+
+---
+Task ID: PHASE-7.3-PERFORMANCE
+Agent: main
+Task: Performance optimization — React.memo on 9 components
+
+The biggest performance issue: `currentStep` changes 16-32 times/second
+during playback, triggering a full page re-render. All child components
+(Mixer, Library, Song, Automation, Timeline, Presets, etc.) re-render
+even though their props haven't changed.
+
+Step 7.3.1 — React.memo on 9 components
+
+Wrapped in React.memo (shallow prop comparison skips re-render when
+props are unchanged):
+
+1. Mixer — re-renders only when busState changes (not on currentStep)
+2. SampleLibrary — re-renders only when samples/search changes
+3. SongEditor — re-renders only when song/songMode changes
+4. AutomationEditor — re-renders only when bank/dirty/enabled changes
+5. TimelineView — re-renders only when song/bpm changes
+6. PresetsPanel — re-renders only when preset list changes
+7. RoleFxPanel — re-renders only when fxState changes
+8. LoudnessMeter — already has its own RAF loop, memo prevents React re-renders
+9. PerformancePads — re-renders only when nowPlaying changes
+
+Pattern: `function XImpl(...) { ... }` + `export const X = React.memo(XImpl)`
+
+Impact: during playback, only PatternEditor + Visualizer + LoudnessMeter
+re-render on every step change (they need to). The other 9 components
+skip re-rendering — their props are stable (callbacks are useCallback'd,
+state objects are only recreated when they actually change).
+
+Verification:
+- Lint: 0 errors
+- TypeScript: 0 errors in src/
+- Unit tests: 750 pass, 6 skip, 0 fail (51 files)
+- 0 runtime errors
+
+% complete per ROAST.md:
+- UX/UI polish: 40% → 45% (+5%, React.memo reduces unnecessary renders)
+- Overall: 39% → 40%

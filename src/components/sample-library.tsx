@@ -63,7 +63,7 @@ export function WaveformThumbnail({ data, color, width = 48, height = 18 }: { da
 
 type SortMode = 'category' | 'name' | 'duration'
 
-export function SampleLibrary({
+function SampleLibraryImpl({
   samples,
   onAudition,
   onRemove,
@@ -370,3 +370,6 @@ export function SampleLibrary({
     </div>
   )
 }
+
+// Phase 7.3.1: React.memo prevents re-renders when currentStep changes
+export const SampleLibrary = React.memo(SampleLibraryImpl)

@@ -16,7 +16,7 @@
 import * as React from 'react'
 import type { Song, SongSegment } from '@/lib/song-persistence'
 
-export function SongEditor({
+function SongEditorImpl({
   song,
   slotNames,
   songMode,
@@ -220,3 +220,6 @@ export function SongEditor({
     </div>
   )
 }
+
+// Phase 7.3.1: React.memo
+export const SongEditor = React.memo(SongEditorImpl)

@@ -7,7 +7,7 @@ import type { Song } from '@/lib/song-persistence'
 
 const SLOT_COLORS = ['#00ffc8', '#ff2e88', '#fbbf24', '#a78bfa']
 
-export function TimelineView({
+function TimelineViewImpl({
   song, songMode, currentSegment, currentBar, bpm,
 }: {
   song: Song
@@ -104,3 +104,6 @@ export function TimelineView({
     </div>
   )
 }
+
+// Phase 7.3.1: React.memo
+export const TimelineView = React.memo(TimelineViewImpl)

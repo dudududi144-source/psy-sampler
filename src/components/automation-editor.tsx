@@ -18,7 +18,7 @@ const TARGETS: Array<{ target: AutomationTarget; label: string; min: number; max
 const TRACK_HEIGHT = 48
 const TIMELINE_DURATION = 32
 
-export function AutomationEditor({
+function AutomationEditorImpl({
   bank, dirty, enabled, onToggle, onAddPoint, onClearTrack,
 }: {
   bank: AutomationBank
@@ -137,3 +137,6 @@ export function AutomationEditor({
     </div>
   )
 }
+
+// Phase 7.3.1: React.memo
+export const AutomationEditor = React.memo(AutomationEditorImpl)

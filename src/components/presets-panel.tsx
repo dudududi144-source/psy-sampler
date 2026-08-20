@@ -7,7 +7,7 @@ import { PATTERN_PRESETS, type PatternPreset } from '@/lib/pattern-persistence'
 import { MIXER_PRESETS, type MixerPreset } from '@/lib/mixer-presets'
 import * as React from 'react'
 
-export function PresetsPanel({
+function PresetsPanelImpl({
   onLoad,
   onLoadMixer,
 }: {
@@ -130,3 +130,6 @@ export function PatternSlots({
     </div>
   )
 }
+
+// Phase 7.3.1: React.memo
+export const PresetsPanel = React.memo(PresetsPanelImpl)

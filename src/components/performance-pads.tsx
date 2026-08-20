@@ -111,7 +111,7 @@ function Pad({
   )
 }
 
-export function PerformancePads({
+function PerformancePadsImpl({
   onTrigger,
   nowPlayingRole,
   nowPlayingAt,
@@ -160,3 +160,6 @@ export function PerformancePads({
     </section>
   )
 }
+
+// Phase 7.3.1: React.memo
+export const PerformancePads = React.memo(PerformancePadsImpl)
