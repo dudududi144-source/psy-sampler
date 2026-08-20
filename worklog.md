@@ -4096,3 +4096,86 @@ Stage Summary:
 
 Next: Phase 3.2 (pattern chaining / follow actions) + Phase 4 (Mixer/FX)
 per the roadmap.
+
+---
+Task ID: PHASE-4.1-PER-BUS-SENDS
+Agent: main
+Task: Per-bus delay + reverb send levels (Phase 4.1)
+
+The roast documented: "no per-channel send levels — each bus can't
+independently control how much reverb/delay it gets".
+
+Investigation revealed: the AudioGraph already HAD delaySend + reverbSend
+gain nodes per bus, but there was NO runtime API to change them. They
+were set once at construction (fixed defaults: drum 0.05/0.1,
+music 0.2/0.25, atmos 0.4/0.5) and never adjustable.
+
+═══════════════════════════════════════════════════════════════════════════════
+Step 4.1.1 — AudioGraph send API
+═══════════════════════════════════════════════════════════════════════════════
+
+Added 4 new methods to src/psy-sampler/audio-graph.ts:
+
+  setBusDelaySend(name, value) — sets delay send gain (0..1), clamped,
+    uses setTargetAtTime for smooth (10ms time constant) transitions
+  getBusDelaySend(name) — returns current delay send level
+  setBusReverbSend(name, value) — same for reverb send
+  getBusReverbSend(name) — returns current reverb send level
+
+All methods gracefully return early if the bus doesn't exist (no crash).
+
+═══════════════════════════════════════════════════════════════════════════════
+Step 4.1.2 — Mixer UI send knobs + hook integration
+═══════════════════════════════════════════════════════════════════════════════
+
+BusMixerState (src/components/types.ts) extended with:
+  delaySend: number  (0..1, Phase 4.1)
+  reverbSend: number (0..1, Phase 4.1)
+
+DEFAULT_BUS_STATE updated with sensible per-bus defaults:
+  drum:  delaySend=0.05, reverbSend=0.1  (dry drums, minimal reverb)
+  music: delaySend=0.2,  reverbSend=0.25  (moderate sends)
+  atmos: delaySend=0.4,  reverbSend=0.5   (wet atmosphere)
+
+useMixerOps hook (src/hooks/use-mixer-ops.ts) extended with:
+  onBusDelaySend(name, value) — calls graph.setBusDelaySend + updates state
+  onBusReverbSend(name, value) — calls graph.setBusReverbSend + updates state
+
+MIXER_PRESETS (src/lib/mixer-presets.ts) updated — all 6 presets now
+include delaySend + reverbSend fields (0.1/0.2 defaults).
+
+Mixer component (src/components/mixer.tsx) extended:
+  - 2 new PsyKnobs per bus: DLY (amber) + REV (cyan)
+  - DLY knob: 0..1 range, shows 'off' when 0, value when >0.01
+  - REV knob: 0..1 range, same formatting
+  - Per-bus default values match the bus's character (drum=dry, atmos=wet)
+  - Color: amber for DLY (matches delay visual), cyan for REV (matches reverb)
+  - 7 knobs per bus total: GAIN, EQ L/M/H, SAT, DLY, REV
+
+page.tsx integration:
+  - Destructures onBusDelaySend + onBusReverbSend from useMixerOps
+  - Passes to <Mixer> component as new props
+
+═══════════════════════════════════════════════════════════════════════════════
+Verification
+═══════════════════════════════════════════════════════════════════════════════
+
+- Lint: 0 errors
+- TypeScript: 0 errors in src/
+- Unit tests: 749 pass, 1 skip, 0 fail (50 files)
+- Agent Browser: 6 new knobs visible (DLY + REV per bus × 3 buses)
+- 0 runtime errors
+
+% complete per ROAST.md commitment:
+- Mixer/FX: 30% → 40% (+10%, per-bus sends now adjustable)
+- Overall: 31% → 32%
+
+Stage Summary:
+- 4 new API methods on AudioGraph (setBusDelaySend, getBusDelaySend,
+  setBusReverbSend, getBusReverbSend)
+- 2 new callbacks in useMixerOps (onBusDelaySend, onBusReverbSend)
+- 2 new BusMixerState fields (delaySend, reverbSend)
+- 6 presets updated with send fields
+- 2 new PsyKnobs per bus in Mixer UI (DLY amber, REV cyan)
+- 0 lint, 0 TS, 0 test failures
+- Verified: knobs visible in browser, values adjustable at runtime

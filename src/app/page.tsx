@@ -253,6 +253,8 @@ export default function Home() {
     onBusGain,
     onBusEQ,
     onBusSaturation,
+    onBusDelaySend,
+    onBusReverbSend,
     onBusMute,
     onBusSolo,
     loadMixerPreset,
@@ -1897,7 +1899,16 @@ export default function Home() {
                 </Button>
               </div>
               <ErrorBoundary name="Mixer">
-              <Mixer busState={busState} onGain={onBusGain} onEQ={onBusEQ} onSaturation={onBusSaturation} onMute={onBusMute} onSolo={onBusSolo} />
+              <Mixer
+                busState={busState}
+                onGain={onBusGain}
+                onEQ={onBusEQ}
+                onSaturation={onBusSaturation}
+                onDelaySend={onBusDelaySend}
+                onReverbSend={onBusReverbSend}
+                onMute={onBusMute}
+                onSolo={onBusSolo}
+              />
               </ErrorBoundary>
             </div>
             <ErrorBoundary name="PresetsPanel">

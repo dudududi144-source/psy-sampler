@@ -352,6 +352,45 @@ export class AudioGraph {
     return bus ? bus.saturationDrive : 0
   }
 
+  // ─── Per-bus send levels (Phase 4.1) ──────────────────────────────────────
+  // Each bus has delaySend and reverbSend gain nodes. These control how much
+  // of the bus's signal goes to the delay/reverb returns. Previously these
+  // were set once at construction (fixed defaults) with no runtime API.
+
+  /**
+   * Set the delay send level for a bus (0..1).
+   * 0 = no delay, 1 = maximum delay send.
+   */
+  setBusDelaySend(name: BusName, value: number): void {
+    const bus = this.buses.get(name)
+    if (!bus) return
+    const v = Math.max(0, Math.min(1, value))
+    bus.delaySend.gain.setTargetAtTime(v, this.ctx.currentTime, 0.01)
+  }
+
+  /** Get the current delay send level (0..1). */
+  getBusDelaySend(name: BusName): number {
+    const bus = this.buses.get(name)
+    return bus ? bus.delaySend.gain.value : 0
+  }
+
+  /**
+   * Set the reverb send level for a bus (0..1).
+   * 0 = no reverb, 1 = maximum reverb send.
+   */
+  setBusReverbSend(name: BusName, value: number): void {
+    const bus = this.buses.get(name)
+    if (!bus) return
+    const v = Math.max(0, Math.min(1, value))
+    bus.reverbSend.gain.setTargetAtTime(v, this.ctx.currentTime, 0.01)
+  }
+
+  /** Get the current reverb send level (0..1). */
+  getBusReverbSend(name: BusName): number {
+    const bus = this.buses.get(name)
+    return bus ? bus.reverbSend.gain.value : 0
+  }
+
   // ─── Sidechain ducking ─────────────────────────────────────────────────────
 
   /** Enable/disable sidechain ducking. When enabled, triggerSidechain() dips music+atmos. */

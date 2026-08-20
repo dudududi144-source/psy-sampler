@@ -26,6 +26,8 @@ export function Mixer({
   onGain,
   onEQ,
   onSaturation,
+  onDelaySend,
+  onReverbSend,
   onMute,
   onSolo,
 }: {
@@ -33,6 +35,10 @@ export function Mixer({
   onGain: (name: BusName, value: number) => void
   onEQ: (name: BusName, band: 'low' | 'mid' | 'high', value: number) => void
   onSaturation: (name: BusName, value: number) => void
+  /** Phase 4.1: delay send level (0..1). */
+  onDelaySend: (name: BusName, value: number) => void
+  /** Phase 4.1: reverb send level (0..1). */
+  onReverbSend: (name: BusName, value: number) => void
   onMute: (name: BusName) => void
   onSolo: (name: BusName) => void
 }) {
@@ -135,6 +141,31 @@ export function Mixer({
                   label="SAT"
                   fmt={v => v > 0.1 ? v.toFixed(1) : 'off'}
                   onChange={v => onSaturation(name, v)}
+                />
+                {/* Phase 4.1: delay + reverb send knobs */}
+                <PsyKnob
+                  value={state.delaySend ?? 0}
+                  min={0}
+                  max={1}
+                  def={name === 'drum' ? 0.05 : name === 'music' ? 0.2 : 0.4}
+                  step={0.01}
+                  size={48}
+                  color={state.delaySend > 0.01 ? '#fbbf24' : '#52525b'}
+                  label="DLY"
+                  fmt={v => v > 0.01 ? v.toFixed(2) : 'off'}
+                  onChange={v => onDelaySend(name, v)}
+                />
+                <PsyKnob
+                  value={state.reverbSend ?? 0}
+                  min={0}
+                  max={1}
+                  def={name === 'drum' ? 0.1 : name === 'music' ? 0.25 : 0.5}
+                  step={0.01}
+                  size={48}
+                  color={state.reverbSend > 0.01 ? '#86f7ff' : '#52525b'}
+                  label="REV"
+                  fmt={v => v > 0.01 ? v.toFixed(2) : 'off'}
+                  onChange={v => onReverbSend(name, v)}
                 />
               </div>
 

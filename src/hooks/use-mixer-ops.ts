@@ -26,9 +26,9 @@ import type { MixerPreset } from '@/lib/mixer-presets'
 import { useToast } from '@/hooks/use-toast'
 
 const DEFAULT_BUS_STATE: Record<BusName, BusMixerState> = {
-  drum: { gain: 0.9, muted: false, solo: false, eqLow: 0, eqMid: 0, eqHigh: 0, saturation: 0 },
-  music: { gain: 0.85, muted: false, solo: false, eqLow: 0, eqMid: 0, eqHigh: 0, saturation: 0 },
-  atmos: { gain: 0.7, muted: false, solo: false, eqLow: 0, eqMid: 0, eqHigh: 0, saturation: 0 },
+  drum: { gain: 0.9, muted: false, solo: false, eqLow: 0, eqMid: 0, eqHigh: 0, saturation: 0, delaySend: 0.05, reverbSend: 0.1 },
+  music: { gain: 0.85, muted: false, solo: false, eqLow: 0, eqMid: 0, eqHigh: 0, saturation: 0, delaySend: 0.2, reverbSend: 0.25 },
+  atmos: { gain: 0.7, muted: false, solo: false, eqLow: 0, eqMid: 0, eqHigh: 0, saturation: 0, delaySend: 0.4, reverbSend: 0.5 },
 }
 
 export interface UseMixerOpsOptions {
@@ -72,6 +72,24 @@ export function useMixerOps(opts: UseMixerOpsOptions) {
       graph.setBusSaturation(name, value)
     }
     setBusState((prev) => ({ ...prev, [name]: { ...prev[name], saturation: value } }))
+  }, [bundleRef])
+
+  // ─── Per-bus send levels (Phase 4.1) ──────────────────────────────────────
+  // New: delay + reverb send per bus. Previously fixed at construction.
+  const onBusDelaySend = React.useCallback((name: BusName, value: number) => {
+    const graph = bundleRef.current?.audioGraph
+    if (graph) {
+      graph.setBusDelaySend(name, value)
+    }
+    setBusState((prev) => ({ ...prev, [name]: { ...prev[name], delaySend: value } }))
+  }, [bundleRef])
+
+  const onBusReverbSend = React.useCallback((name: BusName, value: number) => {
+    const graph = bundleRef.current?.audioGraph
+    if (graph) {
+      graph.setBusReverbSend(name, value)
+    }
+    setBusState((prev) => ({ ...prev, [name]: { ...prev[name], reverbSend: value } }))
   }, [bundleRef])
 
   const onBusMute = React.useCallback((name: BusName) => {
@@ -143,6 +161,8 @@ export function useMixerOps(opts: UseMixerOpsOptions) {
     onBusGain,
     onBusEQ,
     onBusSaturation,
+    onBusDelaySend,
+    onBusReverbSend,
     onBusMute,
     onBusSolo,
     loadMixerPreset,

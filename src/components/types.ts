@@ -68,6 +68,10 @@ export interface BusMixerState {
   eqHigh: number
   /** Saturation drive (0..10). 0 = bypass. */
   saturation: number
+  /** Delay send level (0..1). Phase 4.1 — per-bus delay send. */
+  delaySend: number
+  /** Reverb send level (0..1). Phase 4.1 — per-bus reverb send. */
+  reverbSend: number
 }
 
 // ─── Constants ───────────────────────────────────────────────────────────────
