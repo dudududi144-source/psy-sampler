@@ -16,8 +16,10 @@
 //   5. The imported sample appears in the SampleLibrary list and participates in selection.
 
 import * as React from 'react'
-import type { SampleCategories, SampleAsset } from '@/psy-sampler'
+import type { SampleCategory, SampleAsset } from '@/psy-sampler'
+import type { SampleProvenance } from '@/psy-sampler'
 import { ROLES } from '@/components/types'
+import { SampleSlicer } from '@/components/sample-slicer'
 
 const LICENSE_OPTIONS = [
   { value: 'CC0 1.0', label: 'CC0 1.0 (Public Domain)' },
@@ -44,6 +46,7 @@ export function SampleImporter({
   const [pending, setPending] = React.useState<PendingImport | null>(null)
   const [error, setError] = React.useState<string | null>(null)
   const [dragOver, setDragOver] = React.useState(false)
+  const [slicing, setSlicing] = React.useState(false)
   const [form, setForm] = React.useState({
     category: 'kick' as SampleCategory,
     license: 'CC0 1.0',
@@ -305,6 +308,33 @@ export function SampleImporter({
               import to library
             </button>
             <button
+              onClick={() => {
+                if (!form.source.trim()) {
+                  setError('Source is required before slicing (provenance applies to all slices).')
+                  return
+                }
+                if (!form.author.trim()) {
+                  setError('Author is required before slicing.')
+                  return
+                }
+                if (!form.commercialUse) {
+                  setError('You must assert commercial-use rights to slice.')
+                  return
+                }
+                setError(null)
+                setSlicing(true)
+              }}
+              className="min-h-[44px] touch-manipulation flex-1 rounded border px-3 py-2 font-mono text-xs font-bold uppercase tracking-wider transition-all hover:brightness-125"
+              style={{
+                borderColor: '#22d3ee',
+                color: '#22d3ee',
+                background: 'rgba(34,211,238,0.1)',
+              }}
+              title="Detect onsets and slice this buffer into individual hits"
+            >
+              slice into hits
+            </button>
+            <button
               onClick={cancelImport}
               className="min-h-[44px] touch-manipulation rounded border px-3 py-2 font-mono text-xs uppercase tracking-wider transition-all hover:brightness-125"
               style={{ borderColor: '#3a4150', color: '#9aa3af' }}
@@ -313,6 +343,30 @@ export function SampleImporter({
             </button>
           </div>
         </div>
+      )}
+
+      {/* Slicer overlay — replaces the provenance form while active */}
+      {pending && slicing && (
+        <SampleSlicer
+          audioContext={audioContext}
+          buffer={pending.buffer}
+          fileName={pending.file.name}
+          provenance={{
+            source: form.source.trim(),
+            author: form.author.trim(),
+            license: form.license,
+            licenseUrl: null,
+            commercialUse: form.commercialUse,
+            attribution: form.attribution.trim() || null,
+            usageRestrictions: 'None — user asserted commercial rights',
+          }}
+          onImport={onImport}
+          onCancel={() => {
+            setSlicing(false)
+            setPending(null)
+            setForm((prev) => ({ ...prev, source: '', author: '', attribution: '' }))
+          }}
+        />
       )}
     </div>
   )

@@ -185,3 +185,18 @@ export { realizeScheduledEvent } from './device'
  * @returns Bundle with device, library, scheduler, audioGraph, voicePool, load(), dispose()
  */
 export { createSamplerDevice, type CreateSamplerOptions, type SamplerBundle } from './factory'
+
+// ─── Slicer ──────────────────────────────────────────────────────────────────
+
+/** A detected onset (time + spectral-flux strength). */
+export type { Onset, DetectOnsetsOptions } from './slicer'
+
+/** Detect onsets in a mono signal using spectral flux. */
+export { detectOnsets } from './slicer'
+
+/** Split an AudioBuffer at the given onset times. */
+export { sliceAudioBuffer } from './slicer'
+
+/** Downmix an AudioBuffer to a mono Float32Array. */
+export { toMono as sliceToMono } from './slicer'
+export { toMono } from './slicer'

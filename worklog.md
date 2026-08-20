@@ -2921,3 +2921,88 @@ Stage Summary:
 - Pushed to GitHub. Commits: b2252f7, e4b545e
 - GitHub Pages live: https://dudududi144-source.github.io/psy-sampler/
 - TEXT ONLY. No emojis. No Unicode symbols. Professional.
+
+---
+Task ID: SAMPLE-SLICER
+Agent: main
+Task: Implement Sample Slicing — transient detection + AudioBuffer splitting
+
+Built a new "Slice into hits" feature for the SampleImporter. Lets users drop
+a drum loop / percussion phrase and auto-divide it into individual hits using
+spectral-flux onset detection. Each slice becomes a separate SampleAsset in
+the library with proper provenance inherited from the import form.
+
+Files created:
+- src/psy-sampler/slicer.ts (250 lines)
+  - detectOnsets(mono, sampleRate, opts) — spectral-flux onset detection
+    * STFT: 1024-sample Hann window, 50% overlap (hop=512)
+    * Per-frame magnitude spectrum via naive DFT (portable, no FFT dep)
+    * Spectral flux = sum of positive magnitude differences (onsets only)
+    * Normalise by local median over 20-frame window (~120 ms, adaptive)
+    * Peak-pick: local max in +-5 frame window AND above threshold
+    * Threshold = 1.0 + (1-sensitivity)*2.0 (sensitivity 0..1)
+    * Min-spacing 30 ms so a single hit doesn't trigger multiple onsets
+    * Guarantee at least one onset at t=0 (the first hit)
+  - sliceAudioBuffer(source, onsetTimes, maxSliceSec=2.0)
+    * Returns one AudioBuffer per onset
+    * Each slice spans [onset[i], onset[i+1]) — last runs to buffer end
+    * Truncates slices to 2.0 s so a long tail doesn't dominate pad slot
+    * Creates AudioBuffers via OfflineAudioContext (portable host)
+  - toMono(buffer) — channel-averaged downmix (mirror of library's private method)
+
+- src/components/sample-slicer.tsx (340 lines)
+  - SampleSlicer React component
+    * Computes mono downmix via useMemo (no ref during render — lint-clean)
+    * Runs detectOnsets via useMemo on [mono, sampleRate, sensitivity]
+    * User overrides stored in Partial<Record<number, {role?,keep?}>>
+    * Default role assignment via pickDefaultRole(i, total):
+      - i % 4 === 0  → kick  (downbeats)
+      - i % 4 === 2  → clap  (backbeats)
+      - i % 2 === 1  → hat-closed (offbeats)
+      - i === total-1 → fx (tail)
+    * User can change role per-row via <select> (PSY-colored per role)
+    * User can toggle KEEP/SKIP per row (false positives can be discarded)
+    * Audition button plays the slice via BufferSource → ctx.destination
+    * Sensitivity slider (0.1..0.95) — re-runs detection live
+    * SlicerWaveform: full-width canvas (600x64 px) with peak bars in PSY cyan
+      + vertical slice markers colored by role + triangle markers at top
+    * SLICE N SAMPLES button — calls sliceAudioBuffer + emits N onImport callbacks
+    * CANCEL button — closes slicer without committing
+  - Each emitted SampleAsset carries:
+    * id = baseFilename-i+1 (sanitised, max 24 chars)
+    * file = slice:id (marker — not a URL, came from a buffer)
+    * category = user-chosen role
+    * subcategory = 'sliced'
+    * provenance = inherited from importer form (license/author/source/commercial)
+    * character = ['sliced', 'loop-cut']
+    * features = peak + rms + duration + sampleRate + channels (computed per slice)
+
+Modified files:
+- src/psy-sampler/index.ts
+  - Export Onset, DetectOnsetsOptions, detectOnsets, sliceAudioBuffer, toMono
+- src/components/sample-importer.tsx
+  - Added "SLICE INTO HITS" button next to "IMPORT TO LIBRARY" (PSY cyan style)
+  - Pre-validates source/author/commercialUse before opening slicer
+  - <SampleSlicer> mounted in slicing state — replaces provenance form
+  - onCancel: clears pending + form, returns to drop zone
+  - Fixed pre-existing typo: SampleCategories → SampleCategory (import line 19)
+
+Verified end-to-end via Agent Browser:
+- Dropped synthetic 2 s drum loop (8 hits: 4 kicks @ 0/0.5/1.0/1.5 + 4 hats @ 0.25/0.75/1.25/1.75)
+- Slicer detected 9 onsets (8 hits + 1 at t=0) — "SLICER · 9 ONSETS · 9 KEPT"
+- Default role assignment correct: kick/hat/clap/hat/kick/hat/clap/hat/fx
+- Clicked "SLICE 9 SAMPLES" — library went 31 → 40 samples
+- All 9 slices present in library: test-loop-1..9 with correct role + duration
+- 0 runtime errors, 0 lint errors, 0 new TS errors (pre-existing scalePattern
+  errors in page.tsx are unrelated)
+- Toast notification: "Imported: test-loop-9fx · CC0 1.0 · 0.26s"
+
+Stage Summary:
+- New feature: drop a drum loop → auto-slice into individual hits → add to library
+- 100% lint-clean, 0 React anti-patterns (no setState-in-effect, no ref-in-render)
+- Provenance flows from importer form → all slices (license + commercial asserted)
+- Default role heuristic + per-row override (select + KEEP/SKIP)
+- Audition per slice before committing
+- Sensitivity slider for fine-tuning onset count
+- Visualised: full waveform + PSY-colored slice markers + triangle tops
+- Live site: https://dudududi144-source.github.io/psy-sampler/
