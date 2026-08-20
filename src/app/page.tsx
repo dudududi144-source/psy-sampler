@@ -1948,39 +1948,47 @@ export default function Home() {
             </div>
           </div>
 
-          {/* ─── Main grid: pattern editor ─── */}
-          <div className="section">
-            <PatternEditor
-              pattern={pattern}
-              currentStep={currentStep}
-              stepCount={stepCount}
-              probabilities={probabilities}
-              onToggle={onToggleStep}
-              onPaint={onPaintStep}
-              onStepCountChange={onStepCountChange}
-              onSetProbability={onSetProbability}
-              onCopyRole={onCopyRole}
-              onPasteRole={onPasteRole}
-              onRandomize={onRandomizePattern}
-              onChords={onGenerateChords}
-              onHumanize={onHumanize}
-              onQuantize={onQuantize}
-              onRampUp={onRampUp}
-              onRampDown={onRampDown}
-              onScaleUp={onScaleUp}
-              onScaleDown={onScaleDown}
-              noteMap={noteMap}
-              onFillRole={onFillRole}
-              onDouble={onDoublePattern}
-              onHalf={onHalfPattern}
+          {/* ─── Pattern Editor + Performance Pads (side by side) ─── */}
+          <div className="grid gap-3 lg:grid-cols-3">
+            <div className="lg:col-span-2">
+              <PatternEditor
+                pattern={pattern}
+                currentStep={currentStep}
+                stepCount={stepCount}
+                probabilities={probabilities}
+                onToggle={onToggleStep}
+                onPaint={onPaintStep}
+                onStepCountChange={onStepCountChange}
+                onSetProbability={onSetProbability}
+                onCopyRole={onCopyRole}
+                onPasteRole={onPasteRole}
+                onRandomize={onRandomizePattern}
+                onChords={onGenerateChords}
+                onHumanize={onHumanize}
+                onQuantize={onQuantize}
+                onRampUp={onRampUp}
+                onRampDown={onRampDown}
+                onScaleUp={onScaleUp}
+                onScaleDown={onScaleDown}
+                noteMap={noteMap}
+                onFillRole={onFillRole}
+                onDouble={onDoublePattern}
+                onHalf={onHalfPattern}
+                nowPlayingRole={nowPlaying.role}
+                nowPlayingAt={nowPlaying.at}
+                onClearPattern={onClearPattern}
+              />
+            </div>
+            <PerformancePads
+              onTrigger={triggerPad}
               nowPlayingRole={nowPlaying.role}
               nowPlayingAt={nowPlaying.at}
-              onClearPattern={onClearPattern}
+              disabled={!initialized}
             />
           </div>
 
           {/* ─── Mixer + Presets + Slots ─── */}
-          <div className="section mt-4 grid gap-4 lg:grid-cols-3">
+          <div className="section mt-3 grid gap-3 lg:grid-cols-3">
             <div>
               {/* FX toggles — audio effects, grouped with the mixer */}
               <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
@@ -2064,18 +2072,8 @@ export default function Home() {
             />
           </div>
 
-          {/* ─── Performance Pads (live one-shot triggering) ─── */}
-          <div className="section mt-4">
-            <PerformancePads
-              onTrigger={triggerPad}
-              nowPlayingRole={nowPlaying.role}
-              nowPlayingAt={nowPlaying.at}
-              disabled={!initialized}
-            />
-          </div>
-
-          {/* ─── Timeline + Song Editor + Automation ─── */}
-          <div className="section mt-4 space-y-4">
+          {/* ─── Timeline + Song + Automation (2-col grid) ─── */}
+          <div className="section mt-3 grid gap-3 lg:grid-cols-2">
             <TimelineView
               song={song}
               songMode={songMode}
@@ -2103,7 +2101,7 @@ export default function Home() {
           </div>
 
           {/* ─── Library + Importer + Visualizer ─── */}
-          <div className="section mt-4 grid gap-4 lg:grid-cols-2">
+          <div className="section mt-3 grid gap-3 lg:grid-cols-2">
             <div className="space-y-4">
               <SampleLibrary
                 samples={samples}
