@@ -3006,3 +3006,109 @@ Stage Summary:
 - Sensitivity slider for fine-tuning onset count
 - Visualised: full waveform + PSY-colored slice markers + triangle tops
 - Live site: https://dudududi144-source.github.io/psy-sampler/
+
+---
+Task ID: PROCEDURAL-SAMPLES-V2
+Agent: main
+Task: Regenerate all 31 procedural samples with professional DSP
+
+Replaced the original generate-samples.ts + generate-velocity-samples.ts
+DSP (basic sine + white noise + one-pole filters) with a new unified
+generator (scripts/generate-samples-v2.ts) using professional synthesis:
+
+New DSP primitives:
+- Biquad filter (RBJ cookbook) — supports LP / HP / BP / notch / ap,
+  2nd-order, much sharper than the old one-pole running average
+- Pink noise (Voss-McCartney algorithm) — warmer than white noise for
+  percussive transients (kicks, snares, hats, shaker)
+- Multi-segment ADSR envelope (attack / decay / sustain / release)
+- Soft saturation (tanh with drive control) — musical, preserves transients
+- Allpass delay — for metallic ringing (ride, hats)
+- Band-limited sawtooth (8 partials) — supersaw leads + detuned bass
+
+Generator improvements (per role):
+
+KICK (5 variants, 909-style):
+- Fundamental + 2nd harmonic (was fundamental only)
+- Exponential pitch drop (Bezier-like curve)
+- Click transient via BP-filtered pink noise at 1800 Hz (was raw noise)
+- Sub tail extending beyond body decay (45-60 Hz)
+- Soft saturation (tanh drive 1.2..2.5) for warmth + punch
+- Variants: deep / punchy / soft / hard / main (each with different
+  start/end freq, pitch decay, body decay, click amp, drive)
+
+SNARE:
+- Tonal body (180 + 330 Hz sines, 909 frequencies)
+- BP-filtered pink noise @ 1800 Hz (was raw white noise)
+- Snare wire: separate HP @ 4000 Hz pink noise (extra ring)
+
+CLAP (4 variants, 909-style multi-burst):
+- 3-5 noise bursts spaced 8-12 ms apart
+- Tail decay after last burst
+- BP noise @ 800-1200 Hz with Q 1.0-1.5
+- Variants: soft (3 bursts) / main (4) / hard (4 tighter) / variant (5)
+
+HATS (8 variants, metallic via inharmonic sines + ring mod):
+- Metallic source: 6 sines at golden-ratio inharmonic ratios
+  (1, 1.618, 2.414, 3.732, 5.0, 7.0)
+- Ring-modulated against a subharmonic for extra harmonics
+- 3-stage cascaded Biquad BP (effectively 6-pole response)
+- Pink noise mixed in for grit
+- HP-based shimmer with slow LFO modulation
+- Variants: closed / open / 3 RR-closed / 2 RR-open / open-hat-gen
+
+BASS (2 variants, detuned saws + sub):
+- 2 detuned saws (chorus effect, was single raw saw)
+- Sub sine one octave below fundamental
+- LP filter envelope sweep (200→800 Hz for A, 150→500 for deep)
+- ADSR amp envelope (was simple exp)
+
+LEAD (1 variant, 5-voice supersaw):
+- 5 detuned saws (Roland JP-8000 style, cents: 0, ±8, ±16)
+- LP filter envelope sweep (4000→1500 Hz, closing filter)
+- ADSR amp envelope
+- Band-limited saw (8 partials) for cleaner sound
+
+PERC (5 variants — 2 main + 3 RR):
+- Tonal sine + BP-filtered pink noise transient
+- RR variants use different fundamental frequencies (pentatonic)
+
+TOM:
+- Pitched drum (280→150 Hz sine with pitch drop)
+- BP-filtered pink noise click transient
+
+RIDE:
+- Metallic source through 2-stage cascaded BP (6000 + 9000 Hz)
+- Sustained metallic decay (300 ms)
+
+SHAKER:
+- BP-filtered pink noise @ 6500 Hz (was LP-filtered white noise)
+- Asymmetric envelope (quick rise, slow fall)
+
+TEXTURE (2-second pad):
+- 3 detuned low drones (55 + 82.5 + 110 Hz)
+- LP-filtered pink noise with slowly opening cutoff (400→1000 Hz)
+- Slow LFO on amplitude (3-second cycle)
+
+FX SWEEP:
+- Pink noise + low sines (220 + 330 Hz)
+- LP filter sweep 200→8000 Hz over 1 second
+
+Verification:
+- 31 samples regenerated, all served HTTP 200
+- Total audio: 10.8 s (474k samples @ 44.1 kHz)
+- Peak normalization to 0.95 in writeWav (prevents inter-sample clipping)
+- Library loads all 31 samples (verified via Agent Browser)
+- 0 lint errors, 0 runtime errors, 0 console errors
+- Sample slicing feature (from previous task) still works on the new WAVs
+- PLAY/STOP verified working
+
+Stage Summary:
+- All 31 procedural samples now use professional synthesis techniques
+- Sounds much fuller/warmer than the original basic DSP
+- 909-style kicks + claps, metallic hats, supersaw lead, detuned bass
+- Filesizes similar to before (no audio length change)
+- Old scripts (generate-samples.ts, generate-velocity-samples.ts) kept
+  as reference; the new generator is scripts/generate-samples-v2.ts
+
+Live: https://dudududi144-source.github.io/psy-sampler/
