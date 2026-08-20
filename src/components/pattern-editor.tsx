@@ -491,12 +491,43 @@ export function PatternEditor({
                   return (
                     <button
                       key={step}
+                      id={`cell-${role}-${step}`}
                       onClick={() => handleCellClick(role, step)}
+                      onKeyDown={(e) => {
+                        // Phase 7.1.1: keyboard navigation for the pattern grid.
+                        // Arrow keys move focus to adjacent cells. Space/Enter
+                        // toggles (default button behavior, no preventDefault).
+                        const roleIdx = ROLES.indexOf(role)
+                        let targetRole = role
+                        let targetStep = step
+                        let handled = false
+                        if (e.key === 'ArrowLeft') {
+                          targetStep = step > 0 ? step - 1 : stepCount - 1
+                          handled = true
+                        } else if (e.key === 'ArrowRight') {
+                          targetStep = step < stepCount - 1 ? step + 1 : 0
+                          handled = true
+                        } else if (e.key === 'ArrowUp') {
+                          targetRole = roleIdx > 0 ? ROLES[roleIdx - 1] : ROLES[ROLES.length - 1]
+                          handled = true
+                        } else if (e.key === 'ArrowDown') {
+                          targetRole = roleIdx < ROLES.length - 1 ? ROLES[roleIdx + 1] : ROLES[0]
+                          handled = true
+                        }
+                        if (handled) {
+                          e.preventDefault()
+                          const targetEl = document.getElementById(`cell-${targetRole}-${targetStep}`)
+                          if (targetEl) {
+                            ;(targetEl as HTMLButtonElement).focus()
+                          }
+                        }
+                      }}
                       onPointerDown={editMode === 'velocity' ? (e) => { e.preventDefault(); startDrag(role, step, e) } : undefined}
                       onPointerEnter={editMode === 'velocity' ? () => continueDrag(role, step) : undefined}
                       onPointerUp={editMode === 'velocity' ? endDrag : undefined}
                       onPointerLeave={editMode === 'velocity' ? endDrag : undefined}
                       aria-label={`${role} step ${step + 1} ${isActive ? `velocity ${velocity}` : 'off'}${hasProb ? ` prob ${Math.round(prob * 100)}%` : ''}`}
+                      aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Space"
                       className={[
                         'relative flex-1 items-center justify-center transition-all hover:brightness-125 touch-manipulation select-none',
                         'seq-btn',

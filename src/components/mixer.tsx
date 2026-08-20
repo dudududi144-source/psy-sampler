@@ -186,6 +186,8 @@ export function Mixer({
                 <button
                   onClick={() => onMute(name)}
                   className="tbtn"
+                  aria-label={`Mute ${name} bus${state.muted ? ' (currently muted)' : ''}`}
+                  aria-pressed={state.muted}
                   style={{
                     flex: 1,
                     padding: '6px',
@@ -201,6 +203,8 @@ export function Mixer({
                 <button
                   onClick={() => onSolo(name)}
                   className="tbtn"
+                  aria-label={`Solo ${name} bus${state.solo ? ' (currently soloed)' : ''}`}
+                  aria-pressed={state.solo}
                   style={{
                     flex: 1,
                     padding: '6px',

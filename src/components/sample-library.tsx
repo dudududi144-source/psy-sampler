@@ -279,6 +279,7 @@ export function SampleLibrary({
                     onClick={() => onRemove(s.metadata.id)}
                     className="shrink-0 touch-manipulation rounded border  px-1.5 py-0.5 font-mono text-[10px]  hover:brightness-125"
                     title={`Remove ${s.metadata.id}`}
+                    aria-label={`Remove sample ${s.metadata.id} from library`}
                   >
                     DEL
                   </button>
@@ -289,6 +290,7 @@ export function SampleLibrary({
                     className="shrink-0 touch-manipulation rounded border px-1.5 py-0.5 font-mono text-[10px] hover:brightness-125"
                     style={{ borderColor: '#22d3ee80', color: '#22d3ee' }}
                     title={`Edit ${s.metadata.id} (trim, fade, normalize, reverse)`}
+                    aria-label={`Edit sample ${s.metadata.id} — trim, fade, normalize, reverse`}
                   >
                     EDIT
                   </button>
@@ -306,6 +308,8 @@ export function SampleLibrary({
                     color: expandedId === s.metadata.id ? color : '#9aa3af',
                   }}
                   title="Toggle large preview"
+                  aria-label={`Toggle waveform preview for ${s.metadata.id}`}
+                  aria-expanded={expandedId === s.metadata.id}
                 >
                   {expandedId === s.metadata.id ? '−' : '+'}
                 </button>

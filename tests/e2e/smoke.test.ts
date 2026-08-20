@@ -83,7 +83,7 @@ describe('E2E smoke', async () => {
     await wait(3000)  // audio init takes ~2s
 
     const snap2 = snapshotInteractive()
-    expect(snap2).toContain('PLAY')
+    expect(snap2.includes('PLAY') || snap2.includes('Start playback')).toBe(true)
     expect(snap2).toContain('LIBRARY ·')
     expect(snap2).toContain('PATTERN ·')
   })
@@ -98,20 +98,23 @@ describe('E2E smoke', async () => {
 
   maybeTest('PLAY toggles to STOP', async () => {
     const snap = snapshotInteractive()
-    const match = snap.match(/^- button "PLAY" \[ref=(e\d+)\]/m)
+    // Phase 7.1.3: PLAY button now has aria-label "Start playback"
+    // (was just "PLAY" text before). Match either the old text or new label.
+    const match = snap.match(/^- button "(PLAY|Start playback)" \[ref=(e\d+)\]/m)
     expect(match).not.toBeNull()
-    const ref = match![1]
+    const ref = match![2]
     ab(`click @${ref}`)
     await wait(1500)
     const snap2 = snapshotInteractive()
-    expect(snap2).toContain('STOP')
-    // Click again to stop.
-    const match2 = snap2.match(/^- button "STOP" \[ref=(e\d+)\]/m)
+    // After click, should show STOP or "Stop playback"
+    expect(snap2.includes('STOP') || snap2.includes('Stop playback')).toBe(true)
+    // Click again to stop — find the STOP/Stop playback button.
+    const match2 = snap2.match(/^- button "(STOP|Stop playback)" \[ref=(e\d+)\]/m)
     expect(match2).not.toBeNull()
-    ab(`click @${match2![1]}`)
+    ab(`click @${match2![2]}`)
     await wait(500)
     const snap3 = snapshotInteractive()
-    expect(snap3).toContain('PLAY')
+    expect(snap3.includes('PLAY') || snap3.includes('Start playback')).toBe(true)
   })
 
   maybeTest('mute per role works (first M button)', async () => {

@@ -119,6 +119,8 @@ export function RoleFxPanel({ fxState, onChange, disabled }: RoleFxPanelProps) {
                     color: hasFx ? color : '#9aa3af',
                   }}
                   title={hasFx ? 'Disable FX for this role' : 'Enable FX for this role'}
+                  aria-label={`Toggle FX for ${role} role${hasFx ? ' (currently on)' : ' (currently off)'}`}
+                  aria-pressed={hasFx}
                 >
                   {hasFx ? 'ON' : 'OFF'}
                 </button>

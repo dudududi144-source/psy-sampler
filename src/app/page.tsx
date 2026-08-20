@@ -1452,6 +1452,8 @@ export default function Home() {
               onClick={togglePlay}
               className="tbtn power h-11 gap-2 font-mono text-xs font-bold uppercase tracking-[0.15em]"
               variant={isPlaying ? 'destructive' : 'default'}
+              aria-label={isPlaying ? 'Stop playback' : 'Start playback'}
+              aria-pressed={isPlaying}
               style={
                 isPlaying
                   ? { borderColor: 'rgba(255,46,136,0.5)', boxShadow: '0 0 16px rgba(255,46,136,0.4)' }
@@ -1460,6 +1462,13 @@ export default function Home() {
             >
               {isPlaying ? 'STOP' : 'PLAY'}
             </Button>
+
+            {/* Phase 7.1.3: Screen reader live region for transport state.
+                Visually hidden (sr-only) but announced by screen readers
+                when transport state changes. */}
+            <span className="sr-only" role="status" aria-live="polite">
+              {isPlaying ? `Playing at ${bpm} BPM` : 'Stopped'}
+            </span>
 
             {/* OLED display — real-time audio waveform + harmonic info */}
             <PsyOled
