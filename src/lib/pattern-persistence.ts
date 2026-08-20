@@ -23,12 +23,16 @@ export function getSlotNames(): string[] {
     try {
       const data = localStorage.getItem(`${STORAGE_PREFIX}slot-${i}`)
       if (data) {
-        const parsed = JSON.parse(data) as PatternSlot
-        names.push(parsed.name)
+        const parsed = JSON.parse(data) as Partial<PatternSlot>
+        // Defensively validate: parsed.name might be missing or wrong type.
+        const name = typeof parsed.name === 'string' ? parsed.name : ''
+        names.push(name)
       } else {
         names.push('')
       }
-    } catch {
+    } catch (err) {
+      // Degrade gracefully — corrupt slot shows as empty.
+      console.warn(`[psy-sampler] Slot ${i} name read failed (corrupt data):`, err)
       names.push('')
     }
   }
@@ -52,11 +56,26 @@ export function loadFromSlot(slot: number): PatternSlot | null {
   try {
     const data = localStorage.getItem(`${STORAGE_PREFIX}slot-${slot}`)
     if (!data) return null
-    const parsed = JSON.parse(data) as PatternSlot
-    // FIX Bug 4: validate the pattern shape before returning.
-    parsed.pattern = validatePattern(parsed.pattern)
-    return parsed
-  } catch {
+    const parsed = JSON.parse(data) as Partial<PatternSlot>
+    // Defensively validate: the parsed object might be missing fields.
+    // The roast identified this as a bug — previously we did
+    // `parsed.pattern = validatePattern(parsed.pattern)` which would throw
+    // if parsed.pattern was undefined (corrupt slot data).
+    if (!parsed.pattern || typeof parsed.pattern !== 'object') {
+      console.warn(`[psy-sampler] Slot ${slot} missing pattern field — treating as empty`)
+      return null
+    }
+    if (typeof parsed.name !== 'string') {
+      parsed.name = 'Unknown'
+    }
+    if (typeof parsed.savedAt !== 'number') {
+      parsed.savedAt = Date.now()
+    }
+    const validated = validatePattern(parsed.pattern)
+    return { name: parsed.name, pattern: validated, savedAt: parsed.savedAt }
+  } catch (err) {
+    // Degrade gracefully but log — the user's pattern slot is corrupt.
+    console.warn(`[psy-sampler] Slot ${slot} load failed (corrupt data):`, err)
     return null
   }
 }
@@ -66,8 +85,10 @@ export function clearSlot(slot: number): void {
   if (slot < 0 || slot >= SLOT_COUNT) return
   try {
     localStorage.removeItem(`${STORAGE_PREFIX}slot-${slot}`)
-  } catch {
-    // ignore
+  } catch (err) {
+    // localStorage can be unavailable (private mode, quota exceeded, etc).
+    // Clear is idempotent so this is best-effort.
+    console.warn(`[psy-sampler] Slot ${slot} clear failed:`, err)
   }
 }
 
@@ -76,8 +97,15 @@ export function autosavePattern(pattern: Pattern): void {
   try {
     const data: PatternSlot = { name: 'autosave', pattern, savedAt: Date.now() }
     localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(data))
-  } catch {
-    // ignore — autosave is best-effort
+  } catch (err) {
+    // Best-effort: log a warning so the user knows their work isn't being
+    // saved. Previously silent — caused users to lose patterns without
+    // knowing why.
+    if (err instanceof DOMException && err.name === 'QuotaExceededError') {
+      console.warn('[psy-sampler] Autosave failed: localStorage quota exceeded. Free space or export your pattern.')
+    } else {
+      console.warn('[psy-sampler] Autosave failed (localStorage unavailable?):', err)
+    }
   }
 }
 
@@ -89,7 +117,9 @@ export function loadAutosave(): Pattern | null {
     const parsed = JSON.parse(data) as PatternSlot
     // FIX Bug 4: validate the pattern shape.
     return validatePattern(parsed.pattern)
-  } catch {
+  } catch (err) {
+    // Degrade gracefully but log — the autosave is corrupt, user should know.
+    console.warn('[psy-sampler] Autosave load failed (corrupt data):', err)
     return null
   }
 }

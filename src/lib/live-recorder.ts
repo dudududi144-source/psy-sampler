@@ -5,6 +5,7 @@
 // tapped from the master gain.
 
 import { audioBufferToWavBlob, triggerDownload } from './wav-export'
+import { safeDisconnect, safeStop } from './safe-disconnect'
 
 export interface LiveRecorderOptions {
   ctx: AudioContext
@@ -37,7 +38,7 @@ export class LiveRecorder {
     let mimeType = ''
     for (const mt of mimeTypes) { if (MediaRecorder.isTypeSupported(mt)) { mimeType = mt; break } }
     if (!mimeType) {
-      try { this.sourceNode.disconnect(this.dest) } catch { /* */ }
+      safeDisconnect(this.sourceNode)
       this.dest = null
       throw new Error('No supported MediaRecorder mimeType found')
     }
@@ -57,7 +58,7 @@ export class LiveRecorder {
       const chunks = this.chunks
       recorder.onstop = async () => {
         try {
-          if (dest) { try { this.sourceNode.disconnect(dest) } catch { /* */ } }
+          if (dest) { safeDisconnect(this.sourceNode) }
           const mimeType = recorder.mimeType || 'audio/webm'
           const blob = new Blob(chunks, { type: mimeType })
           const arrayBuffer = await blob.arrayBuffer()
@@ -83,8 +84,8 @@ export class LiveRecorder {
 
   cancel(): void {
     if (!this.recording || !this.recorder) return
-    try { this.recorder.stop() } catch { /* */ }
-    if (this.dest) { try { this.sourceNode.disconnect(this.dest) } catch { /* */ } }
+    safeStop(this.recorder)
+    if (this.dest) { safeDisconnect(this.sourceNode) }
     this.recording = false
     this.recorder = null
     this.dest = null

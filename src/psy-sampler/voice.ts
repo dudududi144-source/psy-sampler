@@ -15,6 +15,7 @@
 
 import type { Voice } from '../psy-foundation-shim/voice-pool'
 import type { VoiceTriggerOptions } from './types'
+import { safeDisconnect } from '../lib/safe-disconnect'
 
 export interface SampleVoiceInit {
   audioContext: AudioContext
@@ -294,13 +295,13 @@ interface ActiveChain {
 }
 
 function disposeChain(chain: ActiveChain): void {
-  try { chain.source.disconnect() } catch { /* */ }
-  try { chain.sourceGain.disconnect() } catch { /* */ }
+  safeDisconnect(chain.source)
+  safeDisconnect(chain.sourceGain)
   if (chain.lowpass) {
-    try { chain.lowpass.disconnect() } catch { /* */ }
+    safeDisconnect(chain.lowpass)
   }
   if (chain.lowpass2) {
-    try { chain.lowpass2.disconnect() } catch { /* */ }
+    safeDisconnect(chain.lowpass2)
   }
-  try { chain.panner.disconnect() } catch { /* */ }
+  safeDisconnect(chain.panner)
 }

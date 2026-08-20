@@ -8,6 +8,8 @@
 // The metronome is driven by the DemoDirector's tick callback — it fires
 // on beat boundaries (step % 4 === 0) when enabled.
 
+import { safeDisconnect } from './safe-disconnect'
+
 export class Metronome {
   private ctx: AudioContext
   private enabled = false
@@ -59,7 +61,7 @@ export class Metronome {
     source.stop(now + 0.01)
     // Cleanup after the click ends.
     source.onended = () => {
-      try { gain.disconnect() } catch { /* */ }
+      safeDisconnect(gain)
     }
   }
 }

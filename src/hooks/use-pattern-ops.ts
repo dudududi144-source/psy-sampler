@@ -90,7 +90,7 @@ export function usePatternOps(opts: UsePatternOpsOptions) {
     setStepCount(newSteps)
     const newPattern = structuredClone(director.getPattern())
     setPatternWithHistory(newPattern)
-    try { autosavePattern(newPattern) } catch { /* */ }
+    autosavePattern(newPattern)  // autosave logs internally on failure
   }, [directorRef, setPatternWithHistory])
 
   const onSetProbability = React.useCallback((role: SampleRole, step: number, prob: number) => {
@@ -141,7 +141,7 @@ export function usePatternOps(opts: UsePatternOpsOptions) {
     }
     director.setPattern(newPattern)
     setPatternWithHistory(newPattern)
-    try { autosavePattern(newPattern) } catch { /* */ }
+    autosavePattern(newPattern)  // autosave logs internally on failure
     toast({ title: `Pasted to ${role}`, description: `From ${clipboardRef.current.fromRole}` })
     return true
   }, [directorRef, pattern, setPatternWithHistory, toast])
@@ -159,7 +159,7 @@ export function usePatternOps(opts: UsePatternOpsOptions) {
     else row[step] = 0
     director.setPattern(newPattern)
     setPatternWithHistory(newPattern)
-    try { autosavePattern(newPattern) } catch { /* */ }
+    autosavePattern(newPattern)  // autosave logs internally on failure
   }, [directorRef, pattern, setPatternWithHistory])
 
   const onPaintStep = React.useCallback((role: SampleRole, step: number, velocity: number) => {
@@ -171,7 +171,7 @@ export function usePatternOps(opts: UsePatternOpsOptions) {
     row[step] = Math.max(0, Math.min(127, Math.round(velocity)))
     director.setPattern(newPattern)
     setPatternWithHistory(newPattern)
-    try { autosavePattern(newPattern) } catch { /* */ }
+    autosavePattern(newPattern)  // autosave logs internally on failure
   }, [directorRef, pattern, setPatternWithHistory])
 
   // ─── Pattern-level operations ────────────────────────────────────────────
@@ -182,7 +182,7 @@ export function usePatternOps(opts: UsePatternOpsOptions) {
     setNoteMap({})
     setLastProgression(null)
     setPatternWithHistory(empty)
-    try { autosavePattern(empty) } catch { /* */ }
+    autosavePattern(empty)  // autosave logs internally on failure
   }, [directorRef, setPatternWithHistory])
 
   const onRandomizePattern = React.useCallback(() => {
@@ -194,7 +194,7 @@ export function usePatternOps(opts: UsePatternOpsOptions) {
     setLastProgression(null)
     const result = structuredClone(director.getPattern())
     setPatternWithHistory(result)
-    try { autosavePattern(result) } catch { /* */ }
+    autosavePattern(result)  // autosave logs internally on failure
     toast({ title: 'Pattern randomized' })
   }, [directorRef, setPatternWithHistory, toast])
 
@@ -207,7 +207,7 @@ export function usePatternOps(opts: UsePatternOpsOptions) {
     setLastProgression(null)
     const result = structuredClone(director.getPattern())
     setPatternWithHistory(result)
-    try { autosavePattern(result) } catch { /* */ }
+    autosavePattern(result)  // autosave logs internally on failure
     toast({ title: `Filled ${role}`, description: 'Quick pattern generated for this role' })
   }, [directorRef, setPatternWithHistory, toast])
 
@@ -225,7 +225,7 @@ export function usePatternOps(opts: UsePatternOpsOptions) {
     setNoteMap(newNoteMap)
     setLastProgression({ label: progression.label, roman: progression.roman })
     setPatternWithHistory(structuredClone(newPattern))
-    try { autosavePattern(newPattern) } catch { /* */ }
+    autosavePattern(newPattern)  // autosave logs internally on failure
     toast({
       title: `Chords: ${progression.label}`,
       description: `${progression.roman} · ${arpeggio} arp · ${bassPattern} bass`,
@@ -239,7 +239,7 @@ export function usePatternOps(opts: UsePatternOpsOptions) {
     const humanized = humanizePattern(pattern, 0.5, seed)
     director.setPattern(humanized)
     setPatternWithHistory(structuredClone(humanized))
-    try { autosavePattern(humanized) } catch { /* */ }
+    autosavePattern(humanized)  // autosave logs internally on failure
     toast({ title: 'Groove added' })
   }, [directorRef, pattern, setPatternWithHistory, toast])
 
@@ -249,7 +249,7 @@ export function usePatternOps(opts: UsePatternOpsOptions) {
     const quantized = quantizePattern(pattern, 3)
     director.setPattern(quantized)
     setPatternWithHistory(structuredClone(quantized))
-    try { autosavePattern(quantized) } catch { /* */ }
+    autosavePattern(quantized)  // autosave logs internally on failure
     toast({ title: 'Quantized' })
   }, [directorRef, pattern, setPatternWithHistory, toast])
 
@@ -259,7 +259,7 @@ export function usePatternOps(opts: UsePatternOpsOptions) {
     const ramped = rampPattern(pattern, 'up', 40, 127)
     director.setPattern(ramped)
     setPatternWithHistory(structuredClone(ramped))
-    try { autosavePattern(ramped) } catch { /* */ }
+    autosavePattern(ramped)  // autosave logs internally on failure
     toast({ title: 'Build-up applied' })
   }, [directorRef, pattern, setPatternWithHistory, toast])
 
@@ -269,7 +269,7 @@ export function usePatternOps(opts: UsePatternOpsOptions) {
     const ramped = rampPattern(pattern, 'down', 40, 127)
     director.setPattern(ramped)
     setPatternWithHistory(structuredClone(ramped))
-    try { autosavePattern(ramped) } catch { /* */ }
+    autosavePattern(ramped)  // autosave logs internally on failure
     toast({ title: 'Breakdown applied' })
   }, [directorRef, pattern, setPatternWithHistory, toast])
 
@@ -279,7 +279,7 @@ export function usePatternOps(opts: UsePatternOpsOptions) {
     const scaled = scalePattern(pattern, 1.25)
     director.setPattern(scaled)
     setPatternWithHistory(structuredClone(scaled))
-    try { autosavePattern(scaled) } catch { /* */ }
+    autosavePattern(scaled)  // autosave logs internally on failure
     toast({ title: 'Louder' })
   }, [directorRef, pattern, setPatternWithHistory, toast])
 
@@ -289,7 +289,7 @@ export function usePatternOps(opts: UsePatternOpsOptions) {
     const scaled = scalePattern(pattern, 0.75)
     director.setPattern(scaled)
     setPatternWithHistory(structuredClone(scaled))
-    try { autosavePattern(scaled) } catch { /* */ }
+    autosavePattern(scaled)  // autosave logs internally on failure
     toast({ title: 'Softer' })
   }, [directorRef, pattern, setPatternWithHistory, toast])
 
@@ -304,7 +304,7 @@ export function usePatternOps(opts: UsePatternOpsOptions) {
     setStepCount(director.stepCount)
     const result = structuredClone(director.getPattern())
     setPatternWithHistory(result)
-    try { autosavePattern(result) } catch { /* */ }
+    autosavePattern(result)  // autosave logs internally on failure
     toast({ title: `Doubled to ${director.stepCount} steps`, description: 'Pattern repeated' })
   }, [directorRef, setPatternWithHistory, toast])
 
@@ -319,7 +319,7 @@ export function usePatternOps(opts: UsePatternOpsOptions) {
     setStepCount(director.stepCount)
     const result = structuredClone(director.getPattern())
     setPatternWithHistory(result)
-    try { autosavePattern(result) } catch { /* */ }
+    autosavePattern(result)  // autosave logs internally on failure
     toast({ title: `Halved to ${director.stepCount} steps`, description: 'Kept first half' })
   }, [directorRef, setPatternWithHistory, toast])
 
@@ -339,7 +339,7 @@ export function usePatternOps(opts: UsePatternOpsOptions) {
       director.setPattern(newPattern)
     }
     setPatternWithHistory(newPattern)
-    try { autosavePattern(newPattern) } catch { /* */ }
+    autosavePattern(newPattern)  // autosave logs internally on failure
   }, [directorRef, setPatternWithHistory])
 
   return {

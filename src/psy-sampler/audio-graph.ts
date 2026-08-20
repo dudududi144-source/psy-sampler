@@ -8,6 +8,7 @@
 // The sampler device creates this graph and routes voices to buses per role.
 
 import type { BusName } from './types'
+import { safeDisconnect } from '../lib/safe-disconnect'
 
 export interface AudioGraphOptions {
   masterGain?: number
@@ -222,7 +223,7 @@ export class AudioGraph {
   disableBusOutput(name: BusName): void {
     const bus = this.buses.get(name)
     if (!bus || !bus.directOutput) return
-    try { bus.saturationGain.disconnect(bus.directOutput) } catch { /* */ }
+    safeDisconnect(bus.saturationGain)
     bus.directOutput = null
   }
 

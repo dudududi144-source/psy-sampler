@@ -218,41 +218,59 @@ export function estimateBpmFromOnsets(onsets: Onset[]): BpmEstimate {
   }
   intervals.sort((a, b) => a - b)
 
-  // Median.
+  // Median (robust to outliers).
   const median = intervals[Math.floor(intervals.length / 2)]
+  if (median <= 0) {
+    return { bpm: 0, confidence: 0, medianInterval: 0, noteValue: '16th' }
+  }
 
   // Confidence: low standard deviation relative to mean → high confidence.
   const mean = intervals.reduce((a, b) => a + b, 0) / intervals.length
   const variance = intervals.reduce((acc, x) => acc + (x - mean) ** 2, 0) / intervals.length
   const stddev = Math.sqrt(variance)
-  // CV = stddev/mean. Low CV = uniform. Confidence = max(0, 1 - cv * 2).
   const cv = mean > 0 ? stddev / mean : 1
   const confidence = Math.max(0, 1 - cv * 2)
 
-  // Try 16th-note interpretation first (most common for drum loops):
-  //   16th note at BPM X has interval 60 / (BPM * 4) seconds.
-  //   → BPM = 60 / (interval * 4) = 15 / interval
-  let bpm16 = 15 / median
-  // Snap to a "reasonable" range (60..200 BPM). If outside, the loop is
-  // probably using a different note value.
-  let noteValue: '16th' | '8th' | '4th' = '16th'
-  let bpm = bpm16
-  if (bpm16 < 60) {
-    // Try as 8th notes: BPM = 30 / interval
-    bpm = 30 / median
-    noteValue = '8th'
-  } else if (bpm16 > 200) {
-    // Try as 4th notes: BPM = 60 / interval
-    bpm = 60 / median
-    noteValue = '4th'
+  // Try all three note-value interpretations and pick the one whose BPM
+  // falls in the most musically-common range (70-180 BPM).
+  // This is the ROOT FIX for the off-by-2 bug: previously the algorithm
+  // greedily chose 16th notes when the result was >= 60, but a 120 BPM
+  // 4-on-the-floor loop has hits every 0.25s (8th notes at 120 BPM, OR
+  // 16th notes at 60 BPM). The previous algorithm returned 60 BPM (wrong);
+  // the new algorithm considers all interpretations and picks the one in
+  // the 70-180 BPM sweet spot.
+  const candidates: Array<{ bpm: number; noteValue: '16th' | '8th' | '4th' }> = [
+    { bpm: 15 / median, noteValue: '16th' }, // 16th notes
+    { bpm: 30 / median, noteValue: '8th' },  // 8th notes
+    { bpm: 60 / median, noteValue: '4th' },   // 4th notes
+  ]
+
+  // Filter to "musically reasonable" BPM range (70-180).
+  // Psytrance is 140-150 BPM, techno 120-135, house 115-130, breakbeat 130-140.
+  // 70-180 covers all common electronic genres.
+  const MUSICAL_MIN = 70
+  const MUSICAL_MAX = 180
+  const inRange = candidates.filter(c => c.bpm >= MUSICAL_MIN && c.bpm <= MUSICAL_MAX)
+
+  let chosen: { bpm: number; noteValue: '16th' | '8th' | '4th' }
+  if (inRange.length > 0) {
+    // Pick the candidate closest to 120 BPM (the modal tempo of popular music).
+    // This breaks ties when multiple interpretations fall in range.
+    chosen = inRange.reduce((best, c) =>
+      Math.abs(c.bpm - 120) < Math.abs(best.bpm - 120) ? c : best,
+    )
+  } else {
+    // Fallback: no candidate in range — use 16th notes (most common for loops).
+    chosen = candidates[0]
   }
 
+  let bpm = chosen.bpm
   // Snap to nearest integer BPM if confidence is high.
   if (confidence > 0.5) {
     bpm = Math.round(bpm)
   }
 
-  return { bpm, confidence, medianInterval: median, noteValue }
+  return { bpm, confidence, medianInterval: median, noteValue: chosen.noteValue }
 }
 
 /**

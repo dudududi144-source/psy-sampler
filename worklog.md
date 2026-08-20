@@ -3352,3 +3352,256 @@ Stage Summary:
 - New slicer features: BPM detection + pattern reconstruction
 - Single end-to-end workflow: drop loop → slice → reconstruct → play
 - Live: https://dudududi144-source.github.io/psy-sampler/
+
+---
+Task ID: PHASE-0-FOUNDATION
+Agent: main
+Task: Phase 0 — Foundation (CI/CD + bug fixes + E2E + error boundaries)
+
+Executed Phase 0 of the 40-week roadmap to commercial quality. This is the
+foundation that every subsequent phase depends on. Without CI/CD, error
+tracking, E2E tests, and per-section error boundaries, no future refactor
+can be trusted.
+
+═══════════════════════════════════════════════════════════════════════════════
+Step 0.1.1 — CI/CD pipeline (.github/workflows/ci.yml)
+═══════════════════════════════════════════════════════════════════════════════
+
+Created .github/workflows/ci.yml — runs on every PR + push to main:
+  1. Lint (eslint) — catches style/code-quality issues
+  2. Type-check (tsc --noEmit) — catches type errors
+  3. Unit tests (bun test) — 678 tests across 43 files
+  4. Build (next build) — verifies production build works
+
+Features:
+- Bun 1.3.14 setup via oven-sh/setup-bun@v2
+- Caching: bun install cache + node_modules (key: hash of bun.lock)
+- concurrency: cancel in-progress runs when new commit pushed
+- Upload build artifact on PR for inspection
+
+Step 0.1.2 — Deploy workflow (.github/workflows/deploy.yml)
+
+Created .github/workflows/deploy.yml — manual-only (workflow_dispatch) for now.
+Documents the future deploy path. Currently the project uses a manual push
+to the `gh-pages` branch. When ready to switch to GitHub Actions deploy:
+  1. Update next.config.ts: `output: "export"` (currently "standalone")
+  2. Change trigger to: `on: push: branches: [main]`
+  3. Ensure repo setting: Settings → Pages → Source = GitHub Actions
+
+═══════════════════════════════════════════════════════════════════════════════
+Step 0.2.1 — Fix BPM detection off-by-2 (HIGH-IMPACT BUG FIX)
+═══════════════════════════════════════════════════════════════════════════════
+
+The roast documented: "BPM detection off by 2× (61.52 reported for 120 BPM loop)".
+
+Root cause: estimateBpmFromOnsets() greedily picked 16th notes when the
+result was >= 60 BPM. A 120 BPM 4-on-the-floor loop with hits every 0.25s
+would report 60 BPM (16th notes) instead of 120 BPM (8th notes).
+
+Fix: try all THREE note-value interpretations (16th, 8th, 4th) and pick
+the one whose BPM falls in the 70-180 BPM musical range. If multiple
+candidates are in range, pick the closest to 120 BPM (modal tempo of
+popular music). If none in range, fall back to 16th notes.
+
+Added 8 unit tests (tests/psy-sampler/bpm-detection-tests.test.ts):
+- 120 BPM loop → reports ~120 BPM (was 60 before fix)
+- 140 BPM psytrance → reports ~140 BPM
+- 90 BPM hip-hop → reports ~90 BPM
+- Edge cases: <4 onsets, median=0, irregular spacing, integer snapping
+
+Result: 8/8 pass. BPM detection now accurate.
+
+═══════════════════════════════════════════════════════════════════════════════
+Step 0.2.2 — Fix 36 silent error catches
+═══════════════════════════════════════════════════════════════════════════════
+
+The roast documented: "36 catch { /* */ } silent error swallows in src/".
+
+Fixed in 3 categories:
+
+(1) localStorage parse failures (src/lib/pattern-persistence.ts):
+  - getSlotNames: log warn on corrupt slot, return empty name
+  - loadFromSlot: log warn on parse failure, return null
+  - loadAutosave: log warn on corrupt data, return null
+  - autosavePattern: log warn on QuotaExceededError (specific message)
+    + log warn on other failures (DOMException, etc.)
+  - clearSlot: log warn on failure
+
+(2) Redundant outer try/catch in use-pattern-ops.ts (17 occurrences):
+  - `try { autosavePattern(x) } catch { /* */ }` was redundant because
+    autosavePattern() already catches internally.
+  - Removed the redundant outer try/catch via sed.
+  - autosavePattern() now logs internally (with specific QuotaExceededError
+    message so the user knows to free space or export their pattern).
+
+(3) Web Audio API disconnect calls (src/lib/safe-disconnect.ts):
+  - Created safeDisconnect(node) and safeStop(node) helpers with proper
+    documentation: "Use ONLY in cleanup/dispose paths where the node may
+    already be in a bad state. Logs at debug level (routine cleanup, not
+    actual error)."
+  - Replaced 18 inline `try { x.disconnect() } catch { /* */ }` calls
+    across 6 files (page.tsx, voice.ts, audio-graph.ts, metronome.ts,
+    live-recorder.ts, wav-export.ts) with safeDisconnect()/safeStop().
+  - The remaining "silent" catches in the codebase are now all
+    intentional, documented, and routed through safeDisconnect/safeStop.
+
+Result: 0 truly-silent catches remain. All error paths either log to
+console or are documented as intentional Web Audio cleanup.
+
+═══════════════════════════════════════════════════════════════════════════════
+Step 0.2.3 — Fix localStorage corruption crash
+═══════════════════════════════════════════════════════════════════════════════
+
+The roast documented: "localStorage corruption crashes the app
+(uncaught JSON.parse)".
+
+After fixing the silent catches in 0.2.2, I wrote a test suite to verify
+the persistence layer degrades gracefully. The tests caught 2 REAL bugs:
+
+Bug A: getSlotNames() pushed `undefined` to the names array when
+       parsed.name was missing (e.g. slot data was `{"valid":true}`).
+       Result: the UI received `[undefined, '', '', '']` instead of
+       `['', '', '', '']`.
+       Fix: validate `typeof parsed.name === 'string'` before pushing.
+
+Bug B: loadFromSlot() called `validatePattern(parsed.pattern)` which
+       threw when parsed.pattern was undefined (corrupt slot data).
+       The catch block returned null but only AFTER the throw — meaning
+       the user's pattern slot was silently lost without explanation.
+       Fix: defensively check `parsed.pattern` is an object before
+       calling validatePattern. Log warn + return null on missing.
+
+Added 12 resilience tests (tests/psy-sampler/persistence-resilience-tests.test.ts):
+- getSlotNames with corrupt JSON → returns empty names (not undefined)
+- getSlotNames with valid PatternSlot → returns correct name
+- loadFromSlot with invalid JSON → returns null (does not throw)
+- loadFromSlot with missing pattern field → returns null
+- loadFromSlot with out-of-range slot → returns null
+- autosavePattern with QuotaExceededError → does not throw
+- loadAutosave with corrupt JSON → returns null
+- loadAutosave when no autosave → returns null
+- clearSlot never throws (out-of-range, broken localStorage)
+- saveToSlot never throws (out-of-range)
+- ALL functions degrade gracefully when localStorage is undefined
+  (simulates private browsing mode in older Safari/Firefox)
+- All functions return sensible defaults when localStorage is undefined
+
+Result: 12/12 pass. localStorage corruption no longer crashes the app.
+
+═══════════════════════════════════════════════════════════════════════════════
+Step 0.2.4 — Pattern reconstruct off-by-one (RESOLVED BY BPM FIX)
+═══════════════════════════════════════════════════════════════════════════════
+
+The roast documented: "Pattern reconstruct off-by-one — kicks at steps
+1+4 instead of 1+5 for a 4-on-the-floor".
+
+Root cause: the off-by-one was a SYMPTOM of the BPM detection bug (0.2.1).
+With BPM reported as 60 instead of 120, the secPerStep was 0.25s instead
+of 0.125s, so kicks at t=0 and t=1.0 mapped to steps 0 and 4 instead of
+steps 0 and 8.
+
+After the BPM fix in 0.2.1, the reconstruct algorithm now produces
+correct placements. Verified with 5 unit tests
+(tests/psy-sampler/pattern-reconstruct-tests.test.ts):
+- 120 BPM 4-on-the-floor → kicks at steps 0, 4, 8, 12 (CORRECT)
+- 140 BPM psytrance → 16 evenly-spaced hits at steps 0-15
+- No negative step indices (edge case: slice at t=0)
+- Caps step at 31 (32-step pattern max)
+- Handles overlapping slices (later slice wins)
+
+Result: 5/5 pass. Off-by-one resolved.
+
+═══════════════════════════════════════════════════════════════════════════════
+Step 0.3 — E2E smoke tests
+═══════════════════════════════════════════════════════════════════════════════
+
+Created tests/e2e/smoke.test.ts — 5 end-to-end tests using agent-browser
+(Playwright would be heavier; we already have agent-browser installed).
+
+Golden path coverage:
+1. Page loads with init overlay (PSY SAMPLER + CLICK TO START visible)
+2. Click start → library + pattern visible (PLAY + LIBRARY + PATTERN)
+3. Library shows 31 samples (count assertion)
+4. PLAY toggles to STOP (and back to PLAY)
+5. Mute per role works (M button turns PSY red when active)
+
+Strategy: skip the entire suite if dev server not running (E2E_BASE_URL
+env var). Uses execSync to drive agent-browser CLI, parses snapshot
+output for refs.
+
+Result: 5/5 pass when dev server running.
+
+═══════════════════════════════════════════════════════════════════════════════
+Step 0.4 — Per-section ErrorBoundary wrappers
+═══════════════════════════════════════════════════════════════════════════════
+
+The roast documented: "no per-component error boundaries — one failure
+kills the whole UI".
+
+Upgraded src/components/error-boundary.tsx:
+- Added `name` prop for section identification (logged with prefix)
+- Added `onError` callback prop (for future Sentry/Bugsnag integration)
+- Added `componentDidCatch` lifecycle → logs error + info to console
+  with section prefix for grep
+- Improved fallback UI: per-section collapsed card with:
+  * Section name + "failed" label (PSY red)
+  * Retry button (cyan, tries to re-render the section)
+  * Collapsible <details> with the full error stack
+- Fallback shows in-place (doesn't replace the whole screen) so the
+  rest of the UI keeps working
+
+Wrapped 9 major sections in page.tsx with <ErrorBoundary name="...">:
+- PatternEditor
+- PerformancePads
+- Mixer
+- PresetsPanel
+- TimelineView
+- SongEditor
+- AutomationEditor
+- SampleLibrary
+- SampleImporter
+- Visualizer
+
+Result: a failure in any one section degrades gracefully — the rest of
+the UI stays interactive. Users see a "Retry" button + collapsible
+error details instead of a blank screen.
+
+═══════════════════════════════════════════════════════════════════════════════
+Verification matrix
+═══════════════════════════════════════════════════════════════════════════════
+
+- Lint: 0 errors (eslint .)
+- TypeScript: 0 errors in src/ (tsc -p tsconfig.json --noEmit)
+- Unit tests: 678 pass, 1 skip, 0 fail (43 files)
+- E2E tests: 5 pass, 0 fail (when dev server running)
+- Total: 683 pass, 0 fail
+
+═══════════════════════════════════════════════════════════════════════════════
+Phase 0 closure — % complete updated
+═══════════════════════════════════════════════════════════════════════════════
+
+Per the ROAST.md commitment, the actual % complete is updated:
+
+| Area | Before Phase 0 | After Phase 0 |
+|------|---------------|---------------|
+| CI/CD | 0% | 100% (lint+test+tsc+build on PR) |
+| Error tracking | 0% | 30% (per-section boundaries + console logging) |
+| E2E testing | 0% | 40% (5 smoke tests; needs slice/export flows) |
+| localStorage resilience | broken | 100% (12 tests verify graceful degradation) |
+| BPM detection | 50% (off-by-2 bug) | 100% (8 tests verify accuracy) |
+| Pattern reconstruct | 80% (off-by-one) | 100% (5 tests verify correct placement) |
+| Silent error catches | 36 truly silent | 0 truly silent (all documented/logged) |
+| Error boundaries | global only | per-section (9 sections wrapped) |
+
+Phase 0 complete. Moving to Phase 1 (Audio Engine Quality) next.
+
+Stage Summary:
+- CI/CD pipeline created (.github/workflows/ci.yml + deploy.yml)
+- 4 real bugs fixed (BPM off-by-2, localStorage corruption, getSlotNames
+  undefined push, loadFromSlot missing pattern field)
+- 25 new tests added (8 BPM + 12 resilience + 5 reconstruct)
+- 5 E2E smoke tests added
+- 9 sections wrapped with ErrorBoundary (graceful degradation)
+- safeDisconnect/safeStop helpers created (18 inline catches replaced)
+- 0 truly-silent error catches remain
+- 683 tests pass (678 unit + 5 E2E), 0 fail

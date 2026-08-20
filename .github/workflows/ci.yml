@@ -1,0 +1,82 @@
+# CI Pipeline — runs on every PR + push to main.
+#
+# Verifies:
+#   1. Lint (eslint)
+#   2. Type-check (tsc --noEmit)
+#   3. Unit tests (bun test)
+#   4. Build (next build)
+#
+# All checks MUST pass before merge to main. This is the safety net that
+# catches regressions during the Phase 1-10 roadmap execution.
+#
+# Caching: bun cache + .next cache + tsbuildinfo cache for fast incremental runs.
+
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# Cancel in-progress runs when a new commit is pushed to the same PR.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: Lint + Typecheck + Test + Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+
+      - name: Cache Bun
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.bun/install/cache
+            node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Lint (eslint)
+        run: bun run lint
+        env:
+          CI: true
+
+      - name: Type-check (tsc)
+        run: bunx tsc -p tsconfig.json --noEmit
+        env:
+          CI: true
+
+      - name: Unit tests (bun test)
+        run: bun test
+        env:
+          CI: true
+
+      - name: Build (next build)
+        run: bun run build
+        env:
+          CI: true
+          NEXT_TELEMETRY_DISABLED: 1
+
+      - name: Upload build artifact
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: next-build
+          path: .next
+          retention-days: 3

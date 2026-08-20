@@ -50,6 +50,7 @@ import {
 } from '@/lib/pattern-persistence'
 import { saveSessionState, loadSessionState, type SessionState } from '@/lib/session-persistence'
 import { loadSong, saveSong, resolveSong, songDurationSec, type Song } from '@/lib/song-persistence'
+import { safeDisconnect } from '@/lib/safe-disconnect'
 import { createProject, downloadProject, readProjectFile, type ProjectState } from '@/lib/project-persistence'
 import { LiveRecorder } from '@/lib/live-recorder'
 import { AutomationBank, type AutomationTarget } from '@/lib/automation'
@@ -618,13 +619,13 @@ export default function Home() {
       gain.connect(busInput)
       source.start()
       source.onended = () => {
-        try { gain?.disconnect() } catch { /* */ }
+        safeDisconnect(gain)
       }
       setNowPlaying({ role: cat, sampleId: asset.metadata.id, at: Date.now() })
     } catch (err) {
       // FIX Bug 9: disconnect nodes on failure to prevent leak.
-      try { gain?.disconnect() } catch { /* */ }
-      try { source?.disconnect() } catch { /* */ }
+      safeDisconnect(gain)
+      safeDisconnect(source)
       console.warn('[psy-sampler] Audition failed:', err)
     }
   }, [])
@@ -743,7 +744,7 @@ export default function Home() {
     setNoteMap({})
     setLastProgression(null)
     setPatternWithHistory(structuredClone(newPattern))
-    try { autosavePattern(newPattern) } catch { /* */ }
+    autosavePattern(newPattern)
     // Apply detected BPM if it's reasonable.
     if (reconstruction.bpm > 60 && reconstruction.bpm < 200) {
       const bpmInt = Math.round(reconstruction.bpm)
@@ -1721,6 +1722,7 @@ export default function Home() {
           {/* ─── Pattern Editor + Performance Pads (side by side) ─── */}
           <div className="grid gap-3 lg:grid-cols-3">
             <div className="lg:col-span-2">
+              <ErrorBoundary name="PatternEditor">
               <PatternEditor
                 pattern={pattern}
                 currentStep={currentStep}
@@ -1752,13 +1754,16 @@ export default function Home() {
                 onToggleMute={onToggleMute}
                 onToggleSolo={onToggleSolo}
               />
+              </ErrorBoundary>
             </div>
+            <ErrorBoundary name="PerformancePads">
             <PerformancePads
               onTrigger={triggerPad}
               nowPlayingRole={nowPlaying.role}
               nowPlayingAt={nowPlaying.at}
               disabled={!initialized}
             />
+            </ErrorBoundary>
           </div>
 
           {/* ─── Mixer + Presets + Slots ─── */}
@@ -1835,9 +1840,13 @@ export default function Home() {
                   FLT
                 </Button>
               </div>
+              <ErrorBoundary name="Mixer">
               <Mixer busState={busState} onGain={onBusGain} onEQ={onBusEQ} onSaturation={onBusSaturation} onMute={onBusMute} onSolo={onBusSolo} />
+              </ErrorBoundary>
             </div>
+            <ErrorBoundary name="PresetsPanel">
             <PresetsPanel onLoad={loadPreset} onLoadMixer={loadMixerPreset} />
+            </ErrorBoundary>
             <PatternSlots
               slotNames={slotNames}
               onSave={saveToSlotN}
@@ -1848,6 +1857,7 @@ export default function Home() {
 
           {/* ─── Timeline + Song + Automation (2-col grid) ─── */}
           <div className="section mt-3 grid gap-3 lg:grid-cols-2">
+            <ErrorBoundary name="TimelineView">
             <TimelineView
               song={song}
               songMode={songMode}
@@ -1855,6 +1865,8 @@ export default function Home() {
               currentBar={songBar}
               bpm={bpm}
             />
+            </ErrorBoundary>
+            <ErrorBoundary name="SongEditor">
             <SongEditor
               song={song}
               slotNames={slotNames}
@@ -1864,6 +1876,8 @@ export default function Home() {
               onChange={onSongChange}
               onToggleSongMode={onToggleSongMode}
             />
+            </ErrorBoundary>
+            <ErrorBoundary name="AutomationEditor">
             <AutomationEditor
               bank={automationBank}
               dirty={automationDirty}
@@ -1872,11 +1886,13 @@ export default function Home() {
               onAddPoint={onAddAutomationPoint}
               onClearTrack={onClearAutomationTrack}
             />
+            </ErrorBoundary>
           </div>
 
           {/* ─── Library + Importer + Visualizer ─── */}
           <div className="section mt-3 grid gap-3 lg:grid-cols-2">
             <div className="space-y-4">
+              <ErrorBoundary name="SampleLibrary">
               <SampleLibrary
                 samples={samples}
                 onAudition={auditionSample}
@@ -1884,13 +1900,18 @@ export default function Home() {
                 nowPlayingSampleId={nowPlaying.sampleId}
                 nowPlayingAt={nowPlaying.at}
               />
+              </ErrorBoundary>
+              <ErrorBoundary name="SampleImporter">
               <SampleImporter
                 audioContext={audioCtx}
                 onImport={onImportSample}
                 onReconstruct={onReconstructPattern}
               />
+              </ErrorBoundary>
             </div>
+            <ErrorBoundary name="Visualizer">
             <Visualizer analyser={analyser} isPlaying={isPlaying} />
+            </ErrorBoundary>
           </div>
 
           {/* ─── Footer ─── */}

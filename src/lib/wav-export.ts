@@ -6,6 +6,8 @@
 // This is browser-portable (no MediaRecorder/decodeAudioData round-trip).
 // Works on Chrome, Firefox, Safari, Edge.
 
+import { safeDisconnect, safeStop } from './safe-disconnect'
+
 /**
  * Encode an AudioBuffer as a 16-bit PCM WAV Blob.
  */
@@ -102,7 +104,7 @@ export async function renderAndDownloadWavLive(
     recorder.onstop = async () => {
       try {
         // FIX Bug 6: disconnect the tap.
-        try { sourceNode.disconnect(dest) } catch { /* */ }
+        safeDisconnect(sourceNode)
 
         const blob = new Blob(chunks, { type: mimeType })
         const arrayBuffer = await blob.arrayBuffer()
@@ -112,14 +114,14 @@ export async function renderAndDownloadWavLive(
         resolve()
       } catch (err) {
         // FIX Bug 6: disconnect dest on error too.
-        try { sourceNode.disconnect(dest) } catch { /* */ }
+        safeDisconnect(sourceNode)
         reject(err)
       }
     }
 
     recorder.start()
     setTimeout(() => {
-      try { recorder.stop() } catch { /* */ }
+      safeStop(recorder)
     }, durationSec * 1000)
   })
 }
