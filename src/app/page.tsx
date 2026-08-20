@@ -86,6 +86,7 @@ import { RoleFxPanel } from '@/components/role-fx-panel'
 import { SampleEditModal } from '@/components/sample-edit-modal'
 import { SongEditor } from '@/components/song-editor'
 import { Visualizer } from '@/components/visualizer'
+import { LoudnessMeter } from '@/components/loudness-meter'
 import { Mixer } from '@/components/mixer'
 import { PresetsPanel, PatternSlots } from '@/components/presets-panel'
 import { PerformancePads } from '@/components/performance-pads'
@@ -2050,9 +2051,14 @@ export default function Home() {
               />
               </ErrorBoundary>
             </div>
+            <div className="space-y-4">
             <ErrorBoundary name="Visualizer">
             <Visualizer analyser={analyser} isPlaying={isPlaying} />
             </ErrorBoundary>
+            <ErrorBoundary name="LoudnessMeter">
+            <LoudnessMeter analyser={analyser} isPlaying={isPlaying} />
+            </ErrorBoundary>
+            </div>
           </div>
 
           {/* ─── Footer ─── */}

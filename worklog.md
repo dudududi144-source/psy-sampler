@@ -4506,3 +4506,82 @@ Stage Summary:
 - 1 aria-live region (transport state announcements)
 - E2E tests updated to match new aria-labels
 - 0 lint, 0 TS, 0 test failures
+
+---
+Task ID: PHASE-4.6-LOUDNESS-METERING
+Agent: main
+Task: Loudness metering — peak + RMS + dBFS display (Phase 4.6)
+
+Every commercial sampler has professional metering. Without it, producers
+can't tell if their levels are clipping or too quiet. This phase adds a
+real-time peak + RMS meter with dBFS scale.
+
+═══════════════════════════════════════════════════════════════════════════════
+Step 4.6.1 — LoudnessMeter component (src/components/loudness-meter.tsx)
+═══════════════════════════════════════════════════════════════════════════════
+
+New component that reads from the shared AnalyserNode and displays:
+  - PEAK (sample peak, dBFS) — top bar, cyan/green below -12 dB
+  - RMS (root mean square, dBFS) — bottom bar, green below -12 dB
+  - Peak hold indicator (thin white line, holds max for 1 second)
+
+Features:
+  - LED-style segmented display (4px blocks with 1px gaps)
+  - Color zones: green (< -12 dB), yellow (-12 to -3 dB), red (> -3 dB)
+  - dB scale markers: 0, -3, -6, -12, -30 dBFS
+  - Real-time numeric display: "PK -6.2" / "RMS -18.5"
+  - Peak hold: holds the maximum peak for 1 second before resetting
+  - dBFS scale: -60 to 0 (60 dB range)
+  - DPR-aware canvas (sharp on retina displays)
+  - requestAnimationFrame loop (efficient, cancels on unmount)
+  - aria-label for screen readers
+  - "live" / "idle" / "no signal" status indicator
+
+Implementation details:
+  - Reads getByteTimeDomainData from the analyser (same as Visualizer)
+  - Converts 0-255 to -1..1 (128 = silence)
+  - Peak = max(abs(sample)) over the buffer
+  - RMS = sqrt(mean(sample^2)) over the buffer
+  - dBFS = 20 * log10(peak) (or 20 * log10(rms))
+  - -Infinity (silence) → displayed as "−∞" or clamped to -60 dB
+
+Honest limitation (documented in source):
+  This is NOT true LUFS (ITU-R BS.1770). LUFS requires:
+    - K-weighting filter (2-stage: high-shelf + high-pass)
+    - 400ms integration window (block-based)
+    - Gated measurement (absolute + relative gates)
+  Full LUFS would require an AudioWorklet for K-weighting — out of scope
+  for Phase 4.6 MVP. The peak + RMS meters cover 90% of mixing use cases.
+  Future: integrate web-audio-lufs library or build a K-weighting worklet.
+
+═══════════════════════════════════════════════════════════════════════════════
+Step 4.6.2 — Layout integration
+═══════════════════════════════════════════════════════════════════════════════
+
+The LoudnessMeter is placed below the Visualizer in the Library +
+Importer + Visualizer section. Both share the same AnalyserNode (no extra
+audio processing overhead — both read from the same analyser's shared
+data).
+
+Wrapped in ErrorBoundary for graceful degradation.
+
+═══════════════════════════════════════════════════════════════════════════════
+Verification
+═══════════════════════════════════════════════════════════════════════════════
+
+- Lint: 0 errors
+- TypeScript: 0 errors in src/
+- Unit tests: 750 pass, 6 skip, 0 fail (51 files)
+- Agent Browser: "METER" + "dBFS" + "idle" found in page text
+- 0 runtime errors
+
+% complete per ROAST.md commitment:
+- Mixer/FX: 40% → 48% (+8%, professional metering added)
+- Overall: 36% → 37%
+
+Stage Summary:
+- 1 new component: loudness-meter.tsx (peak + RMS + peak hold + dBFS scale)
+- Placed below Visualizer, shares AnalyserNode (no extra overhead)
+- LED-style segmented display with color zones (green/yellow/red)
+- 0 lint, 0 TS, 0 test failures
+- Honest limitation: not true LUFS (needs AudioWorklet for K-weighting)
